@@ -1,0 +1,139 @@
+---
+title: "supplement"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+# Descriptive plot of frequency by corpus and source
+This is the one where panels are sources rather than panels being corpora from which frequency distributions are drawn
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+nsd = Zs %>% 
+  group_by(source, var) %>% 
+  summarise(SD = sd(Z, na.rm = T),
+            M_ = mean(Z, na.rm = T),
+            n = n(),
+            source_order = first(source_order))
+
+Ns = Zs %>% 
+  filter(var == 'wcbc_rank') %>% 
+  group_by(source) %>% 
+  summarise(n = n())
+
+frequencies = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
+
+
+hlines = nsd %>% 
+  filter(var %in% frequencies) %>% 
+  group_by(source) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T),
+            source_order = first(source_order)) %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders'))
+
+plot_data = Zs %>% 
+  filter(var %in% frequencies) %>% 
+  select(var, source, M = Z) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+         source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders'))
+
+Zs %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% frequencies) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+                source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders')) %>% 
+  ggplot(aes(var, M, color = var, group = source)) +
+  scale_color_manual(values = COLORS_CORPUS) +
+  geom_point(data = plot_data, position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-SD, ymax = M + SD), width = .5) +
+  facet_grid(~reorder(source, source_order)) +
+  ylim(c(-2, .5)) +
+  labs(color = 'Variable', x = 'Source', y = 'Rank frequency (standardized)') +
+  geom_hline(yintercept = 0, linetype = 'dotted', color = 'black') +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed', alpha = .5) +
+  theme_bw() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+```
+
+
+
+# lexical variables across sources
+This is the alternative treatment of (non-frequency) word variables across sources with panels grouped 
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap=''}
+
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(source) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T),
+            source_order = first(source_order)) %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders'))
+
+Zs %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% VARS) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters'),
+         source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders')) %>% 
+  ggplot(aes(var, M, color = var, group = source)) +
+  scale_color_manual(values = COLORS_OTHERVAR) +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed') +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_linerange(aes(ymin = M-SEM, ymax = M+SEM), size = 1) +
+  labs(color = 'Variable', x = 'Source', y = 'Standardized value (within WCBC)') +
+  facet_grid(~reorder(source, source_order))  +
+  geom_hline(yintercept = 0, linetype = 'dotted', color = 'grey45') +
+  ylim(c(-1.2, 0)) +
+  theme_bw() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+```

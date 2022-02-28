@@ -1,0 +1,51 @@
+
+# WCBC
+tmp = Zs %>% 
+  filter(var == 'wcbc_rank')
+
+z_tests = split(tmp$Z, tmp$source) %>% 
+  map(t.test)
+
+z_table_wcbc = z_tests_to_table(z_tests) %>% 
+  mutate(var = 'WCBC')
+
+# TASA
+tmp = Zs %>% 
+  filter(var == 'tasa_rank')
+
+z_tests = split(tmp$Z, tmp$source) %>% 
+  map(t.test)
+
+z_table_tasa = z_tests_to_table(z_tests) %>% 
+  mutate(var = 'TASA')
+
+
+# COCA
+tmp = Zs %>% 
+  filter(var == 'coca_rank')
+
+z_tests = split(tmp$Z, tmp$source) %>% 
+  map(t.test)
+
+z_table_coca = z_tests_to_table(z_tests) %>% 
+  mutate(var = 'COCA')
+
+# CHILDES
+tmp = Zs %>% 
+  filter(var == 'childes_rank')
+
+z_tests = split(tmp$Z, tmp$source) %>% 
+  map(t.test)
+
+z_table_childes = z_tests_to_table(z_tests) %>% 
+  mutate(var = 'CHILDES')
+
+z_tables_freq = rbind(z_table_wcbc, z_table_tasa, z_table_coca, z_table_childes) %>% 
+  mutate(Source = toTitleCase(Source),
+         source_order = case_when(Source == 'Dolch' ~ 1,
+                                  Source == 'Fry' ~ 2,
+                                  Source == 'Fundations' ~ 3,
+                                  Source == 'Wonders' ~ 4,
+                                  Source == 'Kilpatrick' ~ 5))
+
+rm(z_table_childes, z_table_coca, z_table_tasa, z_table_wcbc, z_tests)

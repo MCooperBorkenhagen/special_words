@@ -1,0 +1,110 @@
+---
+title             : "Special words: ..."
+shorttitle        : "Special words"
+
+author: 
+  - name          : "Lauren P. Schilling"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Department of Psychology, University of Wisconsin - Madison"
+    email         : "---"
+    role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+      - Writing
+      - Analysis
+  - name          : "Matthew J. Cooper Borkenhagen"
+    affiliation   : "1"
+    address       : "Department of Psychology, University of Wisconsin - Madison"
+    email         : "cooperborken@wisc.edu"
+    role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+      - Conceptualization
+      - Supervision
+      - Writing
+      - Analysis
+  - name          : "Mark S. Seidenberg"
+    affiliation   : "1"
+    address       : "Department of Psychology, University of Wisconsin - Madison"
+    email         : "seidenberg@wisc.edu"
+    role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+      - Conceptualization
+      - Supervision
+      - Writing
+      - Analysis 
+
+bibliography      : ["references.bib"]
+affiliation       :
+  - id            : "1"
+    institution   : "Department of Psychology, University of Wisconsin - Madison"
+
+authornote: '...'
+abstract: '...'
+  
+keywords          : "Reading development, reading instruction, sight words"
+wordcount         : "..."
+
+documentclass     : "apa6"
+#class             : "man"
+figsintext        : yes
+figurelist        : no
+tablelist         : yes
+footnotelist      : no
+lineno            : yes
+lang              : "en-US"
+output            :
+  papaja::apa6_pdf :
+  #word_document :
+    toc               : false
+
+header-includes:
+  - \geometry{left=3cm, right=3cm, top=3cm, bottom=3cm}
+  - \usepackage{booktabs}
+  - \usepackage{longtable}
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \PassOptionsToPackage{x11names}{xcolor}
+  - \usepackage{wrapfig}
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{threeparttable}
+  - \usepackage[normalem]{ulem}
+  - \usepackage{pdfpages}
+  - \interfootnotelinepenalty=10000
+  - \setcounter{page}{0}
+
+---
+
+```{r setup, include=FALSE}
+lapply(read.csv('requirements.txt', stringsAsFactors = F, header = F)[[1]], require, ch = T)
+source('utilities.R')
+
+source('Zs.R')
+all_lists = read_csv('data/all_lists.csv')
+
+COLORS_CORPUS = c('WCBC' = 'firebrick3',
+           'COCA' = 'darkslategray',
+           'CHILDES' = 'gold2',
+           'TASA' = 'coral')
+
+COLORS_OTHERVAR = c('AoA' = 'darkolivegreen4',
+           'Consistency' = 'turquoise3',
+           'Imageability' = 'darkorange1',
+           'Letters' = 'goldenrod1',
+           'Syllables' = 'dodgerblue3')
+
+COLORS_SOURCE = c('Kilpatrick' = 'darkblue',
+           'Dolch' = 'darkred',
+           'Fry' = 'darkorange',
+           'Fundations' = 'turquoise',
+           'Wonders' = 'red')
+```
+
+
+```{r child='profiles.Rmd'}
+
+```
+
+
+```{r child='appendix.Rmd'}
+
+```

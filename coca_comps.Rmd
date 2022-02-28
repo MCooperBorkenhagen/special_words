@@ -1,0 +1,90 @@
+---
+title: "coca_comps"
+output: html_document
+---
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+require(readxl)
+require(psych)
+
+tasa = read_csv('data/tasa.csv') %>% 
+  rename(tasa = tasa_freq) %>% 
+  group_by(word) %>% 
+  summarise(tasa = sum(tasa))
+
+coca = read_csv('data/fiction_counts.csv') %>% 
+  rename(coca = freq) %>% 
+  group_by(word) %>% 
+  summarise(coca = sum(coca))
+
+subtlex = read_xls('~/Documents/words/subtlex/SUBTLEXusfrequencyabove1.xls') %>% 
+  select(word = Word, subtlex = FREQcount) %>% 
+  mutate(word = tolower(word)) %>% 
+  group_by(word) %>% 
+  summarise(subtlex = sum(subtlex))
+
+load(file = '~/Documents/words/childes/data/clean/childes-types.rda')
+
+childes = childes_eng_na_types_0_71_months %>% 
+  mutate(word = tolower(gloss)) %>% 
+  group_by(word) %>% 
+  summarise(childes = sum(count, na.rm = T))
+
+
+unl = readxl::read_xlsx('~/Documents/words/unilex/unilex.xlsx') %>% 
+  select(word = Word, unl = `Freq from Unisyn including BNC, Mapstat, Time mag, and online sources`) %>% 
+  group_by(word) %>% 
+  summarise(unl = sum(unl))
+
+elp = read_csv('~/Documents/words/elp/elp_full_5.27.16.csv') %>% 
+  select(word = Word, hal = Freq_HAL, kf = Freq_KF) %>% 
+  mutate(kf = as.numeric(kf)) %>% 
+  group_by(word) %>% 
+  summarise(hal = sum(hal),
+            kf = sum(kf))
+
+wcbc = read_csv('data/wcbc_freq.csv') %>%
+  select(word = orth, wcbc = wcbc_freq) %>% 
+  group_by(word) %>% 
+  summarise(wcbc = sum(wcbc))
+
+frequencies = elp %>% 
+  full_join(childes) %>%
+  full_join(coca) %>% 
+  full_join(wcbc) %>% 
+  full_join(subtlex) %>% 
+  full_join(unl) %>% 
+  full_join(tasa)
+
+```
+
+
+
+```{r corrMatrix, echo=FALSE, warning=FALSE, message=FALSE}
+pairs.panels(frequencies[,-1], method = "spearman", hist.col = "goldenrod", density = T, ellipses = T, smooth = T)
+
+```
+
+```{r}
+cors = cor(frequencies[,-1], use = 'pairwise.complete.obs', method = 'spearman')
+
+cors = cors %>% 
+  rstatix::cor_gather()
+
+cors %>% 
+  group_by(var2) %>% 
+  summarise(M = mean(cor)) %>% 
+  arrange(desc(M))
+
+
+
+cors %>% 
+  dplyr::filter(var2 %in% c('subtlex', 'unl', 'hal', 'coca', 'kf')) %>% 
+  group_by(var2) %>% 
+  summarise(M = mean(cor)) %>% 
+  arrange(desc(M))
+
+
+
+```
