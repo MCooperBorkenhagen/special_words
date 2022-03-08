@@ -5,7 +5,7 @@ source('lexical_models.R')
 ```
 
 # The properties of words across sources
-One method of capturing the differences across sources concerns the characteristics of the words that they contain. There are several ways of achieving such a comparison. One is doing so directly: one can observe the relative distribution of frequency, word length, etc. across two (or more) instructional lists. However, this sort of direct comparison evades useful description given that it isn't clear how a given distribution sits relative to the characteristics of words that children (who would consume such instructional resources) might be exposed to in their language (and reading) experience more generally. This section reports on a method to facilitate comparison of the distribution of the properties of words in an instructional source relative to some relevant benchmark.
+One method of capturing the differences across sources concerns the characteristics of the words that they contain. There are several ways of achieving such a comparison. One is doing so directly: one can observe the relative distribution of frequency, word length, etc. across two (or more) instructional lists. However, this sort of direct comparison evades useful description given that it isn't clear how a given distribution sits relative to the characteristics of words that children (who would consume such instructional resources) might be exposed to in their language (especially reading) experience more generally. This section reports on a method to facilitate comparison of the distribution of the properties of words in an instructional source relative to a relevant benchmark.
 
 First we will look at the frequency of words in each instructional resource and their relative distribution across them. We will move on to other word properties once frequency is examined.
 
@@ -23,11 +23,15 @@ apa_table(z_tests_to_table(z_tests))
 
 
 ```
-Word frequency is a property that differs based on the source from which it is drawn. A word's frequency in a corpus assembled from transcripts of spoken language interactions with children will have a different frequency (and be drawn from a different distribution) than that word's frequency in a corpus of adult fiction. In order to capture something about this variability, four different sources of word frequency are considered here: the Wisconsin Children's Book Corpus, the CHILDES database, the TASA norms, and the Corpus of Contemporary American English. Each represents a different type of perspective from a reading development standpoint.
+Word frequency is a property that differs based on the source from which it is drawn. A word's frequency in a corpus assembled from transcripts of spoken language interactions with children will have a different frequency (and be drawn from a different distribution) than that word's frequency in a corpus of adult fiction. In order to capture something about this variability, four different sources of word frequency are considered here: the Wisconsin Children's Book Corpus, the CHILDES database, the TASA norms, and the Corpus of Contemporary American English. Each represents a different type of perspective in terms of cognition and development.
 
 The Wisconsin Children's Book Corpus contains texts commonly consumed by pre-readers (up to the age of 5). CHILDES captures something about children's spoken language environment (the data used here are from transcripts for children in the US up to the age of 5 years). TASA captures information about words in literature children are commonly exposed to in grade school, and the Corpus of Contemporary American English captures information about adult texts (in this case from fiction books only).
 
-For all the frequency data, rank frequencies are used; low values indicate high frequencies. While rank frequencies exhibit a uniform distribution (one word per rank), this type of frequency measure avoids the skew found in raw frequencies - which can make interpretation more difficult. A table of descriptive statistics across corpora and sources are shown below.
+For all the frequency data in this section, rank frequencies are used. Therefore, low values indicate high frequencies. While rank frequencies exhibit a uniform distribution (one word per rank), this type of frequency measure avoids the skew found in raw frequencies - which can make interpretation more difficult. In order to facilitate comparison across sources and relative to a normative distribution (i.e., a distribution from a language corpus), rank frequencies were standardized in the following way. All words from a given corpus were standardized for rank frequency by taking the rank frequency value, subtracting the mean for that corpus and dividing by the standard deviation of that corpus. This results in a distribution of rank frequency for each word in a given corpus. Once achieved, measures of rank frequency within each instructional source was calculated using the standardized rank frequency from the first step.
+
+This allows comparisons on several levels. First, the distribution of standardized rank frequency for a given source gives a measure of how different that distribution is for the normative distribution. Additionally, the distribution for each source can be compared to the others given that they've been standardized. The resulting interpretation of the mean of rank frequency for a source is the difference in standard deviation units between that source and the corpus from which standardized values have been calculated.
+
+This is useful when one considers the characteristics of a given text corpus from which the frequency distribution is constructed (child-directed text, child-directed speech, adult-directed text, etc.). A table of descriptive statistics across corpora and sources are shown in Table X.
 
 ```{r descriptivesFreqSource, echo=FALSE, warning=FALSE, message=FALSE}
 
@@ -45,16 +49,16 @@ data.frame(cbind(sources, wcbc, tasa, coca, childes)) %>%
          TASA = tasa,
          COCA = coca,
          CHILDES = childes) %>% 
-  apa_table(caption = 'Descriptive Statistics of Rank Frequency for each Source across Four Corpora', 
-            note = 'Means and standard deviations (in parentheses) are shown over Z transformed rank frequency values for all words in a given instructional source. Frequencies are transformed based on all words in a given corpus before subsetting by instructional source. As a result, the mean rank frequency shown represents how far from the mean of all words in a given corpus (zero) the distribution within an instructional source is.')
+  apa_table(caption = 'Descriptive Statistics of Rank Frequency by Source across Corpora', 
+            note = 'Means and standard deviations (in parentheses) are shown over standardized rank frequency values for all words in a given instructional source. Frequencies are standardized based on all words in a given corpus before subsetting and calculating the mean and spread by instructional source. As a result, the mean rank frequency shown represents how far from the mean of all words in a given corpus (zero) the distribution within an instructional source is.')
 
 
 
 ```
 
-In order to make direct comparisons in frequency across instructional resources, frequency values were standardized within the language corpus from which it is drawn. After standardization, values for frequency were subset for each instructional source. The result of this process is that for a given source, the standardized values represent their position in the standardized distribution for that corpus, where the corpus as a whole becomes a reference distribution, and dues to standardization the mean of this distribution is always zero and the standard deviation is always one. This is useful when one considers the characteristics of a given text corpus from which the frequency distribution is constructed (child-directed text, child-directed speech, adult-directed text, etc.). It results from this process that the mean frequency _within_ a specific source will differ from the distribution of the corpus as a whole (in terms of its average, its spread, etc.), and these differences allow the observer to make a comparison to the reference corpus in a direct way that is useful.
 
-The figure below shows the distribution of frequencies for each of these four corpora across the five instructional resources. A black dotted line is included at zero on the y-axis to represent the mean frequency for all language corpora (the mean is always zero due to standardization). Grey points within each panel are individual observations (words) within each source for a given value for standardized rank frequency. The colored points represent the mean for a source on a given frequency, and the colored bar around that mean represents the standard deviation for that source on that frequency. The red dashed line represents the mean across all frequencies for that instructional source, which facilitates a direct comparison across instructional sources (e.g., Kilpatrick on average contains much lower frequency words than the rest of the sources, as indicated by a higher red dashed line).
+
+Figure X shows the results from a statistical test of each source distribution relative to the normative mean across the five instructional sources. A red dashed line is included at zero on the y-axis to represent the mean frequency for all language corpora (the mean is always zero due to standardization). Grey points within each panel are individual observations (words) within each source for a given value for standardized rank frequency. The colored points represent the mean for a source on a given frequency, and the colored bar around that mean represents the standard error of the point estimate for that source on that frequency. The red dotted line represents the mean across all frequencies for that instructional source, which facilitates a direct comparison across instructional sources (e.g., Kilpatrick on average contains much lower frequency words than the rest of the sources, as indicated by a higher red dashed line).
 
 There are a few straightforward observations one can make about the distribution of standardized frequencies across sources. Dolch displays the lowest average rank frequency and the least amount of variability in frequency. On the other end is Kilpatrick. This set of words is much higher in average rank frequency (i.e., lower in raw frequency) than any of the other resources. Many words across the various sources of word frequency are even above the mean value of frequency from that source. The variability in rank frequency for the set is noteworthy as well. Not only are the averages for Kilpatrick much higher in rank frequency than any of the other instructional resources, the spread of frequency values for that source is higher as well.
 
@@ -137,8 +141,8 @@ Zs %>%
   facet_grid(~var) +
   ylim(c(-2, .5)) +
   labs(color = 'Variable', x = 'Source', y = 'Rank frequency (standardized)') +
-  geom_hline(yintercept = 0, linetype = 'dotted', color = 'black') +
-  geom_hline(data = hlines, aes(yintercept = varmean), color = 'red', linetype = 'dashed', alpha = .5) +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  geom_hline(data = hlines, aes(yintercept = varmean), color = 'black', linetype = 'dotted') +
   theme_bw() +
   theme(legend.position = 'top',
         axis.ticks.x = element_blank(), 
@@ -221,7 +225,7 @@ Zs %>%
                             source == 'kilpatrick' ~ 'Kilpatrick',
                             source == 'wonders' ~ 'Wonders')) %>% 
   ggplot(aes(reorder(source, source_order), M, color = reorder(source, source_order), group = var)) +
-  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'grey45', linetype = 'dotted') +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'black', linetype = 'dotted') +
   scale_color_manual(values = COLORS_SOURCE) +
   geom_point(size = 2) +
   geom_line(color = 'grey') +
