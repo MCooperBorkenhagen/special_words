@@ -1,0 +1,30 @@
+
+# The degree of overlap of words across sources
+
+```{r setup_overlap, include=FALSE}
+
+
+```
+
+
+```{r intersect_sources, echo=FALSE, warning=FALSE, message=FALSE}
+all_lists_ = list(Kilpatrick = all_lists %>% filter(source == 'kilpatrick') %>%  pull(word),
+         Dolch = all_lists %>% filter(source == 'dolch') %>%  pull(word),
+         Fry = all_lists %>% filter(source == 'fry') %>%  pull(word),
+         Fundations = all_lists %>% filter(source == 'fundations') %>%  pull(word),
+         Wonders = all_lists %>% filter(source == 'wonders') %>%  pull(word))
+
+intersect_words = Reduce(intersect, all_lists_) %>% 
+  tibble() %>% 
+  left_join(wcbc, by = c('.' = 'word'))
+
+intersect_words = intersect_words[,c(1, 3)] %>% 
+  arrange(-desc(wcbc_rank))
+
+
+colnames(intersect_words) <- c('Word', 'Rank frequency')
+
+```
+
+One way to compare the words that are included in various instructional sources, is by doing so directly: look at the words included in each source and examine the extent to which words are common across them. If there was a high degree of consensus about the sight word construct, then sources that include words identified by this construct would share a set of common words across them (notwithstanding different quantities of words across sources). We see, however, that this is not the case. Across all five instructional sources included for analysis here, only ```r nrow(intersect_words)``` of all unique words are shared across all sources (```r round(nrow(intersect_words)/length(unique(all_lists$word))*100, digits = 1)```% of all unique words). Nonetheless, this set of words appears to be composed of many of the highest frequency words in the set, as measured by frequencies from the Wisconsin Children's Book Corpus.
+
