@@ -2,6 +2,7 @@
 ```{r setup_profiles, include=FALSE}
 source('frequency_models.R')
 source('lexical_models.R')
+source('lexical_models_affil.R')
 ```
 
 # The properties of words across sources
@@ -25,27 +26,25 @@ apa_table(z_tests_to_table(z_tests))
 ```
 Word frequency is a property that differs based on the source from which it is drawn. A word's frequency in a corpus assembled from transcripts of spoken language interactions with children will have a different frequency (and be drawn from a different distribution) than that word's frequency in a corpus of adult fiction. In order to capture something about this variability, four different sources of word frequency are considered here: the Wisconsin Children's Book Corpus, the CHILDES database, the TASA norms, and the Corpus of Contemporary American English. Each represents a different type of perspective in terms of cognition and development.
 
-The Wisconsin Children's Book Corpus contains texts commonly consumed by pre-readers (up to the age of 5). CHILDES captures something about children's spoken language environment (the data used here are from transcripts for children in the US up to the age of 5 years). TASA captures information about words in literature children are commonly exposed to in grade school, and the Corpus of Contemporary American English captures information about adult texts (in this case from fiction books only).
-
 For all the frequency data in this section, rank frequencies are used. Therefore, low values indicate high frequencies. While rank frequencies exhibit a uniform distribution (one word per rank), this type of frequency measure avoids the skew found in raw frequencies - which can make interpretation more difficult. In order to facilitate comparison across sources and relative to a normative distribution (i.e., a distribution from a language corpus), rank frequencies were standardized in the following way. All words from a given corpus were standardized for rank frequency by taking the rank frequency value, subtracting the mean for that corpus and dividing by the standard deviation of that corpus. This results in a distribution of rank frequency for each word in a given corpus. Once achieved, measures of rank frequency within each instructional source was calculated using the standardized rank frequency from the first step.
 
 This allows comparisons on several levels. First, the distribution of standardized rank frequency for a given source gives a measure of how different that distribution is for the normative distribution. Additionally, the distribution for each source can be compared to the others given that they've been standardized. The resulting interpretation of the mean of rank frequency for a source is the difference in standard deviation units between that source and the corpus from which standardized values have been calculated.
 
 This is useful when one considers the characteristics of a given text corpus from which the frequency distribution is constructed (child-directed text, child-directed speech, adult-directed text, etc.). A table of descriptive statistics across corpora and sources are shown in Table X.
 
+\ Table X
 ```{r descriptivesFreqSource, echo=FALSE, warning=FALSE, message=FALSE}
-
 sources = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$source
-wcbc = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$var
+wcbc_ = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$var
 tasa = desc_by_var(Zs, 'tasa_rank', combine_ = T)$var
 coca = desc_by_var(Zs, 'coca_rank', combine_ = T)$var
 childes = desc_by_var(Zs, 'childes_rank', combine_ = T)$var
 
 
-data.frame(cbind(sources, wcbc, tasa, coca, childes)) %>% 
+data.frame(cbind(sources, wcbc_, tasa, coca, childes)) %>% 
   mutate(sources = tools::toTitleCase(sources))  %>% 
   rename(Source = sources,
-         WCBC = wcbc,
+         WCBC = wcbc_,
          TASA = tasa,
          COCA = coca,
          CHILDES = childes) %>% 
@@ -65,7 +64,7 @@ There are a few straightforward observations one can make about the distribution
 Also, in general it is clear that instructional sources are oriented towards words that are very high frequency in terms of adult texts, but less so for child texts. This effect is observed given that the means for COCA (adult fiction) are all well below average (the red dashed line) in each source (panel), but the average value for WCBC (child-directed texts) is always well above the mean line across language corpora for all sources (i.e., the red point for WCBC is always well above the red dashed line in each panel). To the extent that the TASA norms more accurately represent what children read themselves (rather than what's read to them; i.e., WCBC), a further point can be made: Kilpatrick shows the greatest relative difference between the frequency of words in child texts versus adult texts. This is shown by the difference between the point for COCA and TASA in the Kilpatrick panel, suggesting that the Kilpatrick source is more tuned towards words commonly found in texts read by adults as opposed to those read by children.
 
 \newpage
-
+\ Table X
 ```{r wcbcFreqTtest, echo=FALSE, warning=FALSE, message=FALSE}
 
 
@@ -88,11 +87,11 @@ nsd = Zs %>%
             n = n(),
             source_order = first(source_order))
 
-frequencies = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
+VARS = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
 
 
 hlines = nsd %>% 
-  filter(var %in% frequencies) %>% 
+  filter(var %in% VARS) %>% 
   group_by(var) %>% 
   summarise(varmean = mean(M_, na.rm = T)) %>% 
   mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
@@ -101,7 +100,7 @@ hlines = nsd %>%
                          var == 'coca_rank' ~ 'COCA'))
 
 plot_data = Zs %>% 
-  filter(var %in% frequencies) %>% 
+  filter(var %in% VARS) %>% 
   select(var, source, M = Z) %>% 
   mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
                          var == 'tasa_rank' ~ 'TASA',
@@ -121,7 +120,7 @@ Zs %>%
   summarise(M = mean(Z, na.rm = T)) %>% 
   left_join(nsd) %>% 
   mutate(SEM = SD/(sqrt(n))) %>%
-  filter(var %in% frequencies) %>% 
+  filter(var %in% VARS) %>% 
   mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
                          var == 'tasa_rank' ~ 'TASA',
                          var == 'childes_rank' ~ 'CHILDES',
@@ -152,10 +151,135 @@ Zs %>%
 ```
 
 
+We should also consider the coverage of a given instructional set of words relative to some established corpus of words. To the extent that the corpus represents a relevant language environment for an early reader, each instructional set should represent a nontrivial proportion of words in the corpus especially considering the frequency distribution of words in the target corpus. First, we can look to the corpora that are relevant for children and their language development: WCBC, TASA, and CHILDES. These represent relevant target sets for such an analysis because we would expect that a given instructional resource should be representative of words that children tend to hear and see early in developing language and reading skills. In order to compare total coverage of a given corpus, we also provide data about coverage for a given instructional set relative to the most frequent 100, 500, 1000, and 5000 words of each dataset to get a sense for how this coverage fits relative to the most frequent words in the corpus.
+
+```{r coverageKidCorpus, echo=FALSE, warning=FALSE, message=FALSE}
+
+# Kilatrick
+Kilpatrick_coverage = c('Kilpatrick', 'CHILDES')
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, filter(childes, top_10 == T)$word))/length(filter(childes, top_10 == T)$word))
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, filter(childes, top_25 == T)$word))/length(filter(childes, top_25 == T)$word))
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, filter(childes, top_50 == T)$word))/length(filter(childes, top_50 == T)$word))
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, unique(childes$word)))/length(unique(childes$word)))
+
+# Dolch
+Dolch_coverage = c('Dolch', 'CHILDES')
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, filter(childes, top_10 == T)$word))/length(filter(childes, top_10 == T)$word))
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, filter(childes, top_25 == T)$word))/length(filter(childes, top_25 == T)$word))
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, filter(childes, top_50 == T)$word))/length(filter(childes, top_50 == T)$word))
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, unique(childes$word)))/length(unique(childes$word)))
+
+# Fry
+
+Fry_coverage = c('Fry', 'CHILDES')
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, filter(childes, top_10 == T)$word))/length(filter(childes, top_10 == T)$word))
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, filter(childes, top_25 == T)$word))/length(filter(childes, top_25 == T)$word))
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, filter(childes, top_50 == T)$word))/length(filter(childes, top_50 == T)$word))
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, unique(childes$word)))/length(unique(childes$word)))
+
+
+Fundations_coverage = c('Fundations', 'CHILDES')
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, filter(childes, top_10 == T)$word))/length(filter(childes, top_10 == T)$word))
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, filter(childes, top_25 == T)$word))/length(filter(childes, top_25 == T)$word))
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, filter(childes, top_50 == T)$word))/length(filter(childes, top_50 == T)$word))
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, unique(childes$word)))/length(unique(childes$word)))
+
+Wonders_coverage = c('Wonders', 'CHILDES')
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, filter(childes, top_10 == T)$word))/length(filter(childes, top_10 == T)$word))
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, filter(childes, top_25 == T)$word))/length(filter(childes, top_25 == T)$word))
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, filter(childes, top_50 == T)$word))/length(filter(childes, top_50 == T)$word))
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, unique(childes$word)))/length(unique(childes$word)))
+
+df1 = data.frame(rbind(Kilpatrick_coverage, Dolch_coverage, Fry_coverage, Wonders_coverage, Fundations_coverage))
+
+# TASA
+# Kilpatrick
+Kilpatrick_coverage = c('Kilpatrick', 'TASA')
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, filter(tasa, top_10 == T)$word))/length(filter(tasa, top_10 == T)$word))
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, filter(tasa, top_25 == T)$word))/length(filter(tasa, top_25 == T)$word))
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, filter(tasa, top_50 == T)$word))/length(filter(tasa, top_50 == T)$word))
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, unique(tasa$word)))/length(unique(tasa$word)))
+
+# Dolch
+Dolch_coverage = c('Dolch', 'TASA')
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, filter(tasa, top_10 == T)$word))/length(filter(tasa, top_10 == T)$word))
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, filter(tasa, top_25 == T)$word))/length(filter(tasa, top_25 == T)$word))
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, filter(tasa, top_50 == T)$word))/length(filter(tasa, top_50 == T)$word))
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, unique(tasa$word)))/length(unique(tasa$word)))
+
+# Fry
+
+Fry_coverage = c('Fry', 'TASA')
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, filter(tasa, top_10 == T)$word))/length(filter(tasa, top_10 == T)$word))
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, filter(tasa, top_25 == T)$word))/length(filter(tasa, top_25 == T)$word))
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, filter(tasa, top_50 == T)$word))/length(filter(tasa, top_50 == T)$word))
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, unique(tasa$word)))/length(unique(tasa$word)))
+
+
+Fundations_coverage = c('Fundations', 'TASA')
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, filter(tasa, top_10 == T)$word))/length(filter(tasa, top_10 == T)$word))
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, filter(tasa, top_25 == T)$word))/length(filter(tasa, top_25 == T)$word))
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, filter(tasa, top_50 == T)$word))/length(filter(tasa, top_50 == T)$word))
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, unique(tasa$word)))/length(unique(tasa$word)))
+
+Wonders_coverage = c('Wonders', 'TASA')
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, filter(tasa, top_10 == T)$word))/length(filter(tasa, top_10 == T)$word))
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, filter(tasa, top_25 == T)$word))/length(filter(tasa, top_25 == T)$word))
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, filter(tasa, top_50 == T)$word))/length(filter(tasa, top_50 == T)$word))
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, unique(tasa$word)))/length(unique(tasa$word)))
+
+df2 = data.frame(rbind(Kilpatrick_coverage, Dolch_coverage, Fry_coverage, Wonders_coverage, Fundations_coverage))
+
+
+
+# WCBC
+# Kilpatrick
+Kilpatrick_coverage = c('Kilpatrick', 'WCBC')
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, filter(wcbc, top_10 == T)$word))/length(filter(wcbc, top_10 == T)$word))
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, filter(wcbc, top_25 == T)$word))/length(filter(wcbc, top_25 == T)$word))
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, filter(wcbc, top_50 == T)$word))/length(filter(wcbc, top_50 == T)$word))
+Kilpatrick_coverage = c(Kilpatrick_coverage, length(intersect(all_lists_$Kilpatrick, unique(wcbc$word)))/length(unique(wcbc$word)))
+
+# Dolch
+Dolch_coverage = c('Dolch', 'WCBC')
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, filter(wcbc, top_10 == T)$word))/length(filter(wcbc, top_10 == T)$word))
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, filter(wcbc, top_25 == T)$word))/length(filter(wcbc, top_25 == T)$word))
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, filter(wcbc, top_50 == T)$word))/length(filter(wcbc, top_50 == T)$word))
+Dolch_coverage = c(Dolch_coverage, length(intersect(all_lists_$Dolch, unique(wcbc$word)))/length(unique(wcbc$word)))
+
+# Fry
+
+Fry_coverage = c('Fry', 'WCBC')
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, filter(wcbc, top_10 == T)$word))/length(filter(wcbc, top_10 == T)$word))
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, filter(wcbc, top_25 == T)$word))/length(filter(wcbc, top_25 == T)$word))
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, filter(wcbc, top_50 == T)$word))/length(filter(wcbc, top_50 == T)$word))
+Fry_coverage = c(Fry_coverage, length(intersect(all_lists_$Fry, unique(wcbc$word)))/length(unique(wcbc$word)))
+
+
+Fundations_coverage = c('Fundations', 'WCBC')
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, filter(wcbc, top_10 == T)$word))/length(filter(wcbc, top_10 == T)$word))
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, filter(wcbc, top_25 == T)$word))/length(filter(wcbc, top_25 == T)$word))
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, filter(wcbc, top_50 == T)$word))/length(filter(wcbc, top_50 == T)$word))
+Fundations_coverage = c(Fundations_coverage, length(intersect(all_lists_$Fundations, unique(wcbc$word)))/length(unique(wcbc$word)))
+
+Wonders_coverage = c('Wonders', 'WCBC')
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, filter(wcbc, top_10 == T)$word))/length(filter(wcbc, top_10 == T)$word))
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, filter(wcbc, top_25 == T)$word))/length(filter(wcbc, top_25 == T)$word))
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, filter(wcbc, top_50 == T)$word))/length(filter(wcbc, top_50 == T)$word))
+Wonders_coverage = c(Wonders_coverage, length(intersect(all_lists_$Wonders, unique(wcbc$word)))/length(unique(wcbc$word)))
+
+df3 = data.frame(rbind(Kilpatrick_coverage, Dolch_coverage, Fry_coverage, Wonders_coverage, Fundations_coverage))
+
+coverage = rbind(df1, df2, df3)
+```
+
+
+
+
 ## Other word characteristics across sources
 To facilitate comparison of other word properties (other than frequency), the words from the Wisconsin Children's Book Corpus (Lewis et al., 2021) were used as a benchmark set. All the words from the WCBC (_n_ = ```r nrow(wcbc)```) were aggregated along with a range of word-level measurements (age of acquisition, orthography-to-phonology consistency, imageability, number of letters, and number of syllables). In order to present data that captures the normative comparison to WCBC, similar to what was done with word frequencies, measurements for word-level variables were standardized (mean-centered and put into relation to the standard deviation) based on the distribution of that variable over all words in the WCBC corpus (rather than four different corpora as was done with frequency). This is intended to capture the variability on a given variable relative to the distribution in the benchmark (WCBC-based) sample.
 
-
+\ Table X
 ```{r desc_other, echo=FALSE, warning=FALSE, message=FALSE}
 
 VARS = c('aoa', 'consistency', 'letters', 'syllables', 'imageability')
@@ -191,7 +315,7 @@ Fundations is associated with the lowest values across all sources on average. L
 
 The figure below shows the same data as the previous figure, but oriented in a way that facilitates comparison for a variable across sources, rather than the other way around. The visual elements are all the same except here the color of points are conditioned on sources rather than variables, and the red dashed means are averaged across sources for a variable, rather than variables for a source as we saw before.
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='Means and standard errors for a range of word variables within sources are shown. Means are calculated over standardized measures within WCBC, therefore the position of the point for a source for a variable can be interpreted as the average distance away from the mean of all words within WCBC (i.e., 0 shown with a red dashed line) for that variable in terms of standard deviation units. The mean on a given variable across all sources is shown as a grey dotted line just for convenience. Estimates were derived using t.test() in base R.'}
+```{r profileFigureLexical, echo=FALSE, message=FALSE, warning=FALSE, fig.cap='Means and standard errors for a range of word variables within sources are shown. Means are calculated over standardized measures within WCBC, therefore the position of the point for a source for a variable can be interpreted as the average distance away from the mean of all words within WCBC (i.e., 0 shown with a red dashed line) for that variable in terms of standard deviation units. The mean on a given variable across all sources is shown as a grey dotted line just for convenience. Estimates were derived using t.test() in base R.'}
 
 bardata = z_tables_lexical %>% 
   select(source = Source, se = `*SE*`, var, M = `*b*`) %>% 
@@ -244,6 +368,7 @@ Zs %>%
 
 The differences between the source distribution on each word-level variable relative to the normative distribution (WCBC) are all statistically significant based on a statistical test analogous to those conducted previously on the frequency distributions.
 \newpage
+\ Table X
 ```{r}
 Source = z_tables_lexical %>% filter(var == 'aoa') %>% pull(Source)
 AoA = z_tables_lexical %>% filter(var == 'aoa') %>% rename(b = `*b*`, se = `*SE*`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
