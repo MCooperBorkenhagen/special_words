@@ -118,3 +118,8 @@ coverage = rbind(df1, df2, df3)
 
 rm(df1, df2, df3, Kilpatrick_coverage, Fry_coverage, Dolch_coverage, Fundations_coverage, Wonders_coverage)
 names(coverage) = c('Resource', 'Corpus', 'Top 10%', 'Top 25%', 'Top 50%', 'Entire corpus')
+
+coverage = coverage %>% 
+  pivot_longer(!c(Resource, Corpus), names_to = 'Top', values_to = 'Proportion') %>% 
+  mutate(Proportion = as.numeric(Proportion))
+

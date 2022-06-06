@@ -1,7 +1,3 @@
-
-require(tidyverse)
-require(Hmisc)
-
 ## This script aggregates data for a range of variables for words in the WCBC. This data is written to file so that standard scores can be constructred for words in/across sources for the special words project.
 
 
@@ -101,10 +97,9 @@ wcbc = read_csv('data/wcbc_freq.csv') %>%
 
 
 # clean up
-rm(childes_eng_na_types_0_71_months, childes, unl)
+rm(childes_eng_na_types_0_71_months, unl)
 
 # First calculate the means and SDs to standardize for all words in the WCBC set.
-
 msd = wcbc %>% 
   summarise(wcbc_m = mean(wcbc_freq, na.rm = T),
             wcbc_sd = sd(wcbc_freq, na.rm = T),
@@ -141,8 +136,6 @@ wcbc %>%
 rm(msd)
 
 # Generate the Z scores
-
-
 d = read_csv('data/all_lists.csv') %>% 
   left_join(read_csv('data/wcbc_with_z.csv'))
 
@@ -231,16 +224,18 @@ fry = factor_vars(d, 'fry')
 fundations = factor_vars(d, 'fundations')
 kilpatrick = factor_vars(d, 'kilpatrick')
 wonders = factor_vars(d, 'wonders')
+fountas_pinnell = factor_vars(d, 'fountas_pinnell')
 
-Zs = rbind(dolch, fry, fundations, kilpatrick, wonders) %>% 
+Zs = rbind(dolch, fry, fundations, kilpatrick, wonders, fountas_pinnell) %>% 
   mutate(source_order = case_when(source == 'dolch' ~ 1,
                                   source == 'fry' ~ 2,
-                                  source == 'fundations' ~ 3,
-                                  source == 'wonders' ~ 4,
-                                  source == 'kilpatrick' ~ 5))
+                                  source == 'fountas_pinnell' ~ 3,
+                                  source == 'fundations' ~ 4,
+                                  source == 'wonders' ~ 5,
+                                  source == 'kilpatrick' ~ 6))
 
 
-rm(dolch, fry, fundations, kilpatrick, wonders, d, factor_vars, childes_msd, coca, coca_msd, consistency, tasa, tasa_msd)
+rm(dolch, fry, fundations, kilpatrick, wonders, d, factor_vars, childes_msd, coca, coca_msd, consistency, tasa_msd)
 
 
 

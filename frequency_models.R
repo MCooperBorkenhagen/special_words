@@ -44,8 +44,9 @@ z_tables_freq = rbind(z_table_wcbc, z_table_tasa, z_table_coca, z_table_childes)
   mutate(Source = toTitleCase(Source),
          source_order = case_when(Source == 'Dolch' ~ 1,
                                   Source == 'Fry' ~ 2,
-                                  Source == 'Fundations' ~ 3,
-                                  Source == 'Wonders' ~ 4,
-                                  Source == 'Kilpatrick' ~ 5))
+                                  Source == 'Fountas_Pinnell' ~ 3,
+                                  Source == 'Fundations' ~ 4,
+                                  Source == 'Wonders' ~ 5,
+                                  Source == 'Kilpatrick' ~ 6))
 
 rm(z_table_childes, z_table_coca, z_table_tasa, z_table_wcbc, z_tests)
