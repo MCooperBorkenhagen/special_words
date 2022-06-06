@@ -56,13 +56,13 @@ z_table_imageability = z_tests_to_table(z_tests) %>%
 
 
 # combine
-
 z_tables_lexical = rbind(z_table_aoa, z_table_consistency, z_table_letters, z_table_syllables, z_table_imageability) %>% 
   mutate(Source = toTitleCase(Source),
          source_order = case_when(Source == 'Dolch' ~ 1,
                                   Source == 'Fry' ~ 2,
-                                  Source == 'Fundations' ~ 3,
-                                  Source == 'Wonders' ~ 4,
-                                  Source == 'Kilpatrick' ~ 5))
+                                  Source == 'Fountas_Pinnell' ~ 3,
+                                  Source == 'Fundations' ~ 4,
+                                  Source == 'Wonders' ~ 5,
+                                  Source == 'Kilpatrick' ~ 6))
 
 rm(z_table_aoa, z_table_consistency, z_table_imageability, z_table_letters, z_table_syllables, z_tests)

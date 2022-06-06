@@ -143,6 +143,9 @@ Zs %>%
 ## Rank frequency by reverse rank consistency
 
 ```{r}
+tmp = all_lists %>% filter(source == 'wonders') %>% pull(word)
+COLORS = c('TRUE' = 'firebrick', 'FALSE' = 'goldenrod3')
+
 
 all_lists %>% 
   group_by(word) %>% 
@@ -154,18 +157,42 @@ all_lists %>%
   mutate(rank_consistency = seq_len(n())) %>% 
   mutate(spotlight = case_when(rank_frequency > 500 | rank_consistency > 500 ~ TRUE,
                                TRUE ~ FALSE)) %>% 
+    mutate(source_ = case_when(word %in% tmp ~ 'TRUE', 
+                             word %nin% tmp ~ 'FALSE')) %>% 
   ggplot(aes(rank_frequency, rank_consistency, label = word)) +
-  geom_label() +
-  geom_abline(intercept = 0, slope = 1) +
-  labs(x = 'Rank frequency', y = 'Reverse rank consistency')
-
-
+  #scale_fill_manual(values = COLORS) +
+  geom_label(size = 2.5, fill = 'goldenrod3') +
+  #geom_abline(intercept = 0, slope = 1, color = 'grey54') +
+  labs(x = 'Rank frequency', y = 'Reverse rank consistency') +
+  geom_hline(yintercept = 500) +
+  geom_vline(xintercept = 500) +
+  theme(legend.position = 'none')
 
 
 ```
 
 
 ```{r}
+
+all_lists %>% 
+  group_by(word) %>% 
+  summarise(wcbc_freq = first(wcbc_freq),
+            consistency = first(consistency)) %>% 
+  arrange(desc(wcbc_freq)) %>% 
+  mutate(rank_frequency = seq_len(n())) %>%
+  arrange(-desc(consistency)) %>% 
+  mutate(rank_consistency = seq_len(n())) %>% 
+  mutate(rank_composite = rank_consistency + rank_frequency) %>% 
+  ggplot(aes(rank_composite)) +
+  geom_density(bw = 5) +
+  #geom_histogram(binwidth = 10, color = 'black') +
+  labs(x = 'Rank frequency + reverse rank consistency')
+
+```
+
+
+```{r}
+
 
 all_lists %>% 
   group_by(word) %>% 

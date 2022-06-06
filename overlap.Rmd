@@ -1,32 +1,20 @@
 
 # The degree of overlap of words across sources
 
-```{r setup_overlap, include=FALSE}
-
-
-```
-
 
 ```{r intersect_sources, include=FALSE}
-all_lists_ = list(Kilpatrick = all_lists %>% filter(source == 'kilpatrick') %>%  pull(word) %>% tolower() %>% unique(),
-         Dolch = all_lists %>% filter(source == 'dolch') %>%  pull(word) %>% tolower() %>% unique(),
-         Fry = all_lists %>% filter(source == 'fry') %>%  pull(word) %>% tolower() %>% unique(),
-         Fundations = all_lists %>% filter(source == 'fundations') %>%  pull(word) %>% tolower() %>% unique(),
-         Wonders = all_lists %>% filter(source == 'wonders') %>%  pull(word) %>% tolower() %>% unique())
 
-
-
-intersect_words = wcbc %>% 
-  filter(word %in% Reduce(intersect, all_lists_)) %>% 
+intersect_words_ = wcbc %>% 
+  filter(word %in% intersect_words) %>% 
   select(word, wcbc_rank) %>% 
   arrange(-desc(wcbc_rank)) %>% 
   mutate(final = str_c(word, ' (*', wcbc_rank, '*)')) %>% 
   select(final) %>% 
   pull(final)
 
-intersect_words_ = c(intersect_words, c('', ''))
+intersect_words_ = c(intersect_words_, c('', ''))
 
-intersect_words_ = matrix(intersect_words_, nrow = 7, ncol = 5)
+intersect_words_table = matrix(intersect_words_, nrow = 4, ncol = 7)
 
 ```
 
@@ -34,7 +22,7 @@ One way to compare the words that are included in various instructional sources,
 
 \ Table X
 ```{r intersectTable, echo=FALSE, warning=FALSE, message=FALSE}
-intersect_words_ %>% 
+intersect_words_table %>% 
   apa_table(format = 'pandoc', caption = "Words Common across All Instructional Sources with Rank Frequency", note = "Words are arranged in descending frequency, and rank frequency is provided in parentheses and is calculated from Wisconsin Children's Book Corpus.", col.names = NULL)
 ```
 
@@ -42,42 +30,144 @@ This overlap can be seen visually in the diagram in Figure X. The very center of
 
 ```{r venn, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center', fig.cap='A diagram depicting the overlap in words across sources. Raw counts are provided, with a percentage provided in parentheses showing the percentage of all unique words across all sources that a particular overlapping set represents. Sources can be identified by the outline color of the set. The figure was generated using the ggVennDiagram package in R (Gao, 2022).'}
 
-COLORS_SOURCE2 = c('darkblue', 'darkred', 'darkorange', 'turquoise', 'red')
-ggVennDiagram(all_lists_, label_size = 2, label_alpha = 0, set_size = 4) +
+COLORS_SOURCE2 = c('darkblue', 'darkred', 'darkorange', 'turquoise', 'red', 'green')
+ggVennDiagram(all_lists_, label_size = 2, label_alpha = 0, set_size = 2.5) +
   scale_fill_gradient(low = 'white', high = 'firebrick') +
   scale_color_manual(values = COLORS_SOURCE2) +
-  labs(fill = 'Count')
+  labs(fill = 'Count') +
+  theme(legend.title = element_text(size = 11))
   
 
 ```
 
 In order to characterize the overlap among sources at an interpretable level, we will focus on these two sets of words: those words shared by all sources and those shared by no sources. The common set of ```r length(intersect_words)``` words is composed of many of the highest frequency words in the set of all words across all sources. This is apparent by examining the frequencies from the Wisconsin Children's Book Corpus provided in Table X. Most of the words in this set are in the top 100 (rank frequency) of all words in WCBC, and all are in the top 500 (calculated over ```r nrow(wcbc)``` unique words in WCBC).
 
-```{r symetricDifference, echo=FALSE, warning=FALSE, message=FALSE}
 
-# This script determines the symmetrical difference of all words across all sources.
 
-symmetrical_difference = list()
 
-for (s in unique(all_lists$source)){
+
+```{r affiliationPlot, echo=FALSE, warning=FALSE, message=FALSE}
+min_ = Zs %>% 
+  filter(var == 'wcbc_rank') %>% 
+  filter(!is.na(Z)) %>% 
+  summarise(Z = min(Z)) %>% 
+  pull(Z)
+
+plot_data = Zs %>% 
+  mutate(affil = case_when(word %in% intersect_words ~ 'All',
+                           word %in% symmetrical_difference_words ~ 'One',
+                           TRUE ~ 'Remaining')) %>% 
+  mutate(Z = case_when(is.na(Z) ~ min_,
+                       TRUE ~ Z)) %>% 
+  filter(var == 'wcbc_rank') %>% 
+  group_by(word) %>%
+  summarise(affil = first(affil),
+            M = first(Z))
   
-  o = all_lists %>% 
-    mutate(word = tolower(word)) %>% 
-    filter(source != s) %>% 
-    distinct(word) %>% 
-    pull(word)
-  u = all_lists %>% 
-    mutate(word = tolower(word)) %>% 
-    filter(source == s) %>% 
-    filter(word %nin% o) %>% 
-    pull(word)
   
-  symmetrical_difference[[s]] = u
-}
+z_tests = split(plot_data$M, plot_data$affil) %>% 
+    map(t.test)
 
 
-symmetrical_difference_n = Reduce(sum, lapply(symmetrical_difference, length))
-symmetrical_difference_words = unique(unlist(symmetrical_difference), use.names = FALSE)
+z_table_wcbc_affil = z_tests_to_table(z_tests) %>% 
+  rename(Affiliation = Source) %>% 
+  mutate(var = 'WCBC')
+  
+  
+point_data = z_table_wcbc_affil %>% 
+  select(affil = Affiliation, se = `*SE*`, var, M = `*b*`) %>% 
+  mutate(se = as.numeric(se),
+         M = as.numeric(str_remove_all(M, '\\*')))
+  
+SDs = plot_data %>% 
+  group_by(affil) %>% 
+  dplyr::summarise(SD = sd(M, na.rm = T))
+
+COLORS_AFFIL = c('All' = 'darkgreen', 'One' = 'firebrick', 'Remaining' = 'blue')
+
+point_data %>% 
+  left_join(SDs) %>% 
+  ggplot(aes(affil, M, color = affil)) +
+  geom_point(size = 1.5) +
+  #geom_point(data = plot_data, color = 'grey', size = .8, position = position_jitter(width = .02)) +
+  geom_errorbar(aes(ymin = M+se, ymax = M-se), size = 1.3, width = .13) +
+  scale_color_manual(values = COLORS_AFFIL) +
+  ylim(c(-1.8, 0)) +
+  labs(x = 'Group', y = 'Rank frequency (standardized)', title = 'Frequency') +
+  geom_hline(yintercept = 0, color = 'red', linetype = 'dotted') +
+  theme_apa() +
+  theme(legend.position = 'none', axis.title = element_text(size = 28),
+        plot.title = element_text(size = 42, hjust = .5))
+
+```
+
+
+
+```{r}
+VARS = c("syllables", "letters", "aoa", "imageability", "consistency")
+
+
+bardata = z_tables_lexical_affil %>% 
+  select(group, se = `*SE*`, var, M = `*b*`) %>% 
+  mutate(se = as.numeric(se),
+         M = as.numeric(str_remove_all(M, '\\*')))
+  
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(var) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters'))
+
+
+bardata %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters')) %>% 
+  ggplot(aes(group, M, color = group, group = var)) +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'black', linetype = 'dotted') +
+  scale_color_manual(values = COLORS_AFFIL) +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-se, ymax = M+se), size = .5, width = .8) +
+  labs(color = 'Source', x = 'Variable', y = 'Standardized value (within WCBC)') +
+  facet_grid(~var)  +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  #ylim(c(-1.3, 0)) +
+  theme_bw() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+
+
 
 
 ```
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+b = read_csv('data/tmp.csv') %>% 
+  filter(`200_1` == 1) %>% 
+  filter(word %nin% c('twas', 'goo', 'blah', 'cock', 'humph', 'jerk', 'pork', 'toots', 'ho')) %>% 
+  pull(word)
+
+b = sample(b, 100)
+
+
+tmp2 = data.frame(matrix(b, nrow = 20, ncol = 5))
+names(tmp2) = c('', '', '', '', '')
+
+apa_table(tmp2)
+
+```
+
+
+

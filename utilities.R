@@ -108,4 +108,4 @@ z_tests_to_table_num = function(l){
 
     return(df)}
 
-
+symdiff <- function(x, y) {setdiff( union(x, y), intersect(x, y))}

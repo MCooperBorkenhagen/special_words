@@ -3,23 +3,24 @@ title             : "Special words: ..."
 shorttitle        : "Special words"
 
 author: 
-  - name          : "Lauren P. Schilling"
-    affiliation   : "1"
-    corresponding : yes    # Define only one corresponding author
-    address       : "Department of Psychology, University of Wisconsin - Madison"
-    email         : "---"
-    role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
-      - Writing
-      - Analysis
   - name          : "Matthew J. Cooper Borkenhagen"
     affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
     address       : "Department of Psychology, University of Wisconsin - Madison"
     email         : "cooperborken@wisc.edu"
     role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
       - Conceptualization
       - Supervision
       - Writing
-      - Analysis
+      - Formal Analysis
+  - name          : "Lauren P. Schilling"
+    affiliation   : "1"
+    address       : "Department of Psychology, University of Wisconsin - Madison"
+    email         : "---"
+    role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+      - Conceptualization
+      - Project administration
+      - Data curation
   - name          : "Mark S. Seidenberg"
     affiliation   : "1"
     address       : "Department of Psychology, University of Wisconsin - Madison"
@@ -28,8 +29,6 @@ author:
       - Conceptualization
       - Supervision
       - Writing
-      - Analysis 
-
 bibliography      : ["references.bib"]
 affiliation       :
   - id            : "1"
@@ -80,6 +79,7 @@ source('utilities.R')
 
 source('Zs.R')
 all_lists = read_csv('data/all_lists.csv')
+source('sets.R')
 
 COLORS_CORPUS = c('WCBC' = 'firebrick3',
            'COCA' = 'darkslategray',
@@ -96,13 +96,42 @@ COLORS_SOURCE = c('Kilpatrick' = 'darkblue',
            'Dolch' = 'darkred',
            'Fry' = 'darkorange',
            'Fundations' = 'turquoise',
-           'Wonders' = 'red')
+           'Wonders' = 'red',
+           'Fountas & Pinnell' = 'darkgreen')
+
+
 ```
 
+
+```{r child='introduction.Rmd'}
+
+```
+
+
+```{r child='methods.Rmd'}
+
+```
+
+
+```{r profiles_data, include=FALSE}
+source('frequency_models.R')
+source('lexical_models.R')
+source('lexical_models_affil.R')
+```
 
 ```{r child='profiles.Rmd'}
+```
+
+
+```{r child='overlap.Rmd'}
 
 ```
+
+
+
+#```{r child='dolch_fry.Rmd'}
+# dolch and fry are different, so we look at words that are unique to just these two sources
+#```
 
 
 ```{r child='appendix.Rmd'}
