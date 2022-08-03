@@ -1,5 +1,5 @@
 ---
-title             : "Special words: ..."
+title             : "Special words: What do instructional resources do with common words and words with atypical structure"
 shorttitle        : "Special words"
 
 author: 
@@ -49,8 +49,9 @@ footnotelist      : no
 lineno            : yes
 lang              : "en-US"
 output            :
-  papaja::apa6_pdf :
+  papaja::apa6_docx :
   #word_document :
+  #pandoc_args: !expr rmdfiltr::add_replace_ampersands_filter(rmdfiltr::add_citeproc_filter(args = NULL))
     toc               : false
 
 header-includes:
@@ -137,3 +138,4 @@ source('lexical_models_affil.R')
 ```{r child='appendix.Rmd'}
 
 ```
+
