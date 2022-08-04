@@ -1,3 +1,8 @@
+# The Words Included in Instructional Resources
+On possible source of meaningful variability has to do with the words included in instruction: Do instructional resources agree about which words are important in early vocabulary acquisition? If different resources agree about the words to be prioritized for memorization^[See resource descriptions for a full account of the teaching methods associated with each approach. Nonetheless, each approach involves some amount of word memorization.], then students experiencing these programs would have similar experiences - at least in terms of the words taught. Alternatively, if resources differ in their contents, it would suggest that the students that learn different programs have different experiences. Variability of this kind is important because it suggests different conceptualizations of what is important in early reading development, leaving aside issues of the relative efficacy of one approach versus another.
+ 
+
+
 
 # The degree of overlap of words across sources
 
@@ -30,8 +35,11 @@ This overlap can be seen visually in the diagram in Figure X. The very center of
 
 ```{r venn, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center', fig.cap='A diagram depicting the overlap in words across sources. Raw counts are provided, with a percentage provided in parentheses showing the percentage of all unique words across all sources that a particular overlapping set represents. Sources can be identified by the outline color of the set. The figure was generated using the ggVennDiagram package in R (Gao, 2022).'}
 
+tmp = all_lists_
+names(tmp) = c("Kilpatrick", "Dolch", "Fry", "Fundations", "Wonders", "Fountas & Pinnell")
+
 COLORS_SOURCE2 = c('darkblue', 'darkred', 'darkorange', 'turquoise', 'red', 'green')
-ggVennDiagram(all_lists_, label_size = 2, label_alpha = 0, set_size = 2.5) +
+ggVennDiagram(tmp, label_size = 2, label_alpha = 0, set_size = 2.5) +
   scale_fill_gradient(low = 'white', high = 'firebrick') +
   scale_color_manual(values = COLORS_SOURCE2) +
   labs(fill = 'Count') +
@@ -46,7 +54,7 @@ In order to characterize the overlap among sources at an interpretable level, we
 
 
 
-```{r affiliationPlot, echo=FALSE, warning=FALSE, message=FALSE}
+```{r affiliationPlot, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='Affiliation'}
 min_ = Zs %>% 
   filter(var == 'wcbc_rank') %>% 
   filter(!is.na(Z)) %>% 
@@ -103,7 +111,7 @@ point_data %>%
 
 
 
-```{r}
+```{r affiliationPlot2, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='Affilition 2'}
 VARS = c("syllables", "letters", "aoa", "imageability", "consistency")
 
 
