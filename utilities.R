@@ -109,3 +109,37 @@ z_tests_to_table_num = function(l){
     return(df)}
 
 symdiff <- function(x, y) {setdiff( union(x, y), intersect(x, y))}
+
+frequency_by_corpus = function(data){
+  
+  tmp1 = data %>% 
+    group_by(word) %>% 
+    summarise(wcbc_freq = first(wcbc_freq)) %>% 
+    ungroup() %>% 
+    summarise(Corpus = 'WCBC',
+              M = mean(wcbc_freq, na.rm = T),
+              SD = sd(wcbc_freq, na.rm = T),
+              max = max(wcbc_freq, na.rm = T))
+  
+  tmp2 = data %>% 
+    group_by(word) %>% 
+    summarise(tasa_freq = first(tasa_freq)) %>% 
+    ungroup() %>% 
+    summarise(Corpus = 'TASA',
+              M = mean(tasa_freq, na.rm = T),
+              SD = sd(tasa_freq, na.rm = T),
+              max = max(tasa_freq, na.rm = T))
+  
+  tmp3 = data %>% 
+    group_by(word) %>% 
+    summarise(childes_freq = first(childes_freq)) %>% 
+    ungroup() %>% 
+    summarise(Corpus = 'CHILDES',
+              M = mean(childes_freq, na.rm = T),
+              SD = sd(childes_freq, na.rm = T),
+              max = max(childes_freq, na.rm = T))
+  
+  
+  return(rbind(tmp1, tmp2, tmp3))
+  
+}
