@@ -4,11 +4,6 @@
 
 First we will look at the frequency of words in each instructional resource and their relative distribution across them. We will move on to other word properties once frequency is examined.
 
-In order to analyze instructional words with respect to their linguistic properties, a number of datasets were identified and merged with the database of words aggregated for the study. These data are utilized across the studies presented here, so we will review the different data and their sources up front. One important issue concerns how instructional words compare to words children and adults tend to encounter in other language experiences - reading related and otherwise. In order to make comparisons along these lines we assembled several relevant benchmark sets using language databases that represent language experiences for different groups and in different modes of communication, both via printed and spoken language. The corpora we selected for this purpose are The Wisconsin Children's Book Corpus [@Lewis2022], the Corpus of Contemporary American English [@Davies2010], the Child Language Data Exchange System [@MacWhinney2000], and words from the Educator's Word Frequency Guide from Touchstone Applied Science Associates [@Zeno1995].
-
-The Wisconsin Children's Book Corpus (WCBC) contains texts commonly consumed by pre-readers (up to the age of 6). Data from the Child Language Data Exchange System (CHILDES) represents language from children's spoken language environment (the data used here are from transcripts for children in the US up to the age of 6 years). The Educator's Word Frequency Guide (from Touchstone Applied Science Associates; TASA) captures information about words in literature children are commonly exposed to in grade school, and the Corpus of Contemporary American English (COCA) captures information about adult texts (with data from fiction books only aggregated for this study).
-
-Several other types of word data were consumed for the studies included here.
 
 
 
@@ -93,12 +88,6 @@ The consistent difference in the frequency of words in the Kilpatrick curriculum
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='The raw distribution of words across sources and corpus rank frequency (standardized) are shown as points (in grey) with statistical estimate as colored points within each distribution. Because standard errors are imperceptibly small, standard deviations for the standardized rank frequency values within each distribution are shown. All distributions are significantly different than the corpus mean (0).'}
 
-nsd = Zs %>% 
-  group_by(source, var) %>% 
-  summarise(SD = sd(Z, na.rm = T),
-            M_ = mean(Z, na.rm = T),
-            n = n(),
-            source_order = first(source_order))
 
 VARS = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
 

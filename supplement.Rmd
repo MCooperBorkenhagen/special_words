@@ -209,3 +209,112 @@ all_lists %>%
   labs(x = 'Rank frequency + reverse rank consistency')
 
 ```
+
+
+
+
+```{r affiliationPlot, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='Affiliation'}
+
+min_ = Zs %>% 
+  filter(var == 'wcbc_rank') %>% 
+  filter(!is.na(Z)) %>% 
+  summarise(Z = min(Z)) %>% 
+  pull(Z)
+
+plot_data = Zs %>% 
+  mutate(affil = case_when(word %in% intersect_words ~ 'All',
+                           word %in% symmetrical_difference_words ~ 'One',
+                           TRUE ~ 'Remaining')) %>% 
+  mutate(Z = case_when(is.na(Z) ~ min_,
+                       TRUE ~ Z)) %>% 
+  filter(var == 'wcbc_rank') %>% 
+  group_by(word) %>%
+  summarise(affil = first(affil),
+            M = first(Z))
+  
+  
+z_tests = split(plot_data$M, plot_data$affil) %>% 
+    map(t.test)
+
+
+z_table_wcbc_affil = z_tests_to_table(z_tests) %>% 
+  rename(Affiliation = Source) %>% 
+  mutate(var = 'WCBC')
+  
+  
+point_data = z_table_wcbc_affil %>% 
+  select(affil = Affiliation, se = `*SE*`, var, M = `*b*`) %>% 
+  mutate(se = as.numeric(se),
+         M = as.numeric(str_remove_all(M, '\\*')))
+  
+SDs = plot_data %>% 
+  group_by(affil) %>% 
+  dplyr::summarise(SD = sd(M, na.rm = T))
+
+COLORS_AFFIL = c('All' = 'darkgreen', 'One' = 'firebrick', 'Remaining' = 'blue')
+
+point_data %>% 
+  left_join(SDs) %>% 
+  ggplot(aes(affil, M, color = affil)) +
+  geom_point(size = 1.5) +
+  #geom_point(data = plot_data, color = 'grey', size = .8, position = position_jitter(width = .02)) +
+  geom_errorbar(aes(ymin = M+se, ymax = M-se), size = 1.3, width = .13) +
+  scale_color_manual(values = COLORS_AFFIL) +
+  ylim(c(-1.8, 0)) +
+  labs(x = 'Group', y = 'Rank frequency (standardized)', title = 'Frequency') +
+  geom_hline(yintercept = 0, color = 'red', linetype = 'dotted') +
+  theme_apa() +
+  theme(legend.position = 'none', axis.title = element_text(size = 28),
+        plot.title = element_text(size = 42, hjust = .5))
+
+```
+
+
+
+```{r affiliationPlot2, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='Affilition 2'}
+VARS = c("syllables", "letters", "aoa", "imageability", "consistency")
+
+
+bardata = z_tables_lexical_affil %>% 
+  select(group, se = `*SE*`, var, M = `*b*`) %>% 
+  mutate(se = as.numeric(se),
+         M = as.numeric(str_remove_all(M, '\\*')))
+  
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(var) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters'))
+
+
+bardata %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters')) %>% 
+  ggplot(aes(group, M, color = group, group = var)) +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'black', linetype = 'dotted') +
+  scale_color_manual(values = COLORS_AFFIL) +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-se, ymax = M+se), size = .5, width = .8) +
+  labs(color = 'Source', x = 'Variable', y = 'Standardized value (within WCBC)') +
+  facet_grid(~var)  +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  #ylim(c(-1.3, 0)) +
+  theme_bw() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+
+
+
+
+```

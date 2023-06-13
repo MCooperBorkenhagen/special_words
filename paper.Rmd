@@ -49,6 +49,7 @@ footnotelist      : no
 lineno            : yes
 lang              : "en-US"
 output            :
+  #papaja::apa6_pdf :
   papaja::apa6_docx :
   #word_document :
   #pandoc_args: !expr rmdfiltr::add_replace_ampersands_filter(rmdfiltr::add_citeproc_filter(args = NULL))
@@ -120,13 +121,21 @@ source('lexical_models.R')
 source('lexical_models_affil.R')
 ```
 
-```{r child='profiles.Rmd'}
+
+
+```{r overlap_data}
+source('overlap.R')
+
 ```
 
 
 ```{r child='overlap.Rmd'}
 
 ```
+
+```{r child='profiles.Rmd'}
+```
+
 
 
 
