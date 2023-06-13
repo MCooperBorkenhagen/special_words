@@ -1,0 +1,191 @@
+
+```{r}
+COLORS_CLASS = c('Function' = 'grey44', 'Content' = 'grey75')
+
+
+all_lists %>%
+  group_by(source) %>% 
+  summarise(N = n()) -> tmp
+  
+all_lists %>% 
+  left_join(tmp) %>%
+  group_by(source, class) %>% 
+  summarise(n = n(),
+            N = first(N)) %>% 
+  ungroup() %>% 
+  mutate(prop = n/N) %>% 
+  mutate(class = case_when(class == 'open' ~ 'Content',
+                           class == 'closed' ~ 'Function'),
+         source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell'),
+         order = case_when(source == 'Dolch' ~ 1,
+                            source == 'Fry' ~ 2,
+                            source == 'Fountas & Pinnell' ~ 3,
+                            source == 'Fundations' ~ 4,
+                            source == 'Kilpatrick' ~ 5,
+                            source == 'Wonders' ~ 6)) %>% 
+  ggplot(aes(reorder(source, order), prop, fill = class, color = source, label = n)) +
+  geom_bar(stat = 'identity', position = 'dodge') +
+  geom_text(position = position_dodge(width = .9), color = 'black', vjust=-0.25) +
+  scale_color_manual(values = COLORS_SOURCE, guide = 'none') +
+  scale_fill_manual(values = COLORS_CLASS) +
+  labs(x = 'Instructional resource', y = 'Proportion', fill = 'Word class')
+
+
+```
+
+
+```{r}
+
+COLORS_SOURCE = c('Dolch' = 'darkred',
+           'Fry' = 'darkorange',
+           'Fountas & Pinnell' = 'darkgreen',
+           'Fundations' = 'turquoise',
+           'Wonders' = 'red',
+           'Kilpatrick' = 'darkblue')
+
+nsd = Zs %>% 
+  group_by(source, var) %>% 
+  summarise(SD = sd(Z, na.rm = T),
+            M_ = mean(Z, na.rm = T),
+            n = n(),
+            source_order = first(source_order))
+
+VARS = c('wcbc_rank', 'childes_rank')
+
+
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(var) %>% 
+  summarise(varmean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'childes_rank' ~ 'CHILDES'))
+
+plot_data = Zs %>% 
+  filter(var %in% VARS) %>% 
+  select(var, source, M = Z) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'childes_rank' ~ 'CHILDES'),
+         source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4))
+
+
+
+Zs %>% 
+  filter(var %in% VARS) %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% VARS) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'childes_rank' ~ 'CHILDES'),
+                source = as.factor(case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell'))) %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4)) %>% 
+  ggplot(aes(source_, M, color = source_, group = var)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(data = plot_data, position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-SD, ymax = M + SD, color = source_), width = .5) +
+  facet_grid(~var) +
+  ylim(c(-2, .5)) +
+  labs(color = 'Variable', x = 'Source', y = 'Rank frequency (standardized)') +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  geom_hline(data = hlines, aes(yintercept = varmean), color = 'black', linetype = 'dotted') +
+  theme_bw() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+```
+
+
+
+```{r}
+VARS = c('aoa', 'consistency', 'letters', 'syllables', 'imageability')
+
+bardata = z_tables_lexical %>% 
+  select(source = Source, se = `*SE*`, var, M = `*b*`) %>% 
+  mutate(source = tolower(source), 
+         se = as.numeric(se),
+         M = as.numeric(str_remove_all(M, '\\*')))
+  
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(var) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters'))
+
+Zs %>% 
+  group_by(source, var) %>% 
+  summarise(source_order = first(source_order)) %>% 
+  filter(var %in% VARS) %>% 
+  left_join(bardata) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters'),
+         source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  ggplot(aes(reorder(source, source_order), M, color = reorder(source, source_order), group = var)) +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'black', linetype = 'dotted') +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-se, ymax = M+se), size = .5, width = .8) +
+  labs(color = 'Instructional resource', x = 'Variable', y = 'Standardized value (within WCBC)') +
+  facet_grid(~var)  +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  ylim(c(-1.3, 0)) +
+  theme_bw() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+```
+
+\newpage
+
+\ Table 2
+```{r}
+sources = c('Dolch', 'Fry', 'Fountas & Pinnell', 'Fundations', 'Wonders', 'Kilpatrick')
+n = c(315, 400, 443, 314, 801, 425)
+description = c('"Sight words" are common (high-frequency) words; memorized',
+                '"Sight words" are common words; memorized',
+                '"High-frequency words" are common words; memorized + analyzed',
+                '"Trick words", common words with atypical structure; memorized + analyzed',
+                '"High-frequency words" are common words with atypical structure; memorized',
+                '"Irregular words" are words with atypical structure; analyzed')
+
+tmp = data.frame(cbind(sources, n, description))
+names(tmp) = c('Resource', 'Words', 'Description')
+
+tmp %>% 
+  apa_table(caption = 'Conceptualization of construct for each instructional resource', landscape = TRUE)
+
+```
