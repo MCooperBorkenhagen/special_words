@@ -1,0 +1,282 @@
+
+
+# The properties of words across sources
+
+First we will look at the frequency of words in each instructional resource and their relative distribution across them. We will move on to other word properties once frequency is examined.
+
+
+
+
+## Frequency
+```{r frequency_models, include=FALSE}
+
+tmp = Zs %>% 
+  filter(var == 'wcbc_rank')
+
+z_tests = split(tmp$Z, tmp$source) %>% 
+  map(t.test)
+
+
+apa_table(z_tests_to_table(z_tests))
+
+
+```
+Word frequency is a property that differs based on the source from which it is drawn. A word's frequency in a corpus assembled from transcripts of spoken language interactions with children will have a different frequency (and be drawn from a different distribution) than that word's frequency in a corpus of adult fiction. In order to capture something about this variability, four different sources of word frequency are considered here: the Wisconsin Children's Book Corpus, the CHILDES database, the TASA norms, and the Corpus of Contemporary American English. Each represents a different type of perspective in terms of cognition and development.
+
+For all the frequency data in this section, rank frequencies are used. Therefore, low values indicate high frequencies. While rank frequencies exhibit a uniform distribution (one word per rank), this type of frequency measure avoids the skew found in raw frequencies - which can make interpretation more difficult. In order to facilitate comparison across sources and relative to a normative distribution (i.e., a distribution from a language corpus), rank frequencies were standardized in the following way. All words from a given corpus were standardized for rank frequency by taking the rank frequency value, subtracting the mean for that corpus and dividing by the standard deviation of that corpus. This results in a distribution of rank frequency for each word in a given corpus. Once achieved, measures of rank frequency within each instructional source was calculated using the standardized rank frequency from the first step.
+
+This allows comparisons on several levels. First, the distribution of standardized rank frequency for a given source gives a measure of how different that distribution is for the normative distribution. Additionally, the distribution for each source can be compared to the others given that they've been standardized. The resulting interpretation of the mean of rank frequency for a source is the difference in standard deviation units between that source and the corpus from which standardized values have been calculated.
+
+This is useful when one considers the characteristics of a given text corpus from which the frequency distribution is constructed (child-directed text, child-directed speech, adult-directed text, etc.). A table of descriptive statistics across corpora and sources are shown in Table X.
+
+
+```{r descriptivesFreqSource, echo=FALSE, warning=FALSE, message=FALSE}
+sources = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$source
+wcbc_ = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$var
+tasa = desc_by_var(Zs, 'tasa_rank', combine_ = T)$var
+coca = desc_by_var(Zs, 'coca_rank', combine_ = T)$var
+childes = desc_by_var(Zs, 'childes_rank', combine_ = T)$var
+
+
+data.frame(cbind(sources, wcbc_, tasa, coca, childes)) %>% 
+  mutate(sources = case_when(sources == 'dolch' ~ 'Dolch',
+                            sources == 'fry' ~ 'Fry',
+                            sources == 'fundations' ~ 'Fundations',
+                            sources == 'kilpatrick' ~ 'Kilpatrick',
+                            sources == 'wonders' ~ 'Wonders',
+                            sources == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  rename(Source = sources,
+         WCBC = wcbc_,
+         TASA = tasa,
+         COCA = coca,
+         CHILDES = childes) %>% 
+  apa_table(caption = 'Descriptive Statistics of Rank Frequency by Source across Corpora', 
+            note = 'Means and standard deviations (in parentheses) are shown over standardized rank frequency values for all words in a given instructional source. Frequencies are standardized based on all words in a given corpus before subsetting and calculating the mean and spread by instructional source. As a result, the mean rank frequency shown represents how far from the mean of all words in a given corpus (zero) the distribution within an instructional source is.')
+
+
+
+```
+
+
+
+Figure X shows the results from a statistical test of each source distribution relative to the normative mean across the five instructional sources. A red dashed line is included at zero on the y-axis to represent the mean frequency for all language corpora (the mean is always zero due to standardization). Grey points within each panel are individual observations (words) within each source for a given value for standardized rank frequency. The colored points represent the mean for a source on a given frequency, and the colored bar around that mean represents the standard error of the point estimate for that source on that frequency. The red dotted line represents the mean across all frequencies for that instructional source, which facilitates a direct comparison across instructional sources (e.g., Kilpatrick on average contains much lower frequency words than the rest of the sources, as indicated by a higher red dashed line).
+
+There are a few straightforward observations one can make about the distribution of standardized frequencies across sources. Dolch displays the lowest average rank frequency and the least amount of variability in frequency. On the other end is Kilpatrick. This set of words is much higher in average rank frequency (i.e., lower in raw frequency) than any of the other resources. Many words across the various sources of word frequency are even above the mean value of frequency from that source. The variability in rank frequency for the set is noteworthy as well. Not only are the averages for Kilpatrick much higher in rank frequency than any of the other instructional resources, the spread of frequency values for that source is higher as well.
+
+Also, in general it is clear that instructional sources are oriented towards words that are very high frequency in terms of adult texts, but less so for child texts. This effect is observed given that the means for COCA (adult fiction) are all well below average (the red dashed line) in each source (panel), but the average value for WCBC (child-directed texts) is always well above the mean line across language corpora for all sources (i.e., the red point for WCBC is always well above the red dashed line in each panel). To the extent that the TASA norms more accurately represent what children read themselves (rather than what's read to them; i.e., WCBC), a further point can be made: Kilpatrick shows the greatest relative difference between the frequency of words in child texts versus adult texts. This is shown by the difference between the point for COCA and TASA in the Kilpatrick panel, suggesting that the Kilpatrick source is more tuned towards words commonly found in texts read by adults as opposed to those read by children.
+
+
+
+```{r wcbcFreqTtest, echo=FALSE, warning=FALSE, message=FALSE}
+z_tables_freq %>%
+   mutate(Source = case_when(Source == 'dolch' ~ 'Dolch',
+                            Source == 'fry' ~ 'Fry',
+                            Source == 'fundations' ~ 'Fundations',
+                            Source == 'kilpatrick' ~ 'Kilpatrick',
+                            Source == 'wonders' ~ 'Wonders',
+                            Source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  filter(var == 'WCBC') %>% 
+  select(-c(CI_hi, CI_low, var, source_order)) %>% 
+  apa_table(caption = "Model Outputs by Source for Statistical Test against Mean Rank Frequency from the Wisconsin Children's Book Corpus", note = "Statistical test used was t.test() from base R (R Core Team, 2021). Rank frequencies were Z transformed prior to test, so resulting coefficients express the difference in standard deviations of rank frequency from WCBC between the source mean on rank frequency and the WCBC mean (0 due to Z transformation).")
+
+```
+
+The consistent difference in the frequency of words in the Kilpatrick curriculum can be seen even more clearly in the next plot, which has the panels grouped by frequency corpus and points for each instructional resource plotted within each panel. The Kilpatrick distribution is always set apart from the rest of the sources, and always appears on the opposite side of the mean line for a given frequency corpus.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='The raw distribution of words across sources and corpus rank frequency (standardized) are shown as points (in grey) with statistical estimate as colored points within each distribution. Because standard errors are imperceptibly small, standard deviations for the standardized rank frequency values within each distribution are shown. All distributions are significantly different than the corpus mean (0).'}
+
+
+VARS = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
+
+
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(var) %>% 
+  summarise(varmean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'))
+
+plot_data = Zs %>% 
+  filter(var %in% VARS) %>% 
+  select(var, source, M = Z) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+         source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4))
+
+
+
+Zs %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% VARS) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+                source = as.factor(case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell'))) %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4)) %>% 
+  ggplot(aes(source_, M, color = source_, group = var)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(data = plot_data, position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-SD, ymax = M + SD, color = source_), width = .5) +
+  facet_grid(~var) +
+  ylim(c(-2, .5)) +
+  labs(color = 'Variable', x = 'Source', y = 'Rank frequency (standardized)') +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  geom_hline(data = hlines, aes(yintercept = varmean), color = 'black', linetype = 'dotted') +
+  theme_bw() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+```
+
+
+We should also consider the coverage of a given instructional set of words relative to some established corpus of words. To the extent that the corpus represents a relevant language environment for an early reader, each instructional set should represent a nontrivial proportion of words in the corpus especially considering the frequency distribution of words in the target corpus. First, we can look to the corpora that are relevant for children and their language development: WCBC, TASA, and CHILDES. These represent relevant target sets for such an analysis because we would expect that a given instructional resource should be representative of words that children tend to hear and see early in developing language and reading skills. In order to compare total coverage of a given corpus, we also provide data about coverage for a given instructional set relative to the most frequent 100, 500, 1000, and 5000 words of each dataset to get a sense for how this coverage fits relative to the most frequent words in the corpus.
+
+```{r coverageKidCorpus, echo=FALSE, warning=FALSE, message=FALSE}
+
+```
+
+
+
+
+## Other word characteristics across sources
+To facilitate comparison of other word properties (other than frequency), the words from the Wisconsin Children's Book Corpus (Lewis et al., 2021) were used as a benchmark set. All the words from the WCBC (_n_ = ```r nrow(wcbc)```) were aggregated along with a range of word-level measurements (age of acquisition, orthography-to-phonology consistency, imageability, number of letters, and number of syllables). In order to present data that captures the normative comparison to WCBC, similar to what was done with word frequencies, measurements for word-level variables were standardized (mean-centered and put into relation to the standard deviation) based on the distribution of that variable over all words in the WCBC corpus (rather than four different corpora as was done with frequency). This is intended to capture the variability on a given variable relative to the distribution in the benchmark (WCBC-based) sample.
+
+\ Table X
+```{r desc_other, echo=FALSE, warning=FALSE, message=FALSE}
+
+VARS = c('aoa', 'consistency', 'letters', 'syllables', 'imageability')
+
+sources = desc_by_var(Zs, VARS[1], combine_ = T)$source
+aoa = desc_by_var(Zs, VARS[1], combine_ = T)$var
+consistency = desc_by_var(Zs, VARS[2], combine_ = T)$var
+letters = desc_by_var(Zs, VARS[3], combine_ = T)$var
+syllables = desc_by_var(Zs, VARS[4], combine_ = T)$var
+imageability = desc_by_var(Zs, VARS[5], combine_ = T)$var
+
+
+data.frame(cbind(sources, aoa, consistency, letters, syllables, imageability)) %>% 
+  mutate(sources = case_when(sources == 'dolch' ~ 'Dolch',
+                            sources == 'fry' ~ 'Fry',
+                            sources == 'fundations' ~ 'Fundations',
+                            sources == 'kilpatrick' ~ 'Kilpatrick',
+                            sources == 'wonders' ~ 'Wonders',
+                            sources == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  rename(Source = sources,
+         AoA = aoa,
+         Consistency = consistency,
+         Letters = letters,
+         Syllables = syllables,
+         Imageability = imageability) %>% 
+  apa_table(caption = 'Descriptive Statistics of Other Word Variables for each Source across WCBC', 
+            note = "Means and standard deviations (in parentheses) are shown over Z transformed rank frequency values for all words in a given instructional source. Standardization happens relative to the Wisconsin Children's Book Corpus. Therefore the mean value for a source for a given variable indicates the average distance from the overall mean within WCBC.")
+
+```
+
+The figure below shows the average value for a given variable for each instructional source (colored point in each panel), where colors are conditioned on thefive different variables of interest. Within each panel, the red dashed line again refers to the average across points, here representing the average across all variables. This way of the data facilitates interpretation given that all the points for all the variables fall on the negative side of the distribution for all sources; all points are below the mean on the standardized scale for all words in WCBC. The grey dotted line again shows the mean for all variables in all words in WCBC (zero due to standardization).
+
+
+
+Fundations is associated with the lowest values across all sources on average. Looking at the extremes within that source, we see that the list of words favors words with more syllables and higher age-of-acquisition values relative to the imageability of words. That source also shows the lowest overall consistency of words relative to other sources.
+
+`MORE DESCRIPTIVE ANALYSIS HERE: LAUREN YOU GO FOR IT`
+
+The figure below shows the same data as the previous figure, but oriented in a way that facilitates comparison for a variable across sources, rather than the other way around. The visual elements are all the same except here the color of points are conditioned on sources rather than variables, and the red dashed means are averaged across sources for a variable, rather than variables for a source as we saw before.
+
+```{r profileFigureLexical, echo=FALSE, message=FALSE, warning=FALSE, fig.cap='Means and standard errors for a range of word variables within sources are shown. Means are calculated over standardized measures within WCBC, therefore the position of the point for a source for a variable can be interpreted as the average distance away from the mean of all words within WCBC (i.e., 0 shown with a red dashed line) for that variable in terms of standard deviation units. The mean on a given variable across all sources is shown as a grey dotted line just for convenience. Estimates were derived using t.test() in base R.'}
+
+bardata = z_tables_lexical %>% 
+  select(source = Source, se = `*SE*`, var, M = `*b*`) %>% 
+  mutate(source = tolower(source), 
+         se = as.numeric(se),
+         M = as.numeric(str_remove_all(M, '\\*')))
+  
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(var) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters'))
+
+Zs %>% 
+  group_by(source, var) %>% 
+  summarise(source_order = first(source_order)) %>% 
+  filter(var %in% VARS) %>% 
+  left_join(bardata) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters'),
+         source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  ggplot(aes(reorder(source, source_order), M, color = reorder(source, source_order), group = var)) +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'black', linetype = 'dotted') +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-se, ymax = M+se), size = .5, width = .8) +
+  labs(color = 'Source', x = 'Variable', y = 'Standardized value (within WCBC)') +
+  facet_grid(~var)  +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  ylim(c(-1.3, 0)) +
+  theme_bw() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+```
+
+The differences between the source distribution on each word-level variable relative to the normative distribution (WCBC) are all statistically significant based on a statistical test analogous to those conducted previously on the frequency distributions.
+  
+```{r}
+Source = z_tables_lexical %>% filter(var == 'aoa') %>% pull(Source)
+AoA = z_tables_lexical %>% filter(var == 'aoa') %>% rename(b = `*b*`, se = `*SE*`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+Consistency = z_tables_lexical %>% filter(var == 'consistency') %>% rename(b = `*b*`, se = `*SE*`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+Imageability = z_tables_lexical %>% filter(var == 'imageability') %>% rename(b = `*b*`, se = `*SE*`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+Letters = z_tables_lexical %>% filter(var == 'letters') %>% rename(b = `*b*`, se = `*SE*`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+Syllables = z_tables_lexical %>% filter(var == 'syllables') %>% rename(b = `*b*`, se = `*SE*`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+
+data.frame(cbind(Source, AoA, Consistency, Imageability, Letters, Syllables)) %>% 
+  mutate(Source = case_when(Source == 'Dolch' ~ 'Dolch',
+                            Source == 'Fry' ~ 'Fry',
+                            Source == 'Fundations' ~ 'Fundations',
+                            Source == 'Kilpatrick' ~ 'Kilpatrick',
+                            Source == 'Wonders' ~ 'Wonders',
+                            Source == 'Fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  apa_table(caption = 'Model Estimates for Statistical Tests of Source Means against Means from Normative Sample', 
+            note = 'Estimates obtained from using t.test() from base R, with standard errors in parentheses. Bolded parameter estimates are statistically significant. For a full accounting of parameter estimates see appendix. Values were Z transformed on the distribution from the WCBC prior to subsetting and testing by source.')
+  
+```
+

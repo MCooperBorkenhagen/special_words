@@ -1,0 +1,47 @@
+
+# Appendix
+
+```{r forAppendixAOA, echo=FALSE, warning=FALSE, message=FALSE}
+z_tables_lexical %>% 
+  filter(var == 'aoa') %>% 
+  select(-c(var, source_order, CI_hi, CI_low)) %>% 
+  apa_table(caption = 'Parameter Estimates for Source Means on Age-of-Acquisition Relative to Normative Sample from WCBC',
+            note = "Bolded coefficients are statistically significant and can be interpreted as Cohen's *d* based on the statistical test performed.")
+
+```
+
+
+```{r forAppendixCONSISTENCY, echo=FALSE, warning=FALSE, message=FALSE}
+z_tables_lexical %>% 
+  filter(var == 'consistency') %>% 
+  select(-c(var, source_order, CI_hi, CI_low)) %>% 
+  apa_table(caption = 'Consistency')
+
+```
+
+\newpage
+
+```{r forAppendixIMAGEABILITY, echo=FALSE, warning=FALSE, message=FALSE}
+z_tables_lexical %>% 
+  filter(var == 'imageability') %>% 
+  select(-c(var, source_order, CI_hi, CI_low)) %>% 
+  apa_table(caption = 'Imageability')
+
+```
+
+
+```{r forAppendixLETTERS, echo=FALSE, warning=FALSE, message=FALSE}
+z_tables_lexical %>% 
+  filter(var == 'letters') %>% 
+  select(-c(var, source_order, CI_hi, CI_low)) %>% 
+  apa_table(caption = 'Number of Letters per Word')
+
+```
+
+\newpage
+
+```{r forAppendixSYLLABLES, echo=FALSE, warning=FALSE, message=FALSE}
+z_tables_lexical %>% 
+  filter(var == 'syllables') %>% 
+  select(-c(var, source_order, CI_hi, CI_low)) %>% 
+  apa_table(caption = 'Number of Syllables per Word')
