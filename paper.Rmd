@@ -1,64 +1,61 @@
 ---
-title             : "Special words: What do instructional resources do with common words and words with atypical structure"
+title             : "Special words: Instructional resources and the words taught to young readers"
 shorttitle        : "Special words"
 
 author: 
   - name          : "Matthew J. Cooper Borkenhagen"
-    affiliation   : "1"
-    corresponding : yes    # Define only one corresponding author
-    address       : "Department of Psychology, University of Wisconsin - Madison"
-    email         : "cooperborken@wisc.edu"
+    corresponding : yes
+    affiliation   : "1, 2"
+    email         : "mcooperborkenhagen@fsu.edu"
+    address       : "1114 W. Call Street, Tallahassee, FL 32306"
     role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
       - Conceptualization
       - Supervision
       - Writing
       - Formal Analysis
   - name          : "Lauren P. Schilling"
-    affiliation   : "1"
-    address       : "Department of Psychology, University of Wisconsin - Madison"
-    email         : "---"
+    affiliation   : "3"
+    address       : "Harvard Graduate School of Education"
     role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
       - Conceptualization
       - Project administration
       - Data curation
   - name          : "Mark S. Seidenberg"
-    affiliation   : "1"
-    address       : "Department of Psychology, University of Wisconsin - Madison"
-    email         : "seidenberg@wisc.edu"
+    affiliation   : "4"
     role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
       - Conceptualization
       - Supervision
       - Writing
-bibliography      : ["references.bib"]
-affiliation       :
+affiliation:
   - id            : "1"
+    institution   : "School of Teacher Education, Florida State University"
+  - id            : "2"
+    institution   : "The Florida Center for Reading Research"
+  - id            : "3"
+    institution   : "Harvard Graduate School of Education"
+  - id            : "4"
     institution   : "Department of Psychology, University of Wisconsin - Madison"
 
-authornote: '...'
+#authornote: 'Here is an authornote'
 abstract: '...'
   
 keywords          : "Reading development, reading instruction, sight words"
-wordcount         : "..."
-
+wordcount         : "--- words"
+bibliography      : ["references.bib"]
 documentclass     : "apa6"
-#class             : "man"
+class             : "man"
 figsintext        : yes
 figurelist        : no
 tablelist         : yes
 footnotelist      : no
 lineno            : yes
-lang              : "en-US"
-output            :
-  #papaja::apa6_pdf :
-  papaja::apa6_docx :
-  #word_document :
-  #pandoc_args: !expr rmdfiltr::add_replace_ampersands_filter(rmdfiltr::add_citeproc_filter(args = NULL))
-    toc               : false
-
+replaceampersands : no
+#lang              : "en-US"
+output            : papaja::apa6_pdf
+#output            : papaja::apa6_docx
 header-includes:
-  - \geometry{left=3cm, right=3cm, top=3cm, bottom=3cm}
   - \usepackage{booktabs}
-  - \usepackage{longtable}
+  - \usepackage{longtable}[=v4.13]
   - \usepackage{array}
   - \usepackage{multirow}
   - \PassOptionsToPackage{x11names}{xcolor}
@@ -69,19 +66,16 @@ header-includes:
   - \usepackage{tabu}
   - \usepackage{threeparttable}
   - \usepackage[normalem]{ulem}
-  - \usepackage{pdfpages}
-  - \interfootnotelinepenalty=10000
-  - \setcounter{page}{0}
-
+  - \usepackage{scrextend}
 ---
 
 ```{r setup, include=FALSE}
-lapply(read.csv('requirements.txt', stringsAsFactors = F, header = F)[[1]], require, ch = T)
-source('utilities.R')
+lapply(read.csv('scripts/requirements.txt', stringsAsFactors = F, header = F)[[1]], require, ch = T)
+source('scripts/utilities.R')
 
-source('Zs.R')
+source('scripts/Zs.R')
 all_lists = read_csv('data/all_lists.csv')
-source('sets.R')
+source('scripts/sets.R')
 
 COLORS_CORPUS = c('WCBC' = 'firebrick3',
            'COCA' = 'darkslategray',
@@ -100,51 +94,39 @@ COLORS_SOURCE = c('Kilpatrick' = 'darkblue',
            'Fundations' = 'turquoise',
            'Wonders' = 'red',
            'Fountas & Pinnell' = 'darkgreen')
+```
 
+
+```{r child='sections/introduction.Rmd'}
 
 ```
 
 
-```{r child='introduction.Rmd'}
-
-```
-
-
-```{r child='methods.Rmd'}
+```{r child='sections/methods.Rmd'}
 
 ```
 
 
 ```{r profiles_data, include=FALSE}
-source('frequency_models.R')
-source('lexical_models.R')
-source('lexical_models_affil.R')
+source('scripts/frequency_models.R')
+source('scripts/lexical_models.R')
+source('scripts/lexical_models_affil.R')
 ```
 
 
 
-```{r overlap_data}
-source('overlap.R')
-
+```{r overlap_data, include=FALSE}
+source('scripts/overlap.R')
 ```
 
 
-```{r child='overlap.Rmd'}
+```{r child='sections/overlap.Rmd'}
 
 ```
 
-```{r child='profiles.Rmd'}
+```{r child='sections/profiles.Rmd'}
 ```
 
-
-
-
-#```{r child='dolch_fry.Rmd'}
-# dolch and fry are different, so we look at words that are unique to just these two sources
-#```
-
-
-```{r child='appendix.Rmd'}
-
+```{r child='sections/appendix.Rmd'}
 ```
 

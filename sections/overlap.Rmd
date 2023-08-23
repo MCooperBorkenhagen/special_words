@@ -22,7 +22,7 @@ If there is a high degree of consensus about the sight word construct, then sour
 
 ```{r intersectTable, echo=FALSE, warning=FALSE, message=FALSE}
 intersect_words_table %>% 
-  apa_table(caption = "The 28 Words Common across All Instructional Sources with Rank Frequency", note = "Words are arranged in descending frequency, and rank frequency is provided in parentheses and is calculated from Wisconsin Children's Book Corpus.", col.names = NULL)
+  apa_table(caption = "The 28 Words Common across All Instructional Sources with Rank Frequency", note = "Words are arranged in descending frequency, and rank frequency is provided in parentheses and is calculated from Wisconsin Children's Book Corpus.", col.names = NULL, escape = FALSE)
 ```
 
 
@@ -85,7 +85,7 @@ The Wisconsin Children's Book Corpus (WCBC) contains texts commonly consumed by 
 
 ```{r frequencyCorpusTable, echo=FALSE, warning=FALSE}
 frequency_by_corpus(all_lists) %>% 
-  apa_table(caption = "Descriptive Characteristics for Word Frequencies using for All Words in the Database", note = "Values provided as raw frequencies. Min values are always 1 and have been excluded. WCBC = Wisconsin Childrens Book Corpus; TASA = Frequencies from the Educator's Word Frequency Guide by Touchstone Applied Science Associates; CHILDES = The Child Language Data Exchange System.")
+  apa_table(caption = "Descriptive Characteristics for Word Frequencies using for All Words in the Database", note = "Values provided as raw frequencies. Min values are always 1 and have been excluded. WCBC = Wisconsin Childrens Book Corpus; TASA = Frequencies from the Educator's Word Frequency Guide by Touchstone Applied Science Associates; CHILDES = The Child Language Data Exchange System.", escape = FALSE)
 
 ```
 
