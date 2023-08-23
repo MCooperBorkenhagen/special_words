@@ -76,7 +76,7 @@ z_tables_lexical_affil = rbind(z_table_aoa_affil, z_table_consistency_affil, z_t
   mutate(group = toTitleCase(Source),
          group_order = case_when(Source == 'Dolch' ~ 1,
                                  Source == 'Fry' ~ 2,
-                                 Source == 'Fountas_Pinnell' ~ 3,
+                                 Source == 'Fountas & Pinnell' ~ 3,
                                  Source == 'Fundations' ~ 4,
                                  Source == 'Wonders' ~ 5,
                                  Source == 'Kilpatrick' ~ 6))

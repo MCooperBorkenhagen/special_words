@@ -60,9 +60,10 @@ z_tables_lexical = rbind(z_table_aoa, z_table_consistency, z_table_letters, z_ta
   mutate(Source = toTitleCase(Source),
          source_order = case_when(Source == 'Dolch' ~ 1,
                                   Source == 'Fry' ~ 2,
-                                  Source == 'Fountas_Pinnell' ~ 3,
+                                  Source == 'Fountas & Pinnell' ~ 3,
                                   Source == 'Fundations' ~ 4,
                                   Source == 'Wonders' ~ 5,
-                                  Source == 'Kilpatrick' ~ 6))
+                                  Source == 'Kilpatrick' ~ 6)) %>% 
+  select(-CI_low, -CI_hi, -p_derived)
 
 rm(z_table_aoa, z_table_consistency, z_table_imageability, z_table_letters, z_table_syllables, z_tests)

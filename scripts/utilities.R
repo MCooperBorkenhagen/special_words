@@ -38,58 +38,22 @@ check_p = function(b, p, alpha = .05){
 
 
 
-z_tests_to_table = function(l, apa = T, ps_and_bs = T){
-  
-  #' Generates a dataframe from a list of t.tests
-  #' @param l A list of t.tests
-  #' @return A dataframe with one row per test in l
-  
-  cls = c('Source', 'b', 't', 'df', 'SE', '95% CI', 'CI_low', 'CI_hi', 'p')
-  df = data.frame(matrix(nrow = length(names(l)), ncol = length(cls)))
-  colnames(df) = cls
-  
-  for (i in seq(length(names(l)))){
-    
-    b = l[[i]]$estimate
-    p = l[[i]]$p.value
-    
-    if (ps_and_bs){
-      b_ = check_p(b, p)[1]
-      p_ = check_p(b, p)[2]
-    }
-    else{
-      b_ = rnd(b)
-      p_ = rnd(p)
-    }
-    
-    df$Source[i] = names(l)[i]
-    df$b[i] = b_
-    df$t[i] = rnd(l[[i]]$statistic)
-    df$df[i] = rnd(l[[i]]$parameter, dgt = 0, nsml = 0)
-    df$SE[i] = rnd(l[[i]]$stderr)
-    df$`95% CI`[i] = paste('[', rnd(l[[i]]$conf.int[1]), ', ', rnd(l[[i]]$conf.int[2]), ']', sep = '')
-    df$CI_low[i] = l[[i]]$conf.int[1]
-    df$CI_hi[i] = l[[i]]$conf.int[2]
-    df$p[i] = p_
-  }
-  
-  if (apa){
-    names(df) = c('Source', '*b*', '*t*', '*df*', '*SE*', '95% CI', 'CI_low', 'CI_hi', '*p*')
-    return(df)
-  }
-  else(return(df))}
 
 
+bold_cell = function(x, nsmall = 2){
+  paste0("\\textbf{", format(x, nsmall = nsmall), "}")}
 
-z_tests_to_table_num = function(l){
+z_tests_to_table = function(l, nsmall = 2, latex = TRUE){
   
   #' Generates a dataframe of numeric data from a list of t.tests for graphing not tables
   #' @param l A list of t.tests
   #' @return A dataframe with one row per test in l
   
-  cls = c('Source', 'b', 't', 'df', 'SE', '95% CI', 'CI_low', 'CI_hi', 'p')
-  df = data.frame(matrix(nrow = length(names(l)), ncol = length(cls)))
-  colnames(df) = cls
+  df = tibble(Source = names(l),
+              b = NA, t = NA,
+              df = NA, SE = NA,
+              `CI95` = NA, CI_low = NA,
+              CI_hi = NA, p_derived = NA)
   
   for (i in seq(length(names(l)))){
     
@@ -97,16 +61,53 @@ z_tests_to_table_num = function(l){
     p = l[[i]]$p.value
     
     df$Source[i] = names(l)[i]
-    df$b[i] = b
-    df$t[i] = l[[i]]$statistic
-    df$df[i] = l[[i]]$parameter
-    df$SE[i] = l[[i]]$stderr
-    df$`95% CI`[i] = paste('[', rnd(l[[i]]$conf.int[1]), ', ', rnd(l[[i]]$conf.int[2]), ']', sep = '')
+    df$b[i] = round(b, digits = 2)
+    df$t[i] = round(l[[i]]$statistic, digits = 2)
+    df$df[i] = format(l[[i]]$parameter, nsmall = 0)
+    df$SE[i] = round(l[[i]]$stderr, digits = 2)
+    df$CI95[i] = paste('[', round(l[[i]]$conf.int[1], digits = 2), ', ', round(l[[i]]$conf.int[2], digits = 2), ']', sep = '')
     df$CI_low[i] = l[[i]]$conf.int[1]
     df$CI_hi[i] = l[[i]]$conf.int[2]
-    df$p[i] = p}
+    df$p_derived[i] = l[[i]]$p.value
+    
+  }
+  
+  df = df %>% 
+    mutate(b = case_when(p_derived < .001 ~ bold_cell(b, nsmall = nsmall),
+                         TRUE ~ format(b, nsmall = nsmall)), 
+           p = case_when(p_derived == 0 ~ '<.001', # an idiosyncracy of t.test() is that is sometimes give
+                         p_derived < .001 ~ '<.001',
+                         p_derived < .01 & p_derived >= .001 ~ '<.01',
+                         p_derived < .05 & p_derived >= .01 ~ '<.01',
+                         p_derived >= .05 ~ as.character(round(p_derived, digits = 2))))
+  
+  if (latex){
+    colnames(df) = c('Source', '\\textit{b}', '\\textit{t}', '\\textit{df}', '\\textit{SE}', '95\\% CI', 'CI_low', 'CI_hi', 'p_derived', '\\textit{p}')
+  }
+  
+  return(df)}
 
-    return(df)}
+
+latex_to_num = function(x, latex = 'bold', as_numeric = TRUE){
+  
+  if (latex == 'bold'){
+    target = 'textbf'
+  }
+  if (latex == 'italic'){
+    target = 'textit'
+  }
+  
+  y = str_replace(x, '\\\\', '')
+  y = str_replace(y, paste(target, '\\{', sep = ''), '')
+  y = str_replace(y, '\\}', '')
+  if (as_numeric){
+    return(as.numeric(y))}
+  if (!as_numeric){
+    return(y)
+  }
+}
+
+
 
 symdiff <- function(x, y) {setdiff( union(x, y), intersect(x, y))}
 
