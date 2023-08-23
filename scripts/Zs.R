@@ -232,7 +232,13 @@ Zs = rbind(dolch, fry, fundations, kilpatrick, wonders, fountas_pinnell) %>%
                                   source == 'fountas_pinnell' ~ 3,
                                   source == 'fundations' ~ 4,
                                   source == 'wonders' ~ 5,
-                                  source == 'kilpatrick' ~ 6))
+                                  source == 'kilpatrick' ~ 6),
+         source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell'))
 
 
 rm(dolch, fry, fundations, kilpatrick, wonders, d, factor_vars, childes_msd, coca, coca_msd, consistency, tasa_msd)
