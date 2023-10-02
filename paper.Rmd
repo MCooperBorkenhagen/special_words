@@ -127,6 +127,9 @@ source('scripts/overlap.R')
 ```{r child='sections/profiles.Rmd'}
 ```
 
+```{r child='frequency_and_consistency.Rmd'}
+```
+
 ```{r child='sections/appendix.Rmd'}
 ```
 

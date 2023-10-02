@@ -10,6 +10,7 @@ unl = readxl::read_xlsx('../words/unilex/unilex.xlsx') %>%
 
 
 
+
 childes = childes_eng_na_types_0_71_months %>% 
   mutate(word = tolower(gloss)) %>% 
   group_by(word) %>% 
@@ -242,6 +243,7 @@ Zs = rbind(dolch, fry, fundations, kilpatrick, wonders, fountas_pinnell) %>%
 
 
 rm(dolch, fry, fundations, kilpatrick, wonders, d, factor_vars, childes_msd, coca, coca_msd, consistency, tasa_msd)
+
 
 
 

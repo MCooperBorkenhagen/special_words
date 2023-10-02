@@ -144,3 +144,12 @@ frequency_by_corpus = function(data){
   return(rbind(tmp1, tmp2, tmp3))
   
 }
+
+
+l2 <- function(coordinate_a, coordinate_b) {
+  if (length(coordinate_a) != length(coordinate_b)) {
+    stop("Coordinates must have the same number of dimensions.")
+  }
+
+  return(sqrt(sum((coordinate_b - coordinate_a)^2)))
+}

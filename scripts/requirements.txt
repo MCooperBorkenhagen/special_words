@@ -4,3 +4,4 @@ tidyverse
 papaja
 knitr
 ggVennDiagram
+ggrepel

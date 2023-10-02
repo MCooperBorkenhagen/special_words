@@ -1,1 +1,30 @@
 # Discussion
+
+
+## A Different Conception of Special Words
+We've outlined something fundamental about learning a quasiregular writing system like English: frequency and consistency are integrally related in that consistency is just frequency at a different level of grain within the word. It follows from this that there are principled ways in which to determine the special words of the system: they are those the self-select as outliers with regard to the consistency and frequency dimensions calculated across words.
+
+### With diagonal
+
+
+```{r FrequencyConsistencyPlot2}
+wcbc %>% 
+  filter(word %in% unique(all_lists$word)) %>%
+  arrange(-desc(consistency)) %>% 
+  mutate(consistency_rank = seq_len(n())) %>%
+  arrange(desc(wcbc_freq)) %>% 
+  mutate(freq_rank = seq_len(n()),
+         word = case_when(word == "i" ~ "I",
+                          TRUE ~ word)) %>% 
+  filter(freq_rank < 300 & consistency_rank < 300) %>% 
+  ggplot(aes(freq_rank, consistency_rank, label = word)) +
+  #geom_label_repel(position = position_jitter(height = 100)) +
+  geom_label_repel() +
+  theme_minimal() +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency")
+
+
+```
+
+
+We can talk through what the quadrants are, interpreting them. Focusing in on the
