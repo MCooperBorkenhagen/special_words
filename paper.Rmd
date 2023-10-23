@@ -36,8 +36,7 @@ affiliation:
   - id            : "4"
     institution   : "Department of Psychology, University of Wisconsin - Madison"
 
-#authornote: 'Here is an authornote'
-abstract: '...'
+abstract: "Which words are important for early reading instruction? A mainstream view maintains that certain words should be priviledged early in development due to their being frequent and/or containing idiosycrattic structure. This study sought to answer this question by examining the words from six commonly used instructional resources (1005 total unique words). Results show noteworthy disagreement about the words that should be taught to early readers, and the properties that these words should contain. For example, only 28 words (3%) are shared across the six resources, while the majority of words are present in one resource and shared by no others (560 words; 56%). Results are discussed in the context of established theories of learning that help guide the discussion about the aspects of the language that influence reading development, and an empirical method of selecting words based on observable properties of words is proposed."
   
 keywords          : "Reading development, reading instruction, sight words"
 wordcount         : "--- words"

@@ -1,7 +1,7 @@
 # The Words Included in Instructional Resources
 One possible source of meaningful variability has to do with the words included in instruction: Do instructional resources agree about which words are important in early vocabulary acquisition? If different resources agree about the words to be prioritized for memorization^[See resource descriptions for a full account of the teaching methods associated with each approach. Nonetheless, each approach involves some amount of word memorization.], then students experiencing these programs would have similar experiences - at least in terms of the words taught. Alternatively, if resources differ in their contents, it would suggest that the students that learn different programs have different experiences. Variability of this kind is important because it suggests different conceptualizations of what is important in early reading development, leaving aside issues of the relative efficacy of one approach versus another.
  
-# The degree of overlap of words across sources
+## The Degree of Overlap of Words Across Sources
 ```{r intersect_sources, include=FALSE}
 
 intersect_words_ = wcbc %>% 
@@ -73,8 +73,11 @@ plot_data %>%
 
 In terms of individual resources, Kilpatrick represents the outlier; it contains the most words (326) that are unique to a single source and no others (see outer rim of Figure X in region labeled "Kilpatrick"). This set of words represents a relatively high proportion of all words across all sources (32%).
 
+# Discussion
+Words are an organizing unit of the language in reading instruction. These instructional resources all have in common that certain words in English are prioritized for teaching. As a result, the words themselves are a meaningful unit of analysis for the purposes of determining the extent to which these programs agree about what matters in early reading instruction. It turns out that there is noteworthy disagreement among these resources about which matter most. Only 3% of the words across all unique words are present in all six resources (3% of unique words).
 
-## The overlap across sources in terms of their properties
+
+# The Overlap across Sources in Terms of their Properties
 It is possible that the words across resources might be different while the underlying properties of those words might not vary. If this is the case then variability in the words selected for instruction would be less meaningful; Students might have similar language experience in this type of instruction by virtue of the underlying language structures the words convey. In order to examine this possibility we will look at each set of words binned by their overlap among the 6 instructional resources (the number of resources that the word appeared in) and examine that set of words in terms of their language properties, starting with word frequency.
 
 In order to analyze instructional words with respect to their linguistic properties, a number of datasets were identified and merged with the database of words aggregated for the study. These data are utilized across the studies presented here, so we will review the different data and their sources up front. One important issue concerns how instructional words compare to words children and adults tend to encounter in other language experiences - reading related and otherwise. In order to make comparisons along these lines we assembled several relevant benchmark sets using language databases that represent language experiences for different groups and in different modes of communication, both via printed and spoken language. The corpora we selected for this purpose are The Wisconsin Children's Book Corpus [@Lewis2022], the Child Language Data Exchange System [@MacWhinney2000], and words from the Educator's Word Frequency Guide from Touchstone Applied Science Associates [@Zeno1995].
