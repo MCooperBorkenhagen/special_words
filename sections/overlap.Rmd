@@ -1,7 +1,11 @@
 # The Words Included in Instructional Resources
-One possible source of meaningful variability has to do with the words included in instruction: Do instructional resources agree about which words are important in early vocabulary acquisition? If different resources agree about the words to be prioritized for memorization^[See resource descriptions for a full account of the teaching methods associated with each approach. Nonetheless, each approach involves some amount of word memorization.], then students experiencing these programs would have similar experiences - at least in terms of the words taught. Alternatively, if resources differ in their contents, it would suggest that the students that learn different programs have different experiences. Variability of this kind is important because it suggests different conceptualizations of what is important in early reading development, leaving aside issues of the relative efficacy of one approach versus another.
- 
+
+One possible source of meaningful variability has to do with the words included in instruction: Do instructional resources agree about which words are important in early print vocabulary acquisition? If different resources agree about the words to be prioritized for instruction[^overlap-1], then students experiencing these programs would have similar experiences - at least in terms of the words taught. Alternatively, if resources differ in their contents, it would suggest that the students that learn different programs have different experiences. Variability of this kind is important because it suggests different conceptualizations of what is important in early reading development, leaving aside issues of the relative efficacy of one approach versus another.
+
+[^overlap-1]: See resource descriptions for a full account of the teaching methods associated with each approach. Nonetheless, each approach involves some amount of word memorization.
+
 ## The Degree of Overlap of Words Across Sources
+
 ```{r intersect_sources, include=FALSE}
 
 intersect_words_ = wcbc %>% 
@@ -18,13 +22,63 @@ intersect_words_table = matrix(intersect_words_, nrow = 4, ncol = 7)
 
 ```
 
-If there is a high degree of consensus about the sight word construct, then sources associated with the construct should share a set of common words across them (holding aside the issue of sources different quantities of words across sources). Across the six instructional sources included for analysis here, only ```r length(intersect_words)``` of all unique words are shared across all sources (```r round(length(intersect_words)/length(unique(all_lists$word))*100, digits = 1)```% of types). This set of words is shown in Table X.
+The resources differ in basic ways in which special words are described and aggregated. Each has their own term for them, though they are very often described in similar theoretical terms (see methods), and the average frequency of the words (among other properties) vary across sources (Table XX), in many cases substantially.
+
+```{r SourcesDesc, echo=FALSE, message=FALSE, warning=FALSE}
+table_desc = all_lists %>% 
+  group_by(source, word) %>% 
+  summarise(childes_freq = first(childes_freq),
+                    tasa_freq = first(tasa_freq),
+                    wcbc_freq = first(wcbc_freq),
+                    letters = first(letters),
+                    syllables = first(syllables),
+                    morphemes = first(morphemes)) %>% 
+  ungroup() %>% 
+  group_by(source) %>% 
+  summarise(CHILDES = round(mean(childes_freq, na.rm = T)),
+            CHILDES_sd = round(sd(childes_freq, na.rm = T)),
+            TASA = round(mean(tasa_freq, na.rm = T)),
+            TASA_sd = round(sd(tasa_freq, na.rm = T)),
+            WCBC = round(mean(wcbc_freq, na.rm = T)),
+            WCBC_sd = round(sd(wcbc_freq, na.rm = T)),
+            Letters = round(mean(letters, na.rm = T)),
+            Letters_sd = round(sd(letters, na.rm = T), digits = 2),
+            Syllables = round(mean(syllables, na.rm = T)),
+            Syllables_sd = round(sd(syllables, na.rm = T), digits = 2)) %>% 
+  mutate(CHILDES = str_c(CHILDES, " (", CHILDES_sd, ")"),
+         TASA = str_c(TASA, " (", TASA_sd, ")"),
+         WCBC = str_c(WCBC, " (", WCBC_sd, ")"),
+         Letters = str_c(Letters, " (", Letters_sd, ")"),
+         Syllables = str_c(Syllables, " (", Syllables_sd, ")")) %>% 
+  select(source, CHILDES, TASA, WCBC, Letters, Syllables)
+      
+
+terms_ = tibble(Source = c("Dolch", "Fountas & Pinnell", "Fry", "Fundations", "Kilpatrick", "Wonders"),
+                Term = c("Sight Word", "Words to Know", "Instant Word", "Trick Word", "Irregular Words", "High Frequency Words"))
+
+all_lists %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  summarise(N = n()) %>%
+  left_join(table_desc) %>% 
+  mutate(Source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  select(-source) %>% 
+  select(Source, everything()) %>% 
+  apa_table(caption = "Basic Descriptive Data for All Instructional Sources")
+
+```
+
+Across the six instructional sources included for analysis here, only `r length(intersect_words)` of all unique words are shared across all sources (`r round(length(intersect_words)/length(unique(all_lists$word))*100, digits = 1)`% of types). These words tend to be very common words, all ranking in the top 20% of words by frequency. This set of words is shown in Table X.
 
 ```{r intersectTable, echo=FALSE, warning=FALSE, message=FALSE}
 intersect_words_table %>% 
   apa_table(caption = "The 28 Words Common across All Instructional Sources with Rank Frequency", note = "Words are arranged in descending frequency, and rank frequency is provided in parentheses and is calculated from Wisconsin Children's Book Corpus.", col.names = NULL, escape = FALSE)
 ```
-
 
 ```{r}
 plot_data = all_lists %>% 
@@ -36,28 +90,36 @@ plot_data = all_lists %>%
   mutate(prop = n/length(unique(all_lists$word)),
          n_prop = paste(n, ' (', round(prop*100, digits = 0), '%)', sep = ''))
 
-
-
 ```
 
-This overlap can be seen visually in the diagram in Figure X. The very center of the figure represents those words that are common across all sources. Likewise, any overlapping portion of the diagram represents the overlap from the sources specified by that region, with the outer portions of the figure showing words unique to a specific source and no others. 
+This overlap can be seen visually in the diagram in Figure X. Any overlapping portion of the diagram represents the overlap from the sources specified by that region, with the outer portions of the figure showing words unique to a specific source and no others. The very center of the figure represents those words that are common across all sources.
 
 ```{r venn, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='A diagram depicting the overlap in words across sources. Raw counts are provided, with a percentage provided in parentheses showing the percentage of all unique words across all sources that a particular overlapping set represents. Sources can be identified by the outline color of the set. The figure was generated using the ggVennDiagram package in R (Gao, 2022).'}
 
-tmp = all_lists_
-names(tmp) = c("Kilpatrick", "Dolch", "Fry", "Fundations", "Wonders", "Fountas & Pinnell")
+#tmp = all_lists_
+#names(tmp) = c("Kilpatrick", "Dolch", "Fry", "Fundations", "Wonders", "Fountas & Pinnell")
 
-COLORS_SOURCE2 = c('darkblue', 'darkred', 'darkorange', 'turquoise', 'red', 'green')
-ggVennDiagram(tmp, label_size = 2, label_alpha = 0, set_size = 2.5) +
-  scale_fill_gradient(low = 'white', high = 'firebrick') +
-  scale_color_manual(values = COLORS_SOURCE2) +
-  labs(fill = 'Count') +
-  theme(legend.title = element_text(size = 11))
-  
+#COLORS_SOURCE2 = c('darkblue', 'darkred', 'darkorange', 'turquoise', 'red', 'green')
+#ggVennDiagram(tmp, label_size = 2, label_alpha = 0, set_size = 2.5) +
+#  scale_fill_gradient(low = 'white', high = 'firebrick') +
+#  scale_color_manual(values = COLORS_SOURCE2) +
+#  labs(fill = 'Count') +
+#  theme(legend.title = element_text(size = 11))
+
+knitr::include_graphics('data/venn_figure.png')
+
+
+words_unique_to_kilpatrick = all_lists %>% 
+  filter(source == "kilpatrick") %>% 
+  group_by(word) %>% 
+  summarise(count = first(count)) %>% 
+  pull(word)
 
 ```
 
-The number of words that are unique to a single resource is high by comparison, with ```r max(plot_data$n)``` (representing ```r max(plot_data$prop)```% of all unique words), with the number of unique words decreasing as the number of resources increases (Fig X). 
+The number of words that are unique to a single resource is high by comparison, with `r max(plot_data$n)` (representing `r max(plot_data$prop)`% of all unique words). Of these words, the program that possesses the most unique words is the Kilpatrick program, which has `r length(words_unique_to_kilpatrick)` of the words unique to a single program, representing `r length(words_unique_to_kilpatrick)/length(unique(all_lists$word))` of all words in all programs[^overlap-2]. The number of unique words decreases as the number of resources increases (Fig X), which demonstrates the general tendency for programs to select words in an idiosyncratic fashion; it becomes increasingly unlikely that programs agree on important words for instruction the more programs one considers.
+
+[^overlap-2]: See outer rim of Figure X in region labeled "Kilpatrick".
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap='Few words are shared by all resources (6 total, the far right hand of the x-axis). At the other extreme, many words are unique to one source (560, left hand side of figure).'}
 plot_data %>% 
@@ -66,32 +128,40 @@ plot_data %>%
   #geom_smooth(color = 'grey36', linetype = 'dashed') +
   geom_text(aes(label = n_prop), size = 3, vjust = -.9, alpha = .8) +
   ylim(c(0, 600)) +
-  labs(x = 'Number of resources', y = 'Number of words') +
+  labs(x = 'Number of resources', y = 'Number of words',
+       title = 'Number of words unique across number of total resources') +
   theme_apa() +
   theme(legend.position = 'none')
 ```
 
-In terms of individual resources, Kilpatrick represents the outlier; it contains the most words (326) that are unique to a single source and no others (see outer rim of Figure X in region labeled "Kilpatrick"). This set of words represents a relatively high proportion of all words across all sources (32%).
+The words present only in a single resource vary in terms of their structure and meaning. These words include relatively uncommon words like "yacht", "sovereign", "spatula", "whom", "etiquette", and "gnat" to words that are quite common, like "shoe", "snow", "dry", "last", "seem", and "easy". A sample of 50 of these words with their frequencies can be found in table X (a full list of these words can be found in the supplement online).
 
-# Discussion
-Words are an organizing unit of the language in reading instruction. These instructional resources all have in common that certain words in English are prioritized for teaching. As a result, the words themselves are a meaningful unit of analysis for the purposes of determining the extent to which these programs agree about what matters in early reading instruction. It turns out that there is noteworthy disagreement among these resources about which matter most. Only 3% of the words across all unique words are present in all six resources (3% of unique words).
-
-
-# The Overlap across Sources in Terms of their Properties
-It is possible that the words across resources might be different while the underlying properties of those words might not vary. If this is the case then variability in the words selected for instruction would be less meaningful; Students might have similar language experience in this type of instruction by virtue of the underlying language structures the words convey. In order to examine this possibility we will look at each set of words binned by their overlap among the 6 instructional resources (the number of resources that the word appeared in) and examine that set of words in terms of their language properties, starting with word frequency.
-
-In order to analyze instructional words with respect to their linguistic properties, a number of datasets were identified and merged with the database of words aggregated for the study. These data are utilized across the studies presented here, so we will review the different data and their sources up front. One important issue concerns how instructional words compare to words children and adults tend to encounter in other language experiences - reading related and otherwise. In order to make comparisons along these lines we assembled several relevant benchmark sets using language databases that represent language experiences for different groups and in different modes of communication, both via printed and spoken language. The corpora we selected for this purpose are The Wisconsin Children's Book Corpus [@Lewis2022], the Child Language Data Exchange System [@MacWhinney2000], and words from the Educator's Word Frequency Guide from Touchstone Applied Science Associates [@Zeno1995].
-
-The Wisconsin Children's Book Corpus (WCBC) contains texts commonly consumed by pre-readers (up to the age of 6). Data from the Child Language Data Exchange System (CHILDES) represents language from children's spoken language environment (the data used here are from transcripts for children in the US up to the age of 6 years). The Educator's Word Frequency Guide (from Touchstone Applied Science Associates; TASA) captures information about words in literature children are commonly exposed to in grade school.
-
-
-
-```{r frequencyCorpusTable, echo=FALSE, warning=FALSE}
-frequency_by_corpus(all_lists) %>% 
-  apa_table(caption = "Descriptive Characteristics for Word Frequencies using for All Words in the Database", note = "Values provided as raw frequencies. Min values are always 1 and have been excluded. WCBC = Wisconsin Childrens Book Corpus; TASA = Frequencies from the Educator's Word Frequency Guide by Touchstone Applied Science Associates; CHILDES = The Child Language Data Exchange System.", escape = FALSE)
+```{r WordInOneSource, include=FALSE}
+words_in_one_source = c("mountains", "next", "plant", "real", "sea", "seem", "state", "area", "birds", "covered", "cried", "easy", "figure", "himself", "hours", "king", "map", "mark", "music", "north", "numeral", "pattern", "plan", "products", "pulled", "reached", "rock",  "room", "stand", "step",  "told",  "town", "travel", "unit",  "usually",    "vowel", "waves", "breakfast", "cousin", "dance", "daughter", "neighbor", "library", "paste", "ache", "acne", "acreage", "actual", "aisle", "algae")
 
 ```
 
+```{r}
 
+tibble(word = words_in_one_source) %>% 
+  left_join(wcbc) %>% 
+  select(word, wcbc_rank) %>%
+  arrange(-desc(wcbc_rank)) %>%
+  mutate(wcbc_rank = as.character(wcbc_rank),
+         wcbc_rank = case_when(is.na(wcbc_rank) ~ "NP",
+                               TRUE ~ wcbc_rank)) %>%
+  mutate(final = str_c(word, ' (*', wcbc_rank, '*)')) %>%
+  select(final) %>% 
+  pull(final) %>% 
+  matrix(ncol = 5) %>% 
+  apa_table(caption = 'A sample of 50 words unique only to a single resource (an no other resources) is shown. Words are provided with measures of rank frequency taken from the WCBC. Words that are not present in that corpus are marked with "NR", indicating that they are very infrequent in texts written for children.', col.names = NULL)
 
+```
 
+# Discussion
+
+One might reasonably assume that instructional approaches would identify similar words words for instruction in the classroom. This would indicate shared assumptions about the words that are important for reading vocabulary instruction. Based on the data aggregated for this study, this is clearly not the case. Only 28 words are shared by all six resources analyzed here, representing only 3% of the all unique words across all resources.
+
+By contrast, many more words (`r all_lists %>% filter(count == 1) %>%  nrow()`) are isolated to a single resource, representing over half of the unique words that can be found across all six programs. This suggests that instructional approaches tend to select words in an idiosyncratic way, not bound by selection principles that are similar to those of other programs. The tendency to idiosyncratically select words that are in no (or few) other programs varies across the resources as well. Moreover these findings suggest something troubling about the experiences of children learning to read from these popular instructional resources: their experiences differ in terms of the words that they learn how to read.
+
+The next section concerns the properties of the words found in these resources, considering the possibility that programs agree on the structure of the words contained in the programs despite selecting different words for use in the classroom.

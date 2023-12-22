@@ -36,7 +36,7 @@ affiliation:
   - id            : "4"
     institution   : "Department of Psychology, University of Wisconsin - Madison"
 
-abstract: "Which words are important for early reading instruction? A mainstream view maintains that certain words should be priviledged early in development due to their being frequent and/or containing idiosycrattic structure. This study sought to answer this question by examining the words from six commonly used instructional resources (1005 total unique words). Results show noteworthy disagreement about the words that should be taught to early readers, and the properties that these words should contain. For example, only 28 words (3%) are shared across the six resources, while the majority of words are present in one resource and shared by no others (560 words; 56%). Results are discussed in the context of established theories of learning that help guide the discussion about the aspects of the language that influence reading development, and an empirical method of selecting words based on observable properties of words is proposed."
+abstract: "Which words are important for early reading instruction? A mainstream view maintains that certain words should be privileged early in development due to their being frequent and/or containing idiosyncratic structure. This study sought to answer this question by examining the words from six commonly used instructional resources (1005 total unique words). Results show noteworthy disagreement about the words that should be taught to early readers, and the properties that these words should contain. For example, only 28 words (3%) are shared across the six resources, while the majority of words are present in one resource and shared by no others (560 words; 56%). Results are discussed in the context of established theories of learning that help guide the discussion about the aspects of the language that influence reading development, and an empirical method of selecting words based on observable properties of words is proposed."
   
 keywords          : "Reading development, reading instruction, sight words"
 wordcount         : "--- words"
@@ -50,8 +50,8 @@ footnotelist      : no
 lineno            : yes
 replaceampersands : no
 #lang              : "en-US"
-output            : papaja::apa6_pdf
-#output            : papaja::apa6_docx
+#output            : papaja::apa6_pdf
+output            : papaja::apa6_docx
 header-includes:
   - \usepackage{booktabs}
   - \usepackage{longtable}[=v4.13]
@@ -69,12 +69,19 @@ header-includes:
 ---
 
 ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+
 lapply(read.csv('scripts/requirements.txt', stringsAsFactors = F, header = F)[[1]], require, ch = T)
 source('scripts/utilities.R')
 
 source('scripts/Zs.R')
 all_lists = read_csv('data/all_lists.csv')
 source('scripts/sets.R')
+
+
+# added this coca read because it is needed in one of the sections in its raw form
+source('scripts/coca.R')
 
 COLORS_CORPUS = c('WCBC' = 'firebrick3',
            'COCA' = 'darkslategray',
@@ -93,6 +100,7 @@ COLORS_SOURCE = c('Kilpatrick' = 'darkblue',
            'Fundations' = 'turquoise',
            'Wonders' = 'red',
            'Fountas & Pinnell' = 'darkgreen')
+
 ```
 
 
@@ -113,7 +121,6 @@ source('scripts/lexical_models_affil.R')
 ```
 
 
-
 ```{r overlap_data, include=FALSE}
 source('scripts/overlap.R')
 ```
@@ -123,10 +130,13 @@ source('scripts/overlap.R')
 
 ```
 
+```{r child='sections/properties.Rmd'}
+```
+
 ```{r child='sections/profiles.Rmd'}
 ```
 
-```{r child='frequency_and_consistency.Rmd'}
+```{r child='sections/frequency_and_consistency.Rmd'}
 ```
 
 ```{r child='sections/appendix.Rmd'}

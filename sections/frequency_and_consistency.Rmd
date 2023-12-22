@@ -1,8 +1,5 @@
-### Frequency and Consistency
-The prevailing educational approach involves using words that are common, and those that exhibit atypical structure, or some combination therein. Approaches differentially weight these two factors. Fortunately, each of these dimensions can be measured, and my measuring the extent to which words load across both variables allow we can derive the most common, structurally atypical words of some set directly. A simple approach that lends itself well to visual interpretation is placing a set of words in the two-dimensional space and identifying words in the lower left-hand quadrant^[For this purpose we will use rank frequency and rank _inconsistency_, such that a word with the value 1 would be the most frequent or the most inconsistent, respectively. Note also that identifying a singe quadrant is somewhat arbitrary. Other regions closer to the origin of the two-dimensional space could be considered.]. This creates four categories in the two dimensional space. Figure X, Panel A shows this, characterizing each quadrant based on its properties across frequency and consistency, where Panel B illuminates points (in black) in the target quadrant for special words: those that are both the most frequent and consistent. The resulting distribution in the lower left quadrant consists of `r length(lower_left_quadrant_words)` total words^[Note that this is simply the set that is lower in rank than the mean rank for inconsistency and frequency.]. 
 
-```{r FrequencyConsistencyPlot1, fig.cap="The figure shows a key for interpreting the four quadrants across the two-dimensional space defined by word frequency (x-axis) and spelling-sound inconsistency (y-axis) in Panel A, and a depiction of the target quadrant (lower-left; words that are inconsistent and frequent) shown as black points in Panel B. Frequency and insonsistency are shown as rank versions of those quantitative variables. The linear clustering in the upper portion of Panel B results due to many words having a consistency value of one (inconsistency of zero), where points simply become ordered alphabetically by the rank computation."}
-
+```{r WordsInLowerLeft}
 rank_inconsistency_rank_frequency = wcbc %>% 
   filter(word %in% unique(all_lists$word)) %>%
   arrange(-desc(consistency)) %>% 
@@ -10,6 +7,20 @@ rank_inconsistency_rank_frequency = wcbc %>%
   arrange(desc(wcbc_freq)) %>% 
   mutate(freq_rank = seq_len(n())) %>% 
   select(freq_rank, consistency_rank, word)
+
+lower_left_quadrant_words = rank_inconsistency_rank_frequency %>% 
+  filter(freq_rank < mean(rank_inconsistency_rank_frequency$freq_rank) &
+           consistency_rank < mean(rank_inconsistency_rank_frequency$consistency_rank)) %>% 
+  pull(word)
+
+```
+
+### Frequency and Consistency
+The prevailing educational approach involves using words that are common, and those that exhibit atypical structure, or some combination therein. Approaches differentially weight these two factors. Fortunately, each of these dimensions can be measured, and my measuring the extent to which words load across both variables allow we can derive the most common, structurally atypical words of some set directly. A simple approach that lends itself well to visual interpretation is placing a set of words in the two-dimensional space and identifying words in the lower left-hand quadrant^[For this purpose we will use rank frequency and rank _inconsistency_, such that a word with the value 1 would be the most frequent or the most inconsistent, respectively. Note also that identifying a singe quadrant is somewhat arbitrary. Other regions closer to the origin of the two-dimensional space could be considered.]. This creates four categories in the two dimensional space. Figure X, Panel A shows this, characterizing each quadrant based on its properties across frequency and consistency, where Panel B illuminates points (in black) in the target quadrant for special words: those that are both the most frequent and consistent. The resulting distribution in the lower left quadrant consists of `r length(lower_left_quadrant_words)` total words^[Note that this is simply the set that is lower in rank than the mean rank for inconsistency and frequency.]. 
+
+```{r FrequencyConsistencyPlot1, fig.cap="The figure shows a key for interpreting the four quadrants across the two-dimensional space defined by word frequency (x-axis) and spelling-sound inconsistency (y-axis) in Panel A, and a depiction of the target quadrant (lower-left; words that are inconsistent and frequent) shown as black points in Panel B. Frequency and insonsistency are shown as rank versions of those quantitative variables. The linear clustering in the upper portion of Panel B results due to many words having a consistency value of one (inconsistency of zero), where points simply become ordered alphabetically by the rank computation."}
+
+
 
 plot_1 = rank_inconsistency_rank_frequency  %>% 
   ggplot(aes(freq_rank, consistency_rank)) +
@@ -79,16 +90,9 @@ Notice how different this method is from one that selects for frequency or incon
 
 ### Where Programs Fall in the Two Dimensions
 
-```{r WordsInLowerLeft}
-lower_left_quadrant_words = rank_inconsistency_rank_frequency %>% 
-  filter(freq_rank < mean(rank_inconsistency_rank_frequency$freq_rank) &
-           consistency_rank < mean(rank_inconsistency_rank_frequency$consistency_rank)) %>% 
-  pull(word)
-
-```
 We can compare different sets of words as to where in this two-dimensional space they fall. We can express how well each program covers these words as a proportion, shown in Table X.
 
-```{r}
+```{r CoverageProgramsLowerQuadrantTable}
 table_data = tibble(Source = names(all_lists_),
                     `Proportion of Quadrant` = NA,
                     `Prop. of Source Total` = NA)
@@ -104,7 +108,7 @@ for (i in seq(nrow(table_data))){
   
 table_data %>% 
   mutate(Source = str_replace(Source, "_", " & ")) %>% 
-  arrange(-desc(Source))
+  arrange(-desc(Source)) %>% 
   apa_table(caption = "Coverage of Programs for Words in Lower Left Quadrant",
             note = "Words in lower left quadrant are those that fall below the mean on both rank inconsistency and rank frequency. The total number of words in that quadrant is 178.")
   
