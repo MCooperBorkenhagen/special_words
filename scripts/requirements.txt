@@ -5,3 +5,4 @@ papaja
 knitr
 ggVennDiagram
 ggrepel
+cowplot

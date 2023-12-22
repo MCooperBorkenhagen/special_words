@@ -242,7 +242,7 @@ Zs = rbind(dolch, fry, fundations, kilpatrick, wonders, fountas_pinnell) %>%
                             source == 'fountas_pinnell' ~ 'Fountas & Pinnell'))
 
 
-rm(dolch, fry, fundations, kilpatrick, wonders, d, factor_vars, childes_msd, coca, coca_msd, consistency, tasa_msd)
+rm(dolch, fry, fundations, kilpatrick, wonders, d, factor_vars, childes_msd, coca_msd, consistency, tasa_msd)
 
 
 
