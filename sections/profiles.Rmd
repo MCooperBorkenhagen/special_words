@@ -65,8 +65,6 @@ z_table_wcbc %>%
 
 ```
 
-The consistent difference in the frequency of words in the Kilpatrick curriculum can be seen even more clearly in the next plot, which has the panels grouped by frequency corpus and points for each instructional resource plotted within each panel. The Kilpatrick distribution is always set apart from the rest of the sources, and always appears on the opposite side of the mean line for a given frequency corpus.
-
 ```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='The raw distribution of words across sources and corpus rank frequency (standardized) are shown as points (in grey) with statistical estimate as colored points within each distribution. Because standard errors are imperceptibly small, standard deviations for the standardized rank frequency values within each distribution are shown. All distributions are significantly different than the corpus mean (0).'}
 VARS = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
 
@@ -123,9 +121,94 @@ Zs %>%
 
 ```
 
-We should also consider the coverage of a given instructional set of words relative to some established corpus of words. To the extent that the corpus represents a relevant language environment for an early reader, each instructional set should represent a nontrivial proportion of words in the corpus especially considering the frequency distribution of words in the target corpus. First, we can look to the corpora that are relevant for children and their language development: WCBC, TASA, and CHILDES. These represent relevant target sets for such an analysis because we would expect that a given instructional resource should be representative of words that children tend to hear and see early in developing language and reading skills. In order to compare total coverage of a given corpus, we also provide data about coverage for a given instructional set relative to the most frequent 100, 500, 1000, and 5000 words of each dataset to get a sense for how this coverage fits relative to the most frequent words in the corpus.
+### Coverage of most frequent words in child-directed print and speech
+We could reasonably expect that these resources draw from the most frequent words in child-directed speech and (especially) print. One way of examining this is calculating the proportion of the most frequent _n_ words in child-oriented corpora that a given resource contains. Here we've done this for CHILDES, TASA, and WCBC, each representing different important aspects of experiences of elementary-aged children. Given that these corpora represent relevant learning environments for an early reader, each instructional set should contain a nontrivial proportion of the most frequent words in the corpus - here the most frequent 100, 500, and 1000 words.
 
 ```{r coverageKidCorpus, echo=FALSE, warning=FALSE, message=FALSE}
+ROWS = length(unique(all_lists$source))*length(unique(top_N$corpus))*length(unique(top_N$top_n))
+COLS = c("source", "corpus", "top_n", "in_program", "proportion")
+
+
+coverage = data.frame(matrix(nrow = ROWS, ncol = length(COLS)))
+colnames(coverage) = COLS
+
+i = 1
+
+for (source_ in unique(all_lists$source)){
+  
+  trigger = all_lists %>% 
+        filter(source == source_) %>% 
+        distinct(word) %>% 
+        pull(word)
+  
+  for (corpus_ in unique(top_N$corpus)){
+    for (N in unique(top_N$top_n)){
+      
+      # get all the words for a given source (program)
+      
+      
+      # get all the words from a given corpus as a specific level of "top N" (i.e. 100, 500, 1000)
+      target = top_N %>% 
+        filter(corpus == corpus_) %>% 
+        filter(top_n == N) %>% 
+        pull(word)
+
+      coverage$source[i] = source_
+      coverage$corpus[i] = corpus_
+      coverage$top_n[i] = as.numeric(N)
+      coverage$in_program[i] = length(intersect(target, trigger))
+      coverage$proportion[i] = length(intersect(target, trigger))/as.numeric(N)
+      
+      print(i)
+      i = i + 1
+      
+    }}}
+
+```
+
+```{r coverageKidCorpusTable, echo=FALSE, warning=FALSE, message=FALSE}
+coverage %>% 
+  select(-in_program) %>% 
+  mutate(proportion = round(proportion, digits = 2)) %>% 
+  pivot_wider(names_from = top_n, values_from = proportion) %>% 
+  mutate(proportion = str_c(`100`, `500`, `1000`, sep = " - ")) %>% 
+  select(source, corpus, proportion) %>% 
+  pivot_wider(names_from = corpus, values_from = proportion) %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
+  rename(Resource = source, `WCBC (100-500-1000)` = wcbc, `TASA (100-500-1000)` = tasa, `CHILDES (100-500-1000)` = childes) %>% 
+  apa_table(caption = "Proportion coverage of top 100, 500, and 1000 words from WCBC, TASA, and CHILDES for the five resources.",
+            col_spanners = list("Corpus" = c(2, 4)))
+
+```
+
+
+```{r coverageKidCorpusFigure, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="The coverage that each program (panel) for each level of most frequent 100, 500, and 1000 words for three child-directed corpora are shown: CHILDES, TASA, and WCBC. Programs exhibit variable coverage of these words for the three corpora, with Wonders, Fry, and Dolch showing comparable levels of coverage at one extreme, and Kilpatrick at the other."}
+
+coverage %>% 
+  mutate(corpus = case_when(corpus == 'wcbc' ~ 'WCBC',
+                         corpus == 'tasa' ~ 'TASA',
+                         corpus == 'childes' ~ 'CHILDES',
+                         corpus == 'coca' ~ 'COCA'),
+         source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
+  ggplot(aes(corpus, proportion, fill = as.factor(top_n))) +
+  geom_bar(stat = "identity", position = "dodge", color = "black") +
+  facet_grid(~factor(source, levels = c("Wonders", "Fry", "Dolch", "F&P", "Fundations", "Kilpatrick"))) +
+  theme_apa() +
+  labs(x = "Corpus", y = "Proportion covered", fill = "N most frequent") +
+  theme(text = element_text(family = "Times"),
+        axis.text.x = element_text(angle = 90, vjust = .5, hjust = 1)) +
+  scale_fill_manual(values = c("burlywood", "gold2", "brown"))
+
 
 ```
 
