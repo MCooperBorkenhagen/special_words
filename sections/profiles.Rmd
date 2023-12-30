@@ -122,7 +122,8 @@ Zs %>%
 ```
 
 ### Coverage of most frequent words in child-directed print and speech
-We could reasonably expect that these resources draw from the most frequent words in child-directed speech and (especially) print. One way of examining this is calculating the proportion of the most frequent _n_ words in child-oriented corpora that a given resource contains. Here we've done this for CHILDES, TASA, and WCBC, each representing different important aspects of experiences of elementary-aged children. Given that these corpora represent relevant learning environments for an early reader, each instructional set should contain a nontrivial proportion of the most frequent words in the corpus - here the most frequent 100, 500, and 1000 words.
+
+We could reasonably expect that these resources draw from the most frequent words in child-directed speech and (especially) print. One way of examining this is calculating the proportion of the most frequent *n* words in child-oriented corpora that a given resource contains. Here we've done this for CHILDES, TASA, and WCBC, each representing different important aspects of experiences of elementary-aged children (spoken language, academic prose, and recreational texts read to children). Given that these corpora represent relevant learning environments for an early reader, each instructional set should contain a nontrivial proportion of the most frequent words in the corpus - here the most frequent 100, 500, and 1000 words.
 
 ```{r coverageKidCorpus, echo=FALSE, warning=FALSE, message=FALSE}
 ROWS = length(unique(all_lists$source))*length(unique(top_N$corpus))*length(unique(top_N$top_n))
@@ -166,6 +167,10 @@ for (source_ in unique(all_lists$source)){
 
 ```
 
+The trends across corpora for all six programs follow a common pattern. Programs tend to exhibit more coverage for the most frequent 100 words, less so than the most frequent 500 and even less for the most frequent 1000. This fact is not surprising. Likewise, the coverage for each program for the three child corpora follow a common trend. Coverage for TASA tends to be greater than WCBC, which tends to be greater than CHILDES.
+
+Wonder contains the most words, with 801, so it is perhaps unsurprising that its coverage is greatest. With this quantity of words, it stands out that it only contains 58%, 65%, and 56% of the most frequent 500 words from the three corpora respectively. That list is the only one with enough to potentially contain 100% of those words. By contrast, the Dolch and Fry words obtain comparable coverage with fewer words, each with less than half of that than Wonders. Nonetheless, Wonders, Fry, and Dolch demonstrate very similar levels of coverage. All three have greater than 75% coverage for all three corpora on the top 100 words and around half of the top 500 words. Fountas and Pinnell exhibit slightly lower levels of coverage than those three, with Fundations demonstrating even less coverage than Fountas and Pinnell. The coverage for Kilpatrick is very low, even for the most frequent 100 words. This is fact can be emphasized given that Kilpatrick contains the second most number of words behind Wonders, and over 100 words more than the Dolch list.
+
 ```{r coverageKidCorpusTable, echo=FALSE, warning=FALSE, message=FALSE}
 coverage %>% 
   select(-in_program) %>% 
@@ -174,18 +179,34 @@ coverage %>%
   mutate(proportion = str_c(`100`, `500`, `1000`, sep = " - ")) %>% 
   select(source, corpus, proportion) %>% 
   pivot_wider(names_from = corpus, values_from = proportion) %>% 
+  left_join(coverage %>% 
+              group_by(source) %>% 
+              summarise(proportion_ = mean(proportion)) %>% 
+              arrange(desc(proportion_)) %>% 
+              mutate(order = seq_len(n()))) %>% 
+  arrange(order) %>% 
   mutate(source = case_when(source == 'dolch' ~ 'Dolch',
                             source == 'fry' ~ 'Fry',
                             source == 'fundations' ~ 'Fundations',
                             source == 'kilpatrick' ~ 'Kilpatrick',
                             source == 'wonders' ~ 'Wonders',
                             source == 'fountas_pinnell' ~ 'F&P')) %>% 
-  rename(Resource = source, `WCBC (100-500-1000)` = wcbc, `TASA (100-500-1000)` = tasa, `CHILDES (100-500-1000)` = childes) %>% 
-  apa_table(caption = "Proportion coverage of top 100, 500, and 1000 words from WCBC, TASA, and CHILDES for the five resources.",
+  left_join(all_lists %>% 
+              group_by(source) %>% 
+              summarise(n_ = n()) %>% 
+              mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P'))) %>% 
+  mutate(source = str_c(source, " (", n_, ")")) %>%             
+  select(Resource = source, `WCBC (100-500-1000)` = wcbc, `TASA (100-500-1000)` = tasa, `CHILDES (100-500-1000)` = childes) %>% 
+  apa_table(caption = "Proportion Coverage of Top 100, 500, and 1000 Words from WCBC, TASA, and CHILDES for the Six Resources.",
+            note = "Number of words in each resource is provided next to the name of the resource for reference.",
             col_spanners = list("Corpus" = c(2, 4)))
 
 ```
-
 
 ```{r coverageKidCorpusFigure, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="The coverage that each program (panel) for each level of most frequent 100, 500, and 1000 words for three child-directed corpora are shown: CHILDES, TASA, and WCBC. Programs exhibit variable coverage of these words for the three corpora, with Wonders, Fry, and Dolch showing comparable levels of coverage at one extreme, and Kilpatrick at the other."}
 
@@ -208,8 +229,6 @@ coverage %>%
   theme(text = element_text(family = "Times"),
         axis.text.x = element_text(angle = 90, vjust = .5, hjust = 1)) +
   scale_fill_manual(values = c("burlywood", "gold2", "brown"))
-
-
 ```
 
 ## Other word characteristics across sources
@@ -240,11 +259,9 @@ data.frame(cbind(sources, aoa, consistency, letters, syllables, imageability)) %
 
 ```
 
-The figure below shows the average value for a given variable for each instructional source (colored point in each panel), where colors are conditioned on thefive different variables of interest. Within each panel, the red dashed line again refers to the average across points, here representing the average across all variables. This way of the data facilitates interpretation given that all the points for all the variables fall on the negative side of the distribution for all sources; all points are below the mean on the standardized scale for all words in WCBC. The grey dotted line again shows the mean for all variables in all words in WCBC (zero due to standardization).
+The figure below shows the average value for a given variable for each instructional source (colored point in each panel), where colors are conditioned on the five different variables of interest. Within each panel, the red dashed line again refers to the average across points, here representing the average across all variables. This way of presenting these data facilitates interpretation given that all the points for all the variables fall on the negative side of the distribution for all sources; all points are below the mean on the standardized scale for all words in WCBC. The grey dotted line again shows the mean for all variables in all words in WCBC (zero due to standardization).
 
 Fundations is associated with the lowest values across all sources on average. Looking at the extremes within that source, we see that the list of words favors words with more syllables and higher age-of-acquisition values relative to the imageability of words. That source also shows the lowest overall consistency of words relative to other sources.
-
-`MORE DESCRIPTIVE ANALYSIS HERE: LAUREN YOU GO FOR IT`
 
 The figure below shows the same data as the previous figure, but oriented in a way that facilitates comparison for a variable across sources, rather than the other way around. The visual elements are all the same except here the color of points are conditioned on sources rather than variables, and the red dashed means are averaged across sources for a variable, rather than variables for a source as we saw before.
 
