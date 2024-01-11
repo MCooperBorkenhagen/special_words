@@ -127,13 +127,9 @@ source('scripts/overlap.R')
 
 
 ```{r child='sections/overlap.Rmd'}
-
 ```
 
 ```{r child='sections/properties.Rmd'}
-```
-
-```{r child='sections/profiles.Rmd'}
 ```
 
 ```{r child='sections/frequency_and_consistency.Rmd'}
