@@ -1,0 +1,311 @@
+This script relies on the data generated in `../paper.Rmd`.
+
+# How many words in each source
+```{r WordsPerSource}
+
+all_lists %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  summarize(f = n()) %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  ggplot(aes(reorder(source, f), f, fill = source)) +
+  geom_bar(stat = "identity", color = "black") +
+  geom_text(aes(label = f), size = 6, vjust = 1.9, alpha = .8) +
+  scale_fill_manual(values = COLORS_SOURCE) +
+  labs(x = "Source", y = "Total number of unique words") +
+  theme_apa() +
+  theme(legend.position = "none",
+        axis.title = element_text(size = 18),
+        text = element_text(family = "Times"))
+
+
+all_lists %>% 
+  group_by(source) %>% 
+  distinct(level) %>% view()
+```
+
+
+## Number of words unique to each _quantity_ of sources
+```{r WordsUnique}
+
+plot_data = all_lists %>% 
+  group_by(word) %>% 
+  summarise(count = first(count)) %>%
+  ungroup() %>% 
+  group_by(count) %>% 
+  summarise(n = n()) %>% 
+  mutate(prop = n/length(unique(all_lists$word)),
+         n_prop = paste(n, ' (', round(prop*100, digits = 0), '%)', sep = ''))
+
+
+plot_data %>% 
+  ggplot(aes(count, n)) +
+  geom_bar(stat = 'identity', color = 'black', fill = 'grey57') +
+  #geom_smooth(color = 'grey36', linetype = 'dashed') +
+  geom_text(aes(label = n_prop), size = 3, vjust = -.9, alpha = .8) +
+  ylim(c(0, 600)) +
+  labs(x = 'Number of resources', y = 'Number of words',
+       title = 'Number of words unique across number of total resources') +
+  theme_apa() +
+  theme(legend.position = 'none',
+        axis.title = element_text(size = 18),
+        plot.title = element_text(size = 20),
+        text = element_text(family = "Times"))
+
+```
+
+
+##  Properties of words
+
+```{r}
+
+bardata = z_tables_lexical %>% 
+  select(source = Source, se = `\\textit{SE}`, var, M = `\\textit{b}`) %>% 
+  mutate(se = as.numeric(se),
+         M = latex_to_num(M)) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters')) 
+  
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(var) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters')) 
+
+Zs %>% 
+  group_by(source, var) %>% 
+  summarise(source_order = first(source_order)) %>% 
+  filter(var %in% VARS) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters')) %>% 
+  left_join(bardata) %>% 
+  ggplot(aes(reorder(source, source_order), M, color = reorder(source, source_order), group = reorder(var, source_order))) +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'black', linetype = 'dotted') +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-se, ymax = M+se), size = .5, width = .8) +
+  labs(color = 'Source', x = 'Variable', y = 'Standardized value (within child book corpus)') +
+  facet_grid(~var)  +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  #ylim(c(-1.3, 0)) +
+  theme_apa() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        text = element_text(family = 'Times'))
+
+```
+
+# Consistency by frequency quadrants
+
+```{r Quadrants1}
+
+rank_inconsistency_rank_frequency  %>% 
+  ggplot(aes(freq_rank, consistency_rank)) +
+  geom_hline(aes(yintercept = mean(consistency_rank))) +
+  geom_vline(aes(xintercept = mean(freq_rank))) +
+  theme_apa() +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency")+ 
+  annotate("text", x = 170, y = 650, label = "Consistent & Frequent", size = 5) +
+  annotate("text", x = 170, y = 200, label = "Inconsistent & Frequent", size = 5) +
+  annotate("text", x = 620, y = 200, label = "Inconsistent & Infrequent", size = 5) +
+  annotate("text", x = 620, y = 650, label = "Consistent & Infrequent", size = 5) +
+  scale_y_continuous(limits = c(0, 800)) +
+  scale_x_continuous(limits = c(0, 800)) +
+  theme(axis.title = element_text(size = 18),
+        text = element_text(family = 'Times'))
+
+```
+
+
+```{r Quadrants2}
+rank_inconsistency_rank_frequency %>% 
+  mutate(lower_left = case_when(consistency_rank < mean(consistency_rank) & freq_rank < mean(freq_rank) ~ T,
+                                TRUE ~ F)) %>% 
+  ggplot(aes(freq_rank, consistency_rank, label = word, color = lower_left)) +
+  geom_hline(aes(yintercept = mean(consistency_rank))) +
+  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_point(size = 1) +
+  labs(x = "Rank Frequency",  y = "Rank Inconsistency") +
+  scale_color_manual(values = c("grey67", "black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        axis.title = element_text(size = 18),
+        text = element_text(family = 'Times'))
+
+
+```
+
+## How the programs do in terms of these quadrants
+
+```{r QuadrantsPprograms}
+plot_dolch = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Dolch ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = mean(consistency_rank))) +
+  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_point(size = .5) +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Dolch") +
+  scale_color_manual(values = c("grey88", "black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5))
+
+plot_fp = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Fountas_Pinnell ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = mean(consistency_rank))) +
+  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_point(size = .5) +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Fountas & Pinnell") +
+  scale_color_manual(values = c("grey88", "black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5))
+
+
+plot_fry = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Fry ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = mean(consistency_rank))) +
+  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_point(size = .5) +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Fry") +
+  scale_color_manual(values = c("grey88", "black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5))
+
+
+plot_fundations = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Fundations ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = mean(consistency_rank))) +
+  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_point(size = .5) +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Fundations") +
+  scale_color_manual(values = c("grey88", "black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5))
+
+
+plot_kilpatrick = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Kilpatrick ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = mean(consistency_rank))) +
+  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_point(size = .5) +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Kilpatrick") +
+  scale_color_manual(values = c("grey88", "black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5))
+
+
+plot_wonders = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Wonders ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = mean(consistency_rank))) +
+  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_point(size = .5) +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Wonders") +
+  scale_color_manual(values = c("grey88", "black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5))
+
+plot_grid(plot_dolch, plot_fp, plot_fry, plot_fundations, plot_kilpatrick, plot_wonders)
+
+```
+
+## Top 50 words by frequency and consistency
+
+```{r Quadrants3}
+
+rank_inconsistency_rank_frequency %>% 
+  filter(rank <= 50) %>% 
+  ggplot(aes(freq_rank, consistency_rank, label = word)) +
+  geom_label(size = 3, fill = "goldenrod3") +
+  labs(x = "Rank Frequency",  y = "Rank Inconsistency") +
+  scale_color_manual(values = c("grey67", "black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        axis.title = element_text(size = 18),
+        text = element_text(family = 'Times'))
+
+```
+
+## Items ranked by many dimensions
+
+```{r Top50ManyDimensions}
+
+rank_many_dimensions = wcbc %>% 
+  filter(word %in% unique(all_lists$word)) %>%
+  arrange(-desc(consistency)) %>% 
+  mutate(consistency_rank = seq_len(n())) %>%
+  arrange(desc(wcbc_freq)) %>% 
+  mutate(freq_rank = seq_len(n())) %>% 
+  arrange(-desc(aoa)) %>% 
+  mutate(aoa_rank = seq_len(n())) %>% 
+  arrange(desc(imageability)) %>% 
+  mutate(imageability_rank = seq_len(n())) %>% 
+  arrange(-desc(letters)) %>% 
+  mutate(letters_rank = seq_len(n())) %>% 
+  select(word, consistency_rank, freq_rank, aoa_rank, imageability_rank, letters_rank)
+
+rank_many_dimensions$distance = NA
+
+for (i in seq(nrow(rank_many_dimensions))){
+  ic_ = rank_many_dimensions$consistency_rank[i]
+  f = rank_many_dimensions$freq_rank[i]
+  a = rank_many_dimensions$aoa_rank[i]
+  im = rank_many_dimensions$imageability_rank[i]
+  l = rank_many_dimensions$letters_rank[i]
+  
+  
+  distance = l2(c(0, 0, 0, 0, 0), c(ic_, f, a, im, l))
+  
+  rank_many_dimensions$distance[i] = distance
+  
+  
+}
+
+rank_many_dimensions = rank_many_dimensions %>% 
+  arrange(-desc(distance)) %>% 
+  mutate(rank = seq_len(n()))
+
+
+rank_many_dimensions %>% 
+  filter(rank <= 25) %>% 
+  pull(word)
+
+
+rank_many_dimensions %>% 
+  left_join(rank_inconsistency_rank_frequency %>% 
+              select(word, distance_frequency_inconsistency = distance)) %>% 
+  write.csv("~/Desktop/acbc_rank_ordered_over_many_dimensions.csv")
+
+```
