@@ -13,6 +13,8 @@ author:
       - Supervision
       - Writing
       - Formal Analysis
+      - Project administration
+      - Data curation
   - name          : "Lauren P. Schilling"
     affiliation   : "3"
     address       : "Harvard Graduate School of Education"
@@ -129,7 +131,12 @@ source('scripts/overlap.R')
 ```{r child='sections/overlap.Rmd'}
 ```
 
+```{r properties_data, include=FALSE}
+source('scripts/top_n.R')
+```
+
 ```{r child='sections/properties.Rmd'}
+
 ```
 
 ```{r child='sections/frequency_and_consistency.Rmd'}

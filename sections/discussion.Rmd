@@ -1,5 +1,7 @@
-# Discussion
+# General Discussion
 Words are an organizing unit of the language in reading instruction. These instructional resources all have in common that certain words in English are prioritized for teaching, all focusing on some combination of words that have atypical structure and those that are very common. As a result, the words themselves are a meaningful unit of analysis for the purposes of determining the extent to which these programs agree about what matters in early reading instruction.
+
+It is also the case that the words that are chosen for instruction matter in terms of the information they contain. This has been shown both
 
 It turns out that there is noteworthy disagreement among these resources about which matter most. Only 3% of the words across all unique words are present in all six resources (3% of unique words).
 
@@ -7,10 +9,10 @@ It turns out that there is noteworthy disagreement among these resources about w
 ## A Different Conception of Special Words
 We've outlined something fundamental about learning a quasiregular writing system like English: frequency and consistency are integrally related in that consistency is just frequency at a different level of grain within the word. It follows from this that there are principled ways in which to determine the special words of the system: they are those the self-select as outliers with regard to the consistency and frequency dimensions calculated across words.
 
-### With diagonal
 
+We'va also argued that words can be specified using empirical means based on properties known to be important for learning: their frequency and consistency. Figure XX outlines such a distribution, showing the top 100 words based on a joint ordering of these two variables.
 
-```{r FrequencyConsistencyPlot2}
+```{r FrequencyConsistencyPlot2, fig.cap="The plot shows the top 100 words ranked jointly in terms of frequency and inconsistency. The word closest to the origin is "and", representing the word that is most frequent and atypical when both properties are considered. Words that fall toward the diagonal are equally infrequent and (in)consistent."}
 wcbc %>% 
   filter(word %in% unique(all_lists$word)) %>%
   arrange(-desc(consistency)) %>% 
@@ -19,9 +21,10 @@ wcbc %>%
   mutate(freq_rank = seq_len(n()),
          word = case_when(word == "i" ~ "I",
                           TRUE ~ word)) %>% 
-  filter(freq_rank < 300 & consistency_rank < 300) %>% 
+  filter(freq_rank < 300 & consistency_rank < 300) %>%
   ggplot(aes(freq_rank, consistency_rank, label = word)) +
   #geom_label_repel(position = position_jitter(height = 100)) +
+  geom_abline(intercept = 0, slope = 1, color = "grey45", linetype = "dashed") +
   geom_label_repel() +
   theme_minimal() +
   labs(x = "Rank Frequency", y = "Rank Inconsistency")
@@ -29,5 +32,6 @@ wcbc %>%
 
 ```
 
+The resources studied in this paper vary substantially with respect to how well the words they contain account for properties defined by the two-dimensional space defined for all words across all sets (see Figure XX discussed previously). Some lists (like Fry for example) have fairly good coverage with relatively few words. The Wonders program has strong coverage of the space (from Figure XX), but this is at the expense of including vastly more words than other programs; the more words you select, the more likely you are to cover all ranges of the distribution of frequency and consistency.
 
-We can talk through what the quadrants are, interpreting them. Focusing in on the
+
