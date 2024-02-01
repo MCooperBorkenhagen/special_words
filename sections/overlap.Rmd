@@ -1,6 +1,6 @@
-# The Words Included in Instructional Resources
+# Question 1: The Words Included in Instructional Resources
 
-One possible source of meaningful variability has to do with the words included in instruction: Do instructional resources agree about which words are important in early print vocabulary acquisition? If different resources agree about the words to be prioritized for instruction[^overlap-1], then students experiencing these programs would have similar experiences - at least in terms of the words taught. Alternatively, if resources differ in their contents, it would suggest that the students that learn different programs have different experiences. Variability of this kind is important because it suggests different conceptualizations of what is important in early reading development, leaving aside issues of the relative efficacy of one approach versus another.
+One possible source of meaningful variability has to do with the words included in instruction: Do instructional resources agree about which words are important in early print vocabulary acquisition? If different resources agree about the words to be prioritized for instruction[^overlap-1], then students learning within these programs would have similar experiences - at least in terms of the words taught. Alternatively, if resources differ in their contents, it would suggest that the students that learn different programs have different experiences with printed words. Variability of this kind is important because it suggests different conceptualizations of what is important in early reading development, leaving aside issues of the relative efficacy of one approach versus another.
 
 [^overlap-1]: See resource descriptions for a full account of the teaching methods associated with each approach. Nonetheless, each approach involves some amount of word memorization.
 
@@ -121,7 +121,7 @@ The number of words that are unique to a single resource is high by comparison, 
 
 [^overlap-2]: See outer rim of Figure 1 in region labeled "Kilpatrick".
 
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap='Few words are shared by all resources (6 total, the far right hand of the x-axis). At the other extreme, many words are unique to one source (560, left hand side of figure).'}
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap='Few words are shared by all resources (6 total, the far right hand of the x-axis). At the other extreme, many words are unique to one source (560, left hand side of figure).', fig.width=7}
 plot_data %>% 
   ggplot(aes(count, n)) +
   geom_bar(stat = 'identity', color = 'black', fill = 'grey57') +
@@ -134,7 +134,7 @@ plot_data %>%
   theme(legend.position = 'none')
 ```
 
-The words present only in a single resource vary in terms of their structure and meaning. These words include relatively uncommon words like "yacht", "sovereign", "spatula", "whom", "etiquette", and "gnat" to words that are quite common, like "shoe", "snow", "dry", "last", "seem", and "easy". A sample of 50 of these words with their frequencies can be found in table X (a full list of these words can be found in the supplement online).
+The words present only in a single resource vary in terms of their structure and meaning. These words include relatively uncommon words like "yacht", "sovereign", "spatula", "whom", "etiquette", and "gnat" to words that are quite common, like "shoe", "snow", "dry", "last", "seem", and "easy". A sample of 50 of these words with their frequencies can be found in Table X (a full list of these words can be found in the supplement online).
 
 ```{r WordInOneSource, include=FALSE}
 words_in_one_source = c("mountains", "next", "plant", "real", "sea", "seem", "state", "area", "birds", "covered", "cried", "easy", "figure", "himself", "hours", "king", "map", "mark", "music", "north", "numeral", "pattern", "plan", "products", "pulled", "reached", "rock",  "room", "stand", "step",  "told",  "town", "travel", "unit",  "usually",    "vowel", "waves", "breakfast", "cousin", "dance", "daughter", "neighbor", "library", "paste", "ache", "acne", "acreage", "actual", "aisle", "algae")
