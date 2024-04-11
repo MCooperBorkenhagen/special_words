@@ -1,0 +1,53 @@
+---
+title: "Fry 1980 updates"
+output: html_document
+date: "2024-03-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(tidyverse)
+```
+
+The original data that LS compiled used a list of Fry words that was an extended form of the earlier published lists. In order to update the code and analyses, the correct Fry data (from the 1980 paper) needed to be compiled and merged with the rest of the data. This required some substantial changes to the data cleaning process because of how the source data in `all_lists` was originally compiled.
+
+# Read
+Let's read in the original `all_lists` data and determine whether or not the 1980 version of the Fry list is different than the Fry words present there.
+
+```{r read, echo=FALSE, warning=FALSE}
+
+all_lists_v1 = read_csv('data/all_lists.csv')
+fry_1980_wordlist = read_csv('data/fry_1980_list.csv') %>% 
+  mutate(word = tolower(word)) %>% 
+  pull(word)
+
+fry_later = all_lists_v1 %>% 
+  filter(source == 'fry') %>% 
+  mutate(word = tolower(word)) %>% 
+  pull(word)
+
+all_lists_v2 = all_lists_v1 %>% 
+  filter(source == "fry" & word %in% fry_1980_wordlist) %>% 
+  rbind(read_csv('data/fry_1980_missing_from_all_lists.csv')) %>% 
+  rbind(all_lists_v1 %>% 
+          filter(source != "fry"))
+
+
+```
+
+How many of the Fry 1980 words are not in the original `all_lists` version of the Fry words?
+
+```{r setdiffOldNewFry, echo=TRUE}
+
+fry_missing = dplyr::setdiff(fry_1980_wordlist, fry_later)
+
+```
+
+The number of words that are in the 1980 set that weren't included in the later ones is `length(fry_missing)`. The data for those are in `fry_missing_from_all_lists.csv`. So, the fry data from the original all_lists document are removed above and all the new fry data are added, most from `fry_1980.csv` and  the rest from `fry_missing_from_all_lists.csv`. From there we write that object (v2) to csv and call it `all_lists_v2.csv`
+
+```{r missingWordsInOrigAllLists}
+all_lists_v2 %>% 
+  write_csv('data/all_lists_v2.csv')
+
+```
+

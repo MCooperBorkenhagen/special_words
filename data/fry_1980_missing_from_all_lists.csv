@@ -1,0 +1,9 @@
+word,source,level,letters,syllables,morphemes,aoa,imageability,wcbc_freq,tasa_freq,childes_freq,consistency,class,count
+word,fry,1b,4,1,1,6,3.7,25,1174,1257,0.21,open,5
+call,fry,1d,4,1,1,5.83333333333333,4.4,69,1196,3476,0.972972973,open,3
+oil,fry,1d,3,1,1,4,6.4,10,297,262,1,open,1
+year,fry,2a,4,1,1,2,3.9,28,1122,1013,0.586,open,2
+thing,fry,2a,5,1,1,2,2.6,152,2393,6936,1,open,2
+mean,fry,2d,4,1,1,6.67,2.8,39,1257,5358,0.933,open,1
+eye,fry,3a,3,1,1,4,6.7,23,433,1503,1,open,3
+mountain,fry,3d,8,2,1,4,,38,566,321,0.919,open,1
