@@ -8,9 +8,6 @@ unl = readxl::read_xlsx('../words/unilex/unilex.xlsx') %>%
   select(word, morphemes = `Number of morphemes (Unisyn)`,
          syllables = `Number of syllables (Unisyn)`)
 
-
-
-
 childes = childes_eng_na_types_0_71_months %>% 
   mutate(word = tolower(gloss)) %>% 
   group_by(word) %>% 
@@ -137,7 +134,8 @@ wcbc %>%
 rm(msd)
 
 # Generate the Z scores
-d = read_csv('data/all_lists.csv') %>% 
+
+d = read_csv('data/all_lists_v2.csv') %>% # old version calls ...read_csv('data/all_lists.csv')
   left_join(read_csv('data/wcbc_with_z.csv'))
 
 factor_vars = function(df, src){

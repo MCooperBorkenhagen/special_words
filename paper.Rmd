@@ -78,7 +78,7 @@ lapply(read.csv('scripts/requirements.txt', stringsAsFactors = F, header = F)[[1
 source('scripts/utilities.R')
 
 source('scripts/Zs.R')
-all_lists = read_csv('data/all_lists.csv')
+all_lists = read_csv('data/all_lists_v2.csv') # old call read_csv('data/all_lists.csv')
 source('scripts/sets.R')
 
 
@@ -140,6 +140,10 @@ source('scripts/top_n.R')
 ```
 
 ```{r child='sections/frequency_and_consistency.Rmd'}
+```
+
+
+```{r child='sections/discussion.Rmd'}
 ```
 
 ```{r child='sections/appendix.Rmd'}

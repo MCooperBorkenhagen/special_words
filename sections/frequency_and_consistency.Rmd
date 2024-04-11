@@ -14,7 +14,7 @@ lower_left_quadrant_words = rank_inconsistency_rank_frequency %>%
 
 ```
 
-## Frequency and Consistency
+# Question 3: Frequency and Consistency
 
 We have seen that instructional sources vary in terms of the words are selected for instruction, and that this variability exists at a deeper level than the words themselves (i.e., the properties of the words are an additional source of variability). But can words be selected for instruction in an empirical way, based on observable properties? Our study here has been focused on two properties that are known to matter for learning: *frequency* and *consistency*.
 
@@ -64,7 +64,7 @@ plot_2 = rank_inconsistency_rank_frequency %>%
 plot_grid(plot_1, plot_2, labels = c("A", "B"))
 ```
 
-### Rankings across Inconsistency & Frequency
+## Rankings across Inconsistency & Frequency
 
 A simple rank measure of these two dimensions is the distance of the word from the origin (point 0, 0 in the plot). For this purpose, we can use Euclidean distance, where each word's coordinate is its rank frequency and inconsistency, respectively. Deriving the ordered set in this way is useful because it is simple and empirically motivated. Table X shows the top 20 words based on this ranking (a full list of rankings can be found in the supplementary materials online).
 
@@ -98,7 +98,7 @@ rank_inconsistency_rank_frequency %>%
 
 Notice how different this method is from one that selects for frequency or inconsistency alone. Words with relatively high rankings on frequency or inconsistency are positioned at the top of this distribution. This can be seen even in the table showing the top ranking words (for example, "who" or "have" by frequency, or "one" or "of" by inconsistency). Importantly, an empirical method along these lines allows us to derive a measure or instructional importance based on first principles, as opposed to other methods that select for structural variables in arbitrary ways, which often rely on unvalidated educational theories, subjective measures of importance or both.
 
-### Where Programs Fall in the Two Dimensions
+## Where Programs Fall in the Two Dimensions
 
 We can compare different sets of words as to where in this two-dimensional space they fall, expressing how well each program covers these words as a proportion, shown in Table X.
 
@@ -218,4 +218,3 @@ plot_grid(plot_dolch, plot_fp, plot_fry, plot_fundations, plot_kilpatrick, plot_
 
 The distribution from the Kilpatrick program is also worth highlighting. This set of words represents the *lowest* coverage of the six programs for our `r length(lower_left_quadrant_words)` targets. As we saw previously in the analyses of these variables independently, the words from this program tend towards lower frequency words that also skew towards those with atypical structure - with some high consistency words as well. In the context of organizing words in this two-dimensional way, the differences between Kilpatrick and the other programs is quite dramatic. This program is the only one with less than 50% coverage of the target quadrant - the only program falling on this side of the distribution.
 
-## Discussion

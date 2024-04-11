@@ -88,7 +88,7 @@ z_table_wcbc %>%
 
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='The raw distribution of words across sources and corpus rank frequency (standardized) are shown as points (in grey) with statistical estimate as colored points within each distribution. Because standard errors are imperceptibly small, standard deviations for the standardized rank frequency values within each distribution are shown. All distributions are significantly different than the corpus mean (0).', fig.width=7}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='The raw distribution of words across sources and rank frequency (standardized) from the TASA corpus are shown as points (in grey) with point estimates from the statistical model shown as colored points within each distribution. Because standard errors are imperceptibly small, standard deviations for the standardized rank frequency values within each distribution are shown. All distributions are significantly different than the corpus mean (0).', fig.width=7}
 VARS = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
 
 
@@ -99,7 +99,8 @@ hlines = nsd %>%
   mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
                          var == 'tasa_rank' ~ 'TASA',
                          var == 'childes_rank' ~ 'CHILDES',
-                         var == 'coca_rank' ~ 'COCA'))
+                         var == 'coca_rank' ~ 'COCA')) %>% 
+  filter(var == "TASA")
 
 plot_data = Zs %>% 
   filter(var %in% VARS) %>% 
@@ -110,13 +111,20 @@ plot_data = Zs %>%
                          var == 'coca_rank' ~ 'COCA')) %>% 
   mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4))
 
+ci_data = z_table_tasa %>% 
+  select(source = Source, ci_ = `95\\% CI`) %>% 
+  mutate(ci = str_replace(ci_, "\\[", ""),
+         ci = str_replace(ci, "\\]", ""),
+         ci_lo = str_split(ci, ",", simplify = T)[,1],
+         ci_hi = str_split(ci, ",", simplify = T)[,2],) %>% 
+  mutate(ci_lo = as.numeric(ci_lo),
+         ci_hi = as.numeric(ci_hi)) %>% 
+  select(source, ci_lo, ci_hi)
 
-
-Zs %>% 
+plot_old = Zs %>% 
   group_by(source, var) %>% 
   summarise(M = mean(Z, na.rm = T)) %>% 
   left_join(nsd) %>% 
-  mutate(SEM = SD/(sqrt(n))) %>%
   filter(var %in% VARS) %>% 
   mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
                          var == 'tasa_rank' ~ 'TASA',
@@ -124,24 +132,76 @@ Zs %>%
                          var == 'coca_rank' ~ 'COCA'),
                 source = as.factor(source)) %>% 
   mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4)) %>% 
-  ggplot(aes(source_, M, color = source_, group = var)) +
+  filter(var == "TASA") %>% 
+  ggplot(aes(source_, M, color = source_)) +
   scale_color_manual(values = COLORS_SOURCE) +
   geom_point(data = plot_data, position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
-  geom_point(size = 2) +
-  geom_line(color = 'grey') +
-  geom_errorbar(aes(ymin = M-SD, ymax = M + SD, color = source_), width = .5) +
-  facet_grid(~var) +
+  #geom_point(size = 2) +
+  #geom_line(color = 'grey') +
+  geom_boxplot() +
+  #geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi, color = source), width = .3) +
   ylim(c(-2, .5)) +
-  labs(color = 'Variable', x = 'Source', y = 'Rank frequency (standardized)') +
+  labs(x = 'Source', y = 'Rank frequency (standardized)') +
   geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
   geom_hline(data = hlines, aes(yintercept = varmean), color = 'black', linetype = 'dotted') +
   theme_apa() +
-  theme(legend.position = 'top',
-        axis.ticks.x = element_blank(), 
-        axis.text.x = element_blank(),
+  theme(legend.position = 'none',
         strip.background=element_blank(),
         text = element_text(family = 'Times'))
 
+
+plot_a = Zs %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4)) %>% 
+  filter(var == "tasa_rank") %>% 
+  ggplot(aes(source_, Z, color = source_)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+geom_point(position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
+  #geom_point(size = 2) +
+  stat_summary(fun.data = "mean_sdl", fun.args = list(mult = 1), geom = "crossbar", width = .2) +
+  #geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi, color = source), width = .3) +
+  #ylim(c(-2, .5)) +
+  labs(x = 'Source', y = 'Rank frequency (standardized)') +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  geom_hline(data = hlines, aes(yintercept = varmean), color = 'black', linetype = 'dotted') +
+  theme_apa() +
+  theme(legend.position = 'none',
+        strip.background=element_blank(),
+        text = element_text(family = 'Times'),
+        axis.text.x = element_text(angle = 60, hjust = 1))
+
+plot_a
+
+plot_b = Zs %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  filter(var %in% VARS) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+                source = as.factor(source)) %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4)) %>% 
+  filter(var == "TASA") %>% 
+  left_join(ci_data) %>%
+  ggplot(aes(source_, M, color = source_)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi, color = source), width = .3) +
+  ylim(c(-1.79, -1.05)) +
+  labs(x = 'Source', y = 'Rank frequency (standardized)') +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  geom_hline(data = hlines, aes(yintercept = varmean), color = 'black', linetype = 'dotted') +
+  theme_apa() +
+  theme(legend.position = 'none',
+        strip.background=element_blank(),
+        text = element_text(family = 'Times'),
+        axis.text.x = element_text(angle = 60, hjust = 1))
+
+plot_b
+
+plot_grid(plot_a, plot_b)
 ```
 
 ### Coverage of Most Frequent Words in Child-directed Print and Speech
@@ -233,31 +293,28 @@ coverage %>%
 
 ```{r coverageKidCorpusFigure, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Coverage for each program (panel) for each level of most frequent 100, 500, and 1000 words for three child-directed corpora are shown: CHILDES, TASA, and WCBC. Programs exhibit variable coverage of these words for the three corpora, with Wonders, Fry, and Dolch showing comparable levels of coverage at one extreme, and Kilpatrick at the other.", fig.width=7}
 
-coverage %>% 
-  mutate(corpus = case_when(corpus == 'wcbc' ~ 'WCBC',
-                         corpus == 'tasa' ~ 'TASA',
-                         corpus == 'childes' ~ 'CHILDES',
-                         corpus == 'coca' ~ 'COCA'),
-         source = case_when(source == 'dolch' ~ 'Dolch',
+coverage %>%
+  filter(corpus == "tasa") %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
                             source == 'fry' ~ 'Fry',
                             source == 'fundations' ~ 'Fundations',
                             source == 'kilpatrick' ~ 'Kilpatrick',
                             source == 'wonders' ~ 'Wonders',
                             source == 'fountas_pinnell' ~ 'F&P')) %>% 
-  ggplot(aes(corpus, proportion, fill = as.factor(top_n))) +
+  ggplot(aes(as.factor(top_n), proportion, fill = as.factor(top_n))) +
   geom_bar(stat = "identity", position = "dodge", color = "black") +
   facet_grid(~factor(source, levels = c("Wonders", "Fry", "Dolch", "F&P", "Fundations", "Kilpatrick"))) +
   theme_apa() +
-  labs(x = "Corpus", y = "Proportion covered", fill = "N most frequent") +
+  labs(x = "N most frequent", y = "Proportion covered", fill = "N most frequent") +
   theme(text = element_text(family = "Times"),
         axis.text.x = element_text(angle = 90, vjust = .5, hjust = 1),
-        legend.position = "top") +
-  scale_fill_manual(values = c("burlywood", "gold2", "brown"))
+        legend.position = "none") +
+  scale_fill_manual(values = c("burlywood", "gold2", "brown", "darkorchid4"))
 ```
 
 ## Other Word Characteristics across Sources
 
-To facilitate comparison of other word properties (other than frequency), the words from the Wisconsin Children's Book Corpus [@Lewis2021] were used as a benchmark set. All the words from the WCBC (*n* = `r nrow(wcbc)`) were aggregated along with a range of word-level measurements (age of acquisition, orthography-to-phonology consistency, imageability, number of letters, and number of syllables). In order to present data that captures the normative comparison to WCBC a procedure similar to what was done with word frequencies was used. Measurements for word-level variables were standardized through being mean-centered and put into relation to the standard deviation. This was done based on the distribution of that variable over all words in the WCBC corpus (rather than four different corpora as was done with frequency). This is intended to capture the variability on a given variable relative to the distribution in the benchmark (WCBC-based) sample.
+To facilitate comparison of other word properties (other than frequency), the words from the Wisconsin Children's Book Corpus [@Lewis2022] were used as a benchmark set. All the words from the WCBC (*n* = `r nrow(wcbc)`) were aggregated along with a range of word-level measurements. These include age of acquisition [@Kuperman2012], orthography-to-phonology consistency [@Chee2020], imageability [@Stadthagen2006], number of letters, and number of syllables. In order to present data that captures the normative comparison to WCBC a procedure similar to what was done with word frequencies was used. Measurements for word-level variables were standardized through being mean-centered and put into relation to the standard deviation. This was done based on the distribution of that variable over all words in the WCBC corpus (rather than four different corpora as was done with frequency). This is intended to capture the variability on a given variable relative to the distribution in the benchmark (WCBC-based) sample.
 
 Table XX provides the means and standard deviations for sources across all word variables. Figure 5 shows these values for a given variable for each instructional source (colored point in each panel). Colors are conditioned on the five different variables of interest within each panel and the dotted line refers to the average across points, here representing the average across all variables. This way of presenting these data facilitates interpretation given that all the points for all the variables fall on the negative side of the distribution for all sources; all points are below the mean on the standardized scale for all words in WCBC. The dashed line again shows the mean for all variables in all words in WCBC (zero due to standardization).
 
@@ -361,6 +418,5 @@ data.frame(cbind(Source, AoA, Consistency, Imageability, Letters, Syllables)) %>
 ```
 
 ## Discussion
-Words are known to vary in terms of a number of properties that contribute to learning to read [@Zevin2002; @Zevin2004; @Hsaio2018; @Steacy2019; @Weekes2006]. Given that the instructional resources being studied here vary in terms of the words they contain, it could be that they nonetheless share a range of underlying properties, thus leaving these differences less meaningful. This turns out not to be the case, however. Noteworthy variability exists across the instructional wordlists along a range of variables, including frequency, consistency, imageability, age-of-acquisition, number of letters, and number of syllables. This is true also for several different frequency norms: those derived from spoken language to young children, recreational texts for young readers, and texts for adult readers.
+Words are known to vary in terms of a number of properties that contribute to learning to read [@Zevin2002; @Zevin2004; @Hsaio2018; @Steacy2019; @Weekes2006]. Instructional resources studied here vary in terms of the specific words they contain, however it could be that they nonetheless share a range of underlying properties, thus leaving these differences less meaningful. This turns out not to be the case, however. Noteworthy variability exists across the instructional wordlists along a range of variables, including word frequency, consistency, imageability, age-of-acquisition, number of letters, and number of syllables. This is true also for several different frequency norms: those derived from spoken language to young children, recreational texts for young readers, and texts for adult readers.
 
-Analyses of word frequency reveal a further observation: 

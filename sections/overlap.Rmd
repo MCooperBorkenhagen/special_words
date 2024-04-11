@@ -158,7 +158,7 @@ tibble(word = words_in_one_source) %>%
 
 ```
 
-# Discussion
+## Discussion
 
 One might reasonably assume that instructional approaches would identify similar words words for instruction in the classroom. This would indicate shared assumptions about the words that are important for reading vocabulary instruction. Based on the data aggregated for this study, this is clearly not the case. Only 28 words are shared by all six resources analyzed here, representing only 3% of the all unique words across all resources.
 
