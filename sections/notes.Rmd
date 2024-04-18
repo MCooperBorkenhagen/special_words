@@ -1,0 +1,32 @@
+---
+title: "notes"
+output: html_document
+date: "2024-02-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We've outlined something fundamental about learning a quasiregular writing system like English: frequency and consistency are integrally related in that consistency is just frequency at a different level of grain within the word. It follows from this that there are principled ways in which to determine the special words of the system: they are those the self-select as outliers with regard to the consistency and frequency dimensions calculated across words.
+
+
+
+```{r FrequencyConsistencyPlot2, fig.cap='The plot shows the top 100 words ranked jointly in terms of frequency and inconsistency. The word closest to the origin is "and", representing the word that is most frequent and atypical when both properties are considered. Words that fall toward the diagonal have similar values in the rank of each variable. Note that the word "and" is measured as a low consistency word in the Chee et al. (2020) data despite it having many neighbors with similar pronunciations, as in "hand" and "band".'}
+wcbc %>% 
+  filter(word %in% unique(all_lists$word)) %>%
+  arrange(-desc(consistency)) %>% 
+  mutate(consistency_rank = seq_len(n())) %>%
+  arrange(desc(wcbc_freq)) %>% 
+  mutate(freq_rank = seq_len(n()),
+         word = case_when(word == "i" ~ "I",
+                          TRUE ~ word)) %>% 
+  filter(freq_rank < 300 & consistency_rank < 300) %>%
+  ggplot(aes(freq_rank, consistency_rank, label = word)) +
+  geom_abline(intercept = 0, slope = 1, color = "grey45", linetype = "dashed") +
+  geom_label_repel() +
+  theme_apa() +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency")
+
+
+```
