@@ -48,27 +48,50 @@ This allows comparisons on several levels. First, the distribution of standardiz
 This is useful when one considers the characteristics of a given text corpus from which the frequency distribution is constructed (child-directed text, child-directed speech, adult-directed text, etc.). A table of descriptive statistics across corpora and sources are shown in Table XX.
 
 ```{r descriptivesFreqSource, echo=FALSE, warning=FALSE, message=FALSE}
-sources = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$source
-wcbc_ = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$var
-tasa = desc_by_var(Zs, 'tasa_rank', combine_ = T)$var
-coca = desc_by_var(Zs, 'coca_rank', combine_ = T)$var
-childes = desc_by_var(Zs, 'childes_rank', combine_ = T)$var
+# old code left here for supplement which should contain values across several corpora
 
-data.frame(cbind(sources, wcbc_, tasa, coca, childes)) %>% 
+sources = desc_by_var(Zs, 'tasa_rank', combine_ = T)$source
+#wcbc_ = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$var
+tasa = desc_by_var(Zs, 'tasa_rank', combine_ = T)$var
+#coca = desc_by_var(Zs, 'coca_rank', combine_ = T)$var
+#childes = desc_by_var(Zs, 'childes_rank', combine_ = T)$var
+
+tasa_2 = all_lists %>% 
+  arrange(desc(tasa_freq)) %>% 
+  mutate(rank = seq_len(n())) %>% 
+  group_by(source) %>% 
+  summarise(rank_mean = round(mean(rank, na.rm = T)),
+            rank_sd = round(sd(rank, na.rm = T)),
+            raw_mean = round(mean(tasa_freq, na.rm = T)),
+            raw_sd = round(sd(tasa_freq, na.rm = T))) %>% 
+  mutate(Rank = str_c(rank_mean, " (", rank_sd, ")"),
+         Raw = str_c(raw_mean, " (", raw_sd, ")")) %>% 
+  mutate(Source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            TRUE ~ NA
+                              )) %>% 
+  select(Source, Rank, Raw)
+
+
+data.frame(cbind(sources, tasa)) %>% 
   rename(Source = sources,
-         WCBC = wcbc_,
-         TASA = tasa,
-         COCA = coca,
-         CHILDES = childes) %>% 
-  apa_table(caption = 'Descriptive Statistics of Rank Frequency by Source across Corpora', 
-            note = 'Means and standard deviations (in parentheses) are shown over standardized rank frequency values for all words in a given instructional source. Frequencies are standardized based on all words in a given corpus before subsetting and calculating the mean and spread by instructional source. As a result, the mean rank frequency shown represents how far from the mean of all words in a given corpus (zero) the distribution within an instructional source is.',
+         `Rank (Z)` = tasa,
+         ) %>% 
+  left_join(tasa_2) %>%
+  select(Source, Rank, everything()) %>% 
+  apa_table(caption = "Descriptive Statistics of Rank Frequency by Resource for TASA Corpus", 
+            note = 'Means and standard deviations (in parentheses) are shown for rank frequency, standardized rank frequency (Rank Z), and raw frequency values for all words in a given instructional resource for the TASA corpus. Frequencies are standardized based on all words in TASA before subsetting and calculating the mean and spread by instructional source. As a result, the mean rank frequency shown represents how far from the mean of all words in TASA the distribution within an instructional resource is.',
             escape = FALSE)
 
 
 
 ```
 
-All instructional resources contain words that are, on average, more frequent (lower standardized rank frequency) than the average word from each corpus, as indicated by each mean value being negative. This is expected given than all of the resources are supposed to contain common words (based on their own reporting).
+All instructional resources contain words that are, on average, more frequent (lower standardized rank frequency) than the average word from TASA, as indicated by each mean value for standardized rank frequency being negative. This is expected given than all of the resources are supposed to contain common words (based on their own reporting).
 
 Considering TASA data specifically, these comparisons bear out in a statistical model of these distributions against zero (the normative mean, which is always zero due to standardization). Figure 3 shows the results from this statistical test for the six resources in the distribution of frequencies in that corpus. Grey points within each panel are individual observations (words) within each list for a given value for standardized rank frequency. The colored points represent the mean for a source on a given frequency, and the bar around that mean represents the standard error of the point estimate for that source on that frequency. The dotted line represents the mean across all frequencies for that instructional source. This facilitates a direct comparison across instructional sources.
 
