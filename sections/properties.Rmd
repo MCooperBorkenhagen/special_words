@@ -39,13 +39,13 @@ z_tests_to_table(z_tests) %>%
 
 ```
 
-Word frequency is a property that differs based on the source from which it is drawn. A word's frequency in a corpus assembled from transcripts of spoken language interactions with children will have a different frequency (and be drawn from a different distribution) than that word's frequency in a corpus of adult fiction. In order to capture this variability, the four different sources of word frequency are considered here for analysis, each representing different sources of learning. For example, words present in COCA are oriented towards adult readers. Therefore a set of words that is common among this set and relatively less common among the TASA data (academic texts for young people) would indicate that the set is more likely oriented towards topics and forms that are more often experienced by adult readers rather than children in academic contexts.
+All the frequency data in this section are analyzed using rank frequencies, where low values indicate high frequencies. Rank frequencies exhibit a uniform distribution (one word per rank), and this type of frequency measure avoids the skew found in raw frequencies. Meaningful variation exists in the portion of the distribution where there are no ties (i.e., the highest frequency words/ those with the lowest rank frequency). In order to facilitate comparison across sources and relative to a normative distribution (i.e., a distribution from a reference corpus), rank frequencies were standardized. We first present the rank frequency data for all four corpora for reference and then consider TASA frequency data more in depth because the trends across all corpora are similar.
 
-For all the frequency data in this section, rank frequencies are used. Therefore, low values indicate high frequencies. Rank frequencies exhibit a uniform distribution (one word per rank), and this type of frequency measure avoids the skew found in raw frequencies. It is also the case that meaningful variation exists in the portion of the distribution where there are no ties (i.e., the highest frequency words/ those with the lowest rank frequency). In order to facilitate comparison across sources and relative to a normative distribution (i.e., a distribution from a reference corpus), rank frequencies were standardized in the following way. All words from a given corpus were standardized for rank frequency by taking the rank frequency value, subtracting the mean for that corpus and dividing by the standard deviation of that corpus. This results in a distribution of rank frequency for each word in a given corpus (e.g., the rank frequency within the COCA corpus) set in relation to the variability of rank frequency in that corpus. Once achieved, measures of rank frequency within each instructional source were calculated using the standardized rank frequency from each corpus' distribution just described.
+All words from a given corpus were standardized for rank frequency by taking the rank frequency value, subtracting the mean for that corpus and dividing by the standard deviation of that corpus. This results in a distribution of rank frequency for each word in a given corpus (e.g., the rank frequency within the TASA corpus) set in relation to the variability of rank frequency in that corpus. Once achieved, measures of rank frequency within each instructional source were calculated using the standardized rank frequency from each corpus' distribution just described.
 
-This allows comparisons on several levels. First, the distribution of standardized rank frequency for a given source gives a measure of how different that distribution is for the normative distribution. Additionally, the distribution for each source can be compared to the others given that they've been put on a common scale. The resulting interpretation of the mean of rank frequency for a source is the difference in standard deviation units (of rank) between that source and the corpus from which standardized values have been calculated.
+This allows comparisons on several levels. First, the distribution of standardized rank frequency for a given source gives a measure of how different that distribution is for the normative distribution. Additionally, the distribution for each resource can be compared to the others given that they've been put on a common scale. The resulting interpretation of the mean of rank frequency for a source is the difference in standard deviation units (of rank) between that source and the corpus from which standardized values have been calculated.
 
-This is useful when one considers the characteristics of a given text corpus from which the frequency distribution is constructed (child-directed text, child-directed speech, adult-directed text, etc.). A table of descriptive statistics across corpora and sources are shown in Table X.
+This is useful when one considers the characteristics of a given text corpus from which the frequency distribution is constructed (child-directed text, child-directed speech, adult-directed text, etc.). A table of descriptive statistics across corpora and sources are shown in Table XX.
 
 ```{r descriptivesFreqSource, echo=FALSE, warning=FALSE, message=FALSE}
 sources = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$source
@@ -70,17 +70,15 @@ data.frame(cbind(sources, wcbc_, tasa, coca, childes)) %>%
 
 All instructional resources contain words that are, on average, more frequent (lower standardized rank frequency) than the average word from each corpus, as indicated by each mean value being negative. This is expected given than all of the resources are supposed to contain common words (based on their own reporting).
 
-These comparisons bear out in a statistical model of these distributions against zero (the normative mean, which is always zero due to standardization). Figure 3 shows the results from this statistical test for the six resources in the distribution of frequencies in WCBC. This single corpus is used because it presents the most modest reference point, both because all corpora demonstrate the same general trend and because it is a corpus of interest given its contents. Grey points within each panel are individual observations (words) within each source for a given value for standardized rank frequency. The colored points represent the mean for a source on a given frequency, and the bar around that mean represents the standard error of the point estimate for that source on that frequency. The dotted line represents the mean across all frequencies for that instructional source. This facilitates a direct comparison across instructional sources.
+Considering TASA data specifically, these comparisons bear out in a statistical model of these distributions against zero (the normative mean, which is always zero due to standardization). Figure 3 shows the results from this statistical test for the six resources in the distribution of frequencies in that corpus. Grey points within each panel are individual observations (words) within each list for a given value for standardized rank frequency. The colored points represent the mean for a source on a given frequency, and the bar around that mean represents the standard error of the point estimate for that source on that frequency. The dotted line represents the mean across all frequencies for that instructional source. This facilitates a direct comparison across instructional sources.
 
-Dolch displays the lowest average rank frequency and the least amount of variability in frequency. On the other end is Kilpatrick. This set of words is much higher in average rank frequency (i.e., lower in raw frequency) than any of the other resources. The variability in rank frequency for this set is noteworthy as well. Not only are the averages for Kilpatrick much higher in rank frequency than any of the other instructional resources, the spread of frequency values for that source is higher as well. For several corpora, the Kilpatrick distribution includes words _above the mean_ (true for TASA, WCBC, and CHILDES).
+Fry tends to contain the highest frequency words, with the lowest average rank frequency, as well as the least amount of variability. On the other end is Kilpatrick. This set of words is much higher in average rank frequency (i.e., lower in raw frequency) than any of the other resources. The variability in rank frequency for this set is noteworthy as well. Not only are the averages for Kilpatrick much higher in rank frequency than any of the other instructional resources, the spread of frequency values for that source is higher as well. The Kilpatrick distribution includes words _above the mean_ (this fact holds for frequencies drawn from the other corpora as well).
 
-Also, in general it is clear that instructional sources are oriented towards words that are very high frequency in terms of adult texts, but less so for child texts. This effect is observed given that the means for COCA (adult fiction) are all well below average (the red dashed line) in each corpus, but the average value for WCBC (child-directed texts) is always well above the mean line across language corpora for all sources (i.e., the red point for WCBC is always well above the red dashed line in each panel). Assuming that TASA norms more accurately represent what children read by themselves (rather than what's read to them; i.e., WCBC), a further point can be made: Kilpatrick shows the greatest relative difference between the frequency of words in child texts versus adult texts. This is shown by the difference between the point for COCA and TASA in the Kilpatrick panel, showing that the Kilpatrick source is more representative of words commonly found in texts read by adults as opposed to those read by children.
 
 ```{r wcbcFreqTtest, echo=FALSE, warning=FALSE, message=FALSE}
-z_table_wcbc %>% 
+z_table_tasa %>% 
   select(-CI_hi, -CI_low, -p_derived, -var) %>% 
-  apa_table(caption = "Model Outputs by Source for Statistical Test against Mean Rank Frequency from the Wisconsin Children's Book Corpus", note = "Statistical test used was t.test() from base R (R Core Team, 2021). Rank frequencies were Z transformed prior to test, so resulting coefficients express the difference in standard deviations of rank frequency from WCBC between the source mean on rank frequency and the WCBC mean (0 due to Z transformation).", escape = FALSE)
-
+  apa_table(caption = "Model Outputs by Source for Statistical Test against Mean Rank Frequency from the Educator's Word Frequency Guide (TASA)", note = "Statistical test used was t.test() from base R (R Core Team, 2021). Rank frequencies were Z transformed prior to test, so resulting coefficients express the difference in standard deviations of rank frequency from TASA between the source mean on rank frequency and the TASA mean (0 due to Z transformation).", escape = FALSE)
 
 
 ```
@@ -88,7 +86,10 @@ z_table_wcbc %>%
 
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='The raw distribution of words across sources and rank frequency (standardized) from the TASA corpus are shown as points (in grey) with point estimates from the statistical model shown as colored points within each distribution. Because standard errors are imperceptibly small, standard deviations for the standardized rank frequency values within each distribution are shown. All distributions are significantly different than the corpus mean (0).', fig.width=7}
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='In Panel A the raw distribution of words for rank frequency (standardized) from the TASA corpus are shown as points (in grey) with point estimates from the statistical model shown as colored bars. Boxes around the point estimates show standard deviations because standard errors are imperceptibly small. All distributions are significantly different than the corpus mean (0), which is shown as the dashed line at zero. Panel B shows the same plot but zoomed in so that the differences across resources can be seen. This panel shows standard errors as error bars around the point estimates. In both panels the dotted lines show the mean across the six resources.', fig.width=7}
+
+# code derivative of this can be used for the supplement because all corpora are included at top level here
+
 VARS = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
 
 
@@ -169,8 +170,6 @@ geom_point(position = position_jitter(width = .04, height = .01), size = .01, co
         text = element_text(family = 'Times'),
         axis.text.x = element_text(angle = 60, hjust = 1))
 
-plot_a
-
 plot_b = Zs %>% 
   group_by(source, var) %>% 
   summarise(M = mean(Z, na.rm = T)) %>% 
@@ -199,9 +198,7 @@ plot_b = Zs %>%
         text = element_text(family = 'Times'),
         axis.text.x = element_text(angle = 60, hjust = 1))
 
-plot_b
-
-plot_grid(plot_a, plot_b)
+plot_grid(plot_a, plot_b, labels = c("A", "B"))
 ```
 
 ### Coverage of Most Frequent Words in Child-directed Print and Speech
