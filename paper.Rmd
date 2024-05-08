@@ -5,7 +5,7 @@ shorttitle        : "Special words"
 author: 
   - name          : "Matthew J. Cooper Borkenhagen"
     corresponding : yes
-    affiliation   : "1, 2"
+    affiliation   : 1, 2
     email         : "mcooperborkenhagen@fsu.edu"
     address       : "1114 W. Call Street, Tallahassee, FL 32306"
     role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
@@ -16,26 +16,26 @@ author:
       - Project administration
       - Data curation
   - name          : "Lauren P. Schilling"
-    affiliation   : "3"
+    affiliation   : 3
     address       : "Harvard Graduate School of Education"
     role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
       - Conceptualization
       - Project administration
       - Data curation
   - name          : "Mark S. Seidenberg"
-    affiliation   : "4"
+    affiliation   : 4
     role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
       - Conceptualization
       - Supervision
       - Writing
 affiliation:
-  - id            : "1"
+  - id            : 1
     institution   : "School of Teacher Education, Florida State University"
-  - id            : "2"
+  - id            : 2
     institution   : "The Florida Center for Reading Research"
-  - id            : "3"
+  - id            : 3
     institution   : "Harvard Graduate School of Education"
-  - id            : "4"
+  - id            : 4
     institution   : "Department of Psychology, University of Wisconsin - Madison"
 
 abstract: "Which words are important for early reading instruction? A mainstream view maintains that certain words should be privileged early in development due to their being frequent and/or containing idiosyncratic structure. This study sought to answer this question by examining the words from six commonly used instructional resources (1005 total unique words). Results show noteworthy disagreement about the words that should be taught to early readers, and the properties that these words should contain. For example, only 28 words (3%) are shared across the six resources, while the majority of words are present in one resource and shared by no others (560 words; 56%). Results are discussed in the context of established theories of learning that help guide the discussion about the aspects of the language that influence reading development, and an empirical method of selecting words based on observable properties of words is proposed."

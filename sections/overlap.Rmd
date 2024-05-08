@@ -21,7 +21,7 @@ intersect_words_table = matrix(intersect_words_, nrow = 4, ncol = 7)
 ```
 
 
-Basic descriptive data about each source is shown in Table XX, including frequency measures derived from three different corpora^[The differences in word frequency for the sources don't tend to differ substantially across different text corpora. From this point forward only frequencies from the TASA corpus are provided, though the supplement contains additional frequency data from corpora other than TASA.]. The differences in the word properties of the lists is considered more thoroughly with regard to research question 2, we will say a few things about the data at this point. Simple descriptive statistics foreshadow a general fact about the words in the six resources: they vary in a number of meaningful ways. The frequency of the words as measured from different language corpora show general variation. Fundations, Fry, and Dolch tend to contain the most frequent words as measured by several corpora. For example, their values from the TASA corpus (children's academic texts) are 6113, 5673, and 5311, respectively. Dolch and Fry tend to contain shorter words (both with 4 letters per word on average). By contrast, the resource by Kilpatrick tends to contain less frequent words (true when comparing to all other resources for all corpora shown) and words that are longer (on average six letters and two syllables per word). Kilpatrick's words tend to differentiate from the other five resources in all the analyses presented hereafter.
+Basic descriptive data about each source is shown in Table XX, including frequency measures derived from three different corpora^[The differences in word frequency for the sources don't tend to differ substantially across different text corpora. From this point forward only frequencies from the TASA corpus are provided, though the supplement contains additional frequency data from corpora other than TASA.]. The differences in the word properties of the lists is considered more thoroughly with regard to research question 2, though we will say a few things about the data at this point. Simple descriptive statistics foreshadow a general fact about the words in the six resources: they vary in a number of meaningful ways. Fundations, Fry, and Dolch tend to contain the most frequent words as measured by several corpora. For example, their values from the TASA corpus (children's academic texts) are 6113, 5673, and 5311, respectively. Dolch and Fry tend to contain shorter words (both with 4 letters per word on average). By contrast, the resource by Kilpatrick tends to contain less frequent words (true when comparing to all other resources for all corpora shown) and words that are longer (on average six letters and two syllables per word). Kilpatrick's words tend to differentiate from the other five resources in all the analyses presented hereafter.
 
 ```{r SourcesDesc, echo=FALSE, message=FALSE, warning=FALSE}
 table_desc = all_lists %>% 
@@ -75,8 +75,132 @@ all_lists %>%
 
 ```
 
+```{r}
 
-Across the six instructional sources included for analysis here, only `r length(intersect_words)` of all unique words are shared across all sources (`r round(length(intersect_words)/length(unique(all_lists$word))*100, digits = 1)`% of types). These words tend to be very common words, all ranking in the top 20% of words by frequency. This set of words is shown in Table X.
+
+counts_by_source = all_lists %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  left_join(all_lists %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              ungroup() %>% 
+              group_by(word) %>% 
+              summarise(count = n()) %>% 
+              ungroup()) %>% 
+  ungroup() %>% 
+  group_by(source, count) %>% 
+  summarise(counts = n()) %>% 
+  left_join(all_lists %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              summarise(n = n()) %>% 
+              ungroup()) %>% 
+  mutate(prop = counts/n) %>% 
+  ungroup()
+
+
+counts_by_source_without_kilpatrick = all_lists %>% 
+  filter(source != "kilpatrick") %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  left_join(all_lists %>% 
+              filter(source != "kilpatrick") %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              ungroup() %>% 
+              group_by(word) %>% 
+              summarise(count = n()) %>% 
+              ungroup()) %>% 
+  ungroup() %>% 
+  group_by(source, count) %>% 
+  summarise(counts = n()) %>% 
+  left_join(all_lists %>% 
+              filter(source != "kilpatrick") %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              summarise(n = n()) %>% 
+              ungroup()) %>% 
+  mutate(prop = counts/n) %>% 
+  ungroup()
+
+
+
+all_lists %>%  filter(source == "kilpatrick") %>% distinct(word) %>% nrow()
+```
+
+Resources vary in how likely they are to idiosyncratically select words that aren't in other resources, and there is disagreement about which words should be selected for instruction. This is expressed in Figure XX where resources are broken down in terms of the how many of their words appear in other resources (see Venn Diagram figure below for a complementary depiction of the data). The proportion of words in each category is also expressed, where a larger (and darker) bar indicates a greater proportion. Versions of the data with and without the Kilpatrick program are provided due to the high number of words that only appear there. No resources tend to only choose words that are present in all other lists. Fundations contains the most words that are present in all other resources with 15% of words appearing in all six lists (41% appearing in all five lists with Kilpatrick removed). Kilpatrick's program tends to select word in the most idiosyncratic fashion, with the vast majority of its words being present in no other programs (`r counts_by_source %>% filter(source == "kilpatrick" & count == 1) %>% pull(counts)` words; `r round(counts_by_source %>% filter(source == "kilpatrick" & count == 1) %>% pull(counts)/counts_by_source %>% filter(source == "kilpatrick" & count == 1) %>% pull(n), digits = 2)`% of those words)^[See also the outer rim of Figure XX in region labeled "Kilpatrick" for a visual depiction of this set of words.].
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap='Each resource is broken down in terms of the number of resources its words appear in. Bars are labeled with the number of resources those words appear in (i.e., the number six indicates that those words appear in all six resources), and the size of each bar segment corresponds to a proportion of words in that resource (e.g., over 75% of the words in Kilpatrick appear only in that resource). Panel A shows these data for all six lists, and Panel B shows these data with Kilpatrick removed.', fig.height=8, fig.width=7}
+
+# stacked barplot (with kilpatrick)
+plot_a = counts_by_source %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
+  ungroup() %>% 
+  arrange(desc(source)) %>% 
+  mutate(order = seq_len(n())) %>%
+  ggplot(aes(prop, reorder(source, order), fill = count)) +
+  geom_bar(position = "stack", stat = "identity", color = "black") +
+  geom_text(aes(label = count), position = position_stack(vjust = 0.5)) +
+  scale_fill_continuous(low = "grey22", high = "white") +
+  theme_apa() +
+  labs(x = "Proportion",
+       y = "Resource",
+       fill = "# of Resources") +
+  theme(legend.position = "right")
+
+
+# version without Kilpatrick
+plot_b =  counts_by_source_without_kilpatrick %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
+  ungroup() %>% 
+  arrange(desc(source)) %>% 
+  mutate(order = seq_len(n())) %>% 
+  ggplot(aes(prop, reorder(source, order), fill = count)) +
+  geom_bar(position = "stack", stat = "identity", color = "black") +
+  geom_text(aes(label = count), position = position_stack(vjust = 0.5)) +
+  scale_fill_continuous(low = "grey22", high = "white") +
+  theme_apa() +
+  labs(x = "Proportion",
+       y = "Resource",
+       fill = "# of Resources") +
+  theme(legend.position = "right")
+
+
+plot_grid(plot_a, plot_b, labels = c("A", "B"), ncol = 1)
+
+
+```
+
+Only `r length(intersect_words)` of all unique words are shared across all sources (`r round(length(intersect_words)/length(unique(all_lists$word))*100)`% of all unique words). This overlap can be seen visually in the diagram in Figure XX. Any overlapping portion of the diagram represents the overlap from the sources specified by that region, with the outer portions of the figure showing words unique to a specific source and no others (corresponding to the bar labeled "1" for that program in Figure XX). The very center of the figure represents those words that are common across all sources.
+
+```{r venn, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='A diagram depicting the overlap in words across sources. Raw counts are provided, with a percentage provided in parentheses indicating the proportion of unique words across all sources that a particular overlapping set represents. Values less than 6 represent less than 1% of all words and are shown as 0%. Sources can be identified by the outline color of the set. The line color identifies the resource (e.g., Fundations is the color teal), the color of the shade represents how many words populate a given region (darker = more words; see legend). The very center of the figure shows the 28 words that are common across all resources, discussed in the section titled "The Degree of Overlap Across Sources", also depicted in the rightmost bar of Figure XX. The figure was generated using the ggVennDiagram package in R (Gao, 2022).'}
+
+#tmp = all_lists_
+#names(tmp) = c("Kilpatrick", "Dolch", "Fry", "Fundations", "Wonders", "Fountas & Pinnell")
+
+#COLORS_SOURCE2 = c('darkblue', 'darkred', 'darkorange', 'turquoise', 'red', 'green')
+#ggVennDiagram(tmp, label_size = 2, label_alpha = 0, set_size = 2.5) +
+#  scale_fill_gradient(low = 'white', high = 'firebrick') +
+#  scale_color_manual(values = COLORS_SOURCE2) +
+#  labs(fill = 'Count') +
+#  theme(legend.title = element_text(size = 11))
+
+knitr::include_graphics('data/venn_figure.png')
+
+
+```
+
+The 28 words shared by all resources tend to be very common words, all ranking in the top 20% of words by frequency. This set of words is shown in Table X.
 
 ```{r intersectTable, echo=FALSE, warning=FALSE, message=FALSE}
 intersect_words_table %>% 
@@ -95,33 +219,7 @@ plot_a_data = all_lists %>%
 
 ```
 
-This overlap can be seen visually in the diagram in Figure 1. Any overlapping portion of the diagram represents the overlap from the sources specified by that region, with the outer portions of the figure showing words unique to a specific source and no others. The very center of the figure represents those words that are common across all sources.
-
-```{r venn, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='A diagram depicting the overlap in words across sources. Raw counts are provided, with a percentage provided in parentheses indicating the proportion of unique words across all sources that a particular overlapping set represents. Values less than 6 represent less than 1% of all words and are shown as 0%. Sources can be identified by the outline color of the set. The line color identifies the resource (e.g., Fundations is the color teal), the color of the shade represents how many words populate a given region (darker = more words; see legend). The very center of the figure shows the 28 words that are common across all resources, discussed in the section titled "The Degree of Overlap Across Sources", also depicted in the rightmost bar of Figure XX. The figure was generated using the ggVennDiagram package in R (Gao, 2022).'}
-
-#tmp = all_lists_
-#names(tmp) = c("Kilpatrick", "Dolch", "Fry", "Fundations", "Wonders", "Fountas & Pinnell")
-
-#COLORS_SOURCE2 = c('darkblue', 'darkred', 'darkorange', 'turquoise', 'red', 'green')
-#ggVennDiagram(tmp, label_size = 2, label_alpha = 0, set_size = 2.5) +
-#  scale_fill_gradient(low = 'white', high = 'firebrick') +
-#  scale_color_manual(values = COLORS_SOURCE2) +
-#  labs(fill = 'Count') +
-#  theme(legend.title = element_text(size = 11))
-
-knitr::include_graphics('data/venn_figure.png')
-
-words_unique_to_kilpatrick = all_lists %>% 
-  filter(source == "kilpatrick") %>% 
-  group_by(word) %>% 
-  summarise(count = first(count)) %>% 
-  pull(word)
-
-```
-
-The number of words that are unique to a single resource is high by comparison, with `r max(plot_a_data$n)` (representing `r max(plot_a_data$prop)`% of all unique words). Of these words, the program that possesses the most unique words is the Kilpatrick program, which has `r length(words_unique_to_kilpatrick)` of the words unique to a single program, representing `r length(words_unique_to_kilpatrick)/length(unique(all_lists$word))` of all words in all programs[^overlap-2]. The number of unique words decreases as the number of resources increases (Fig 2), which demonstrates the general tendency for programs to select words in an idiosyncratic fashion; it becomes increasingly unlikely that programs agree on important words for instruction the more programs one considers. This trend holds even when removing the words in Kilpatrick's program (Panel B), though the number of words that all the other five programs share increases considerably (from 28 words to 79 words).
-
-[^overlap-2]: See outer rim of Figure 1 in region labeled "Kilpatrick".
+The number of words that are unique to a single resource (i.e., selected by one resource and no other) is quite high by comparison, with `r max(plot_a_data$n)` (representing `r max(plot_a_data$prop)`% of all unique words). The number of unique words decreases as the number of resources increases (Figure XX), which again demonstrates the general tendency for programs to select words in an idiosyncratic fashion; it becomes increasingly unlikely that programs agree on important words for instruction the more programs one considers. This trend holds even when removing the words in Kilpatrick's program (Panel B), though the number of words that all the other five programs share increases considerably (from 28 words to 79 words).
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap='Both panels show how many words are shared by each quantity of resources. Panel A shows these values when considering all six possible resources. Panel B shows the data when removing the words in the Kilpatrick program (5 total programs possible). The leftmost bar in each panel shows the number of words that only appear in a single resource and no others. The rightmost bar shows the words shared by all resources. Few words are shared by all resources: 28 words when considering all six lists, and 79 when considering all lists except Kilptrick.', fig.width=7}
 plot_a = plot_a_data %>% 
@@ -195,14 +293,121 @@ tibble(word = words_in_one_source) %>%
   select(final) %>% 
   pull(final) %>% 
   matrix(ncol = 5) %>% 
-  apa_table(caption = 'A sample of 50 words unique only to a single resource (an no other resources) is shown. Words are provided with measures of rank frequency taken from the WCBC. Words that are not present in that corpus are marked with "NR", indicating that they are very infrequent in texts written for children.', col.names = NULL)
+  apa_table(caption = 'A sample of 50 words unique only to a single resource (and no other resources) is shown. Words are provided with measures of rank frequency taken from the WCBC. Words that are not present in that corpus are marked with "NR", indicating that they are very infrequent in texts written for children.', col.names = NULL)
 
 ```
 
+We've provided several analyses designed to understand the extent to which programs overlap in the words they select, and how many words are selected idiosyncratically by the programs included in the study. As a final perspective on this question, Figure XX depicts every word for the six lists arranged by increasing frequency, where each word is a tile. If a tile is shaded in, then that word is present in the program. The inconsistent ways in which lists select words is visually depicted by the inconsistent way in which the black tiles extend horizontally across the plot. While examining the data at this scale abstracts away from the identities of the words depicted, it demonstrates the general trend in large scale: words tend not to be shared across the lists. By arranging words in terms of their frequency, we are able to see that lists vary in how much frequency plays a part in the selection criteria for words. This is discussed in more detail in the next sections alongside other results concerning the underlying properties of the words present in each of these resources.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.cap='A tileplot is shown depicting all words present in all six resources, arranged in terms of frequency (frequency is increasing vertically on the y-axis). Each word is depicted as a black bar within a given resource. A word is shared across all six resource if the black bar extends continuously across all six along the x-axis.', fig.width=3}
+
+all_lists %>% 
+  group_by(word) %>% 
+  summarise(tasa_freq = first(tasa_freq)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "dolch") %>% 
+              distinct(word) %>% 
+              mutate(Dolch = word) %>% 
+              select(word, Dolch)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "fry") %>% 
+              distinct(word) %>% 
+              mutate(Fry = word) %>% 
+              select(word, Fry)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "fundations") %>% 
+              distinct(word) %>% 
+              mutate(Fundations = word) %>% 
+              select(word, Fundations)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "fountas_pinnell") %>% 
+              distinct(word) %>% 
+              mutate(`F&P` = word) %>% 
+              select(word, `F&P`)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "kilpatrick") %>% 
+              distinct(word) %>% 
+              mutate(Kilpatrick = word) %>% 
+              select(word, Kilpatrick)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "wonders") %>% 
+              distinct(word) %>% 
+              mutate(Wonders = word) %>% 
+              select(word, Wonders)) %>% 
+  select(-word) %>% 
+  pivot_longer(Dolch:Wonders, names_to = "source", values_to = "word") %>%
+  mutate(tasa_freq = case_when(is.na(tasa_freq) ~ 1,
+                               TRUE ~ tasa_freq + 1)) %>% 
+  ggplot(aes(source, reorder(word, tasa_freq))) +
+  geom_tile()  +
+  theme_apa() +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.y = element_text(size = 11)) +
+  labs(x = "Resource",
+       y = "Word (less frequent ↔ more frequent)") 
+  
+  
+```
+
+
 ## Discussion
+One might suspect that instructional approaches identify similar words for instruction in the classroom. This would indicate shared assumptions about the words that are important for the development of early reading vocabulary. Based on the lists included in this study, this is clearly not the case. Only 28 words are shared by all six resources analyzed here, representing only 3% of the all unique words across all resources.
 
-One might reasonably assume that instructional approaches would identify similar words words for instruction in the classroom. This would indicate shared assumptions about the words that are important for reading vocabulary instruction. Based on the data aggregated for this study, this is clearly not the case. Only 28 words are shared by all six resources analyzed here, representing only 3% of the all unique words across all resources.
+```{r}
+number_of_words_in_only_one_resource_without_kilpatrick = counts_by_source_without_kilpatrick %>% 
+  filter(count == 1) %>% 
+  summarise(counts = sum(counts)) %>% 
+  pull(counts)
 
-By contrast, many more words (`r all_lists %>% filter(count == 1) %>%  nrow()`) are isolated to a single resource, representing over half of the unique words that can be found across all six programs. This suggests that instructional approaches tend to select words in an idiosyncratic way, not bound by selection principles that are similar to those of other programs. The tendency to idiosyncratically select words that are in no (or few) other programs varies across the resources as well. For example, the Kilpatrick program has the strong tendency to select words not selected by other programs (326 of all words across six programs are unique to Kilpatrick, equaling 32% of all words; Figure 1). Others are more likely to select words that at least some of the other programs also select (e.g. Wonders contains only 19 words unique to it and no other program, and Dolch contains 42 - 2% and 4% of all words respectively; Figure 1). Moreover these findings suggest something troubling about the experiences of children learning to read from these popular instructional resources: their experiences differ in terms of the words that they learn how to read.
 
-The next section concerns the properties of the words found in these resources, considering the possibility that programs agree on the structure of the words contained in the programs despite selecting different words for use in the classroom.
+number_unique_words_without_kilpatrick = all_lists %>% 
+  filter(source != "kilpatrick") %>% 
+  distinct(word) %>% 
+  nrow()
+
+number_of_words_in_only_one_resource = counts_by_source %>% 
+  filter(count == 1) %>% 
+  summarise(counts = sum(counts)) %>% 
+  pull(counts)
+
+
+number_of_words_in_kilpatrick_and_no_other = counts_by_source %>% 
+  filter(count == 1 & source == "kilpatrick") %>% 
+  pull(counts)
+
+
+number_of_words_in_kilpatrick = all_lists %>% 
+  filter(source == "kilpatrick") %>% 
+  distinct(word) %>% 
+  nrow()
+
+
+number_of_words_in_fp_and_no_other = counts_by_source %>% 
+  filter(count == 1 & source == "fountas_pinnell") %>% 
+  pull(counts)
+
+number_of_words_in_fp = all_lists %>% 
+  filter(source == "fountas_pinnell") %>% 
+  distinct(word) %>% 
+  nrow()
+
+number_of_words_in_kilpatrick_and_no_other = counts_by_source %>% 
+  filter(count == 1 & source == "kilpatrick") %>% 
+  pull(counts)
+
+
+number_of_words_in_kilpatrick = all_lists %>% 
+  filter(source == "kilpatrick") %>% 
+  distinct(word) %>% 
+  nrow()
+
+
+```
+
+By contrast, many more words (`r number_of_words_in_only_one_resource`) are present in a single resource, representing over half (`r round(number_of_words_in_only_one_resource/length(unique(all_lists$word)), digits = 2)`%) of the unique words that can be found across all six programs. While this value drops considerably when removing the Kilpatrick program (`r number_of_words_in_only_one_resource_without_kilpatrick`; `r format(round(number_of_words_in_only_one_resource_without_kilpatrick/number_unique_words_without_kilpatrick, digits = 2), nsmall = 2)`), the observation still holds. This suggests that instructional approaches tend to select words in an idiosyncratic way, not bound by selection principles that are similar to those of other programs. The tendency to idiosyncratically select words that are in no (or few) other programs varies across the resources as well. For example, the Kilpatrick program has the strong tendency to select words not selected by other programs (`r number_of_words_in_kilpatrick_and_no_other` of all words across six programs are unique to Kilpatrick; `r round(number_of_words_in_kilpatrick_and_no_other/number_of_words_in_kilpatrick, digits = 2)`% of words). Fountas & Pinnell is the next most likely to select words not present in any other programs with `r number_of_words_in_fp_and_no_other` words (`r round(number_of_words_in_fp_and_no_other/number_of_words_in_fp, digits = 2)`%).
+
+Other programs are more likely to select words that at least some of the other programs also select. Fundations contains a distribution more indicative of such a profile, with `r counts_by_source %>% filter(source == "fundations" & count == 6) %>%  pull(prop) %>% round(digits = 2)`% of those words appearing in all other resources and `r counts_by_source %>% filter(source == "fundations" & count == 5) %>%  pull(prop) %>% round(digits = 2)`% of words appearing in five other resources. However, even here many words are idiosyncratic to this program, with `r counts_by_source %>% filter(source == "fundations" & count == 1) %>%  pull(prop) %>% round(digits = 2)`% of words (`r counts_by_source %>% filter(source == "fundations" & count == 1) %>%  pull(counts)` words) found only in this list and no other.
+
+In summary, these findings suggest something troubling about the experiences of children learning to read from these popular instructional resources: their experiences differ in terms of the words that they learn how to read. The next section concerns the properties of the words found in these resources, considering the possibility that programs agree on the _structure_ (and other properties) of the words selected despite selecting different words for use in the classroom.
