@@ -8,10 +8,30 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+# Frequency
+
+Description from original section on "properties":
+The Wisconsin Children's Book Corpus (WCBC) contains texts commonly read by and to pre-readers (up to the age of six). Data from the Child Language Data Exchange System (CHILDES) represents language from children's spoken language environment (the data used here are from transcripts for children in the US up to the age of six). The Educator's Word Frequency Guide (from Touchstone Applied Science Associates; TASA) captures information about words in literature children are commonly exposed to in grade school, and The Corpus of Contemporary American English is a large corpus of texts aimed at adult readers (COCA; this subset is adult fiction).
+
+Descriptives of each of the four original corpora
+```{r}
+# data rely on reads from paper.Rmd
+
+frequency_by_corpus(all_lists) %>% 
+  rbind(coca %>% 
+              summarise(M = mean(freq, na.rm = T),
+                        SD = sd(freq, na.rm = T),
+                        max = max(freq)) %>% 
+              mutate(Corpus = "COCA")) %>%  # add COCA because it was not included in all_list
+  apa_table(caption = "Descriptive Characteristics for Word Frequencies using for All Words in the Database", note = "Values provided as raw frequencies. Min values are always 1 and have been excluded. WCBC = Wisconsin Childrens Book Corpus; TASA = Frequencies from the Educator's Word Frequency Guide by Touchstone Applied Science Associates; CHILDES = The Child Language Data Exchange System; COCA = The Corpus of Contemporary American English", escape = FALSE)
 
 
-# Descriptive plot of frequency by corpus and source
-This is the one where panels are sources rather than panels being corpora from which frequency distributions are drawn
+```
+
+
+
+## Descriptive plot of frequency by corpus and source
+This is the one where panels are sources rather than panels being corpora from which frequency distributions are drawn.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 nsd = Zs %>% 
