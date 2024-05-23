@@ -7,6 +7,32 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Description of measures
+
+
+```{r variable_descriptors_examples, echo=FALSE, warning=FALSE, message=FALSE}
+
+read_csv('../data/variable_descriptor_examples.csv') %>% 
+  apa_table()
+
+#tibble(
+#  var = c("Frequency", "Age of Acquisition", "Consistency", "Imageability", "Letters", "Syllables"),
+#  description = c("high frequency.",
+#                     "low age of acquisition (i.e., learned earlier in life)",
+#                     "low consistency (i.e., inconsistent). These words have idiosyncratic print-speech structure.",
+#                     "low imageability. These words are tend to be more abstract.",
+#                     "few letters. These are short words, orthographically speaking.",
+#                     "few syllables. These are short words in terms of the number of syllables."),
+#  example = c('the, to, a', 
+#               'I,  door,  animal', 
+#               'an,  women,  two',
+#               'an,  is,  are',
+#               'a,  I,  am',
+#               'a,  I,  am')) %>% 
+  #rename(`Variable` = var, `A low value indicates...` = description, `Example words` = example) %>% 
+#  apa_table()
+
+```
 
 # Frequency
 

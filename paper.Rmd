@@ -77,13 +77,20 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 lapply(read.csv('scripts/requirements.txt', stringsAsFactors = F, header = F)[[1]], require, ch = T)
 source('scripts/utilities.R')
 
-source('scripts/Zs.R')
+#source('scripts/Zs.R') # replaced with structured data read (see Zs.R for specs on this object)...
+Zs = read_csv("data/Zs.csv")
+source('scripts/wcbc.R')
+
+childes = read_csv('data/childes.csv')
+
+
 all_lists = read_csv('data/all_lists_v2.csv') # old call read_csv('data/all_lists.csv')
 source('scripts/sets.R')
 
 
 # added this coca read because it is needed in one of the sections in its raw form
 source('scripts/coca.R')
+source('scripts/tasa.R')
 
 COLORS_CORPUS = c('WCBC' = 'firebrick3',
            'COCA' = 'darkslategray',
@@ -126,7 +133,6 @@ source('scripts/lexical_models_affil.R')
 ```{r overlap_data, include=FALSE}
 source('scripts/overlap.R')
 ```
-
 
 ```{r child='sections/overlap.Rmd'}
 ```

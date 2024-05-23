@@ -1,14 +1,15 @@
 ```{r WordsInLowerLeft}
-rank_inconsistency_rank_frequency = wcbc %>% 
-  filter(word %in% unique(all_lists$word)) %>%
+
+rank_inconsistency_rank_frequency = #tasa %>% 
+  #filter(word %in% all_lists$word) %>%
+  #filter(is.element(word, unique(all_lists$word))) %>%
+  tasa[tasa$word %in% all_lists$word, ] %>% 
   arrange(-desc(consistency)) %>% 
   mutate(consistency_rank = seq_len(n())) %>%
-  arrange(desc(wcbc_freq)) %>% 
-  mutate(freq_rank = seq_len(n())) %>% 
-  select(freq_rank, consistency_rank, word)
+  select(tasa_rank, consistency_rank, word)
 
 lower_left_quadrant_words = rank_inconsistency_rank_frequency %>% 
-  filter(freq_rank < mean(rank_inconsistency_rank_frequency$freq_rank) &
+  filter(tasa_rank < mean(rank_inconsistency_rank_frequency$tasa_rank) &
            consistency_rank < mean(rank_inconsistency_rank_frequency$consistency_rank)) %>% 
   pull(word)
 
@@ -16,7 +17,7 @@ lower_left_quadrant_words = rank_inconsistency_rank_frequency %>%
 
 # Question 3: Frequency and Consistency
 
-We have seen that instructional sources vary in terms of the words are selected for instruction, and that this variability exists at a deeper level than the words themselves (i.e., the properties of the words are an additional source of variability). But can words be selected for instruction in an empirical way, based on observable properties? Our study here has been focused on two properties that are known to matter for learning: *frequency* and *consistency*.
+We have seen that instructional sources vary in terms of the words are selected for instruction, and that this variability exists at a deeper level than the words themselves (i.e., the properties of the words are an additional source of variability). But can words be selected for instruction in an empirical way, based on observable properties? Our study here has been focused on a number of properties that are known to matter for learning, but here we consider two more closely: *frequency* and *consistency*.
 
 The prevailing educational approach involves using words that are common, and those that exhibit atypical structure, or some combination therein. Approaches differentially weight these two factors. Fortunately, each of these dimensions can be measured. A number of methods exist for this, several of which have been used in the previous analyses. Therefore, by measuring the extent to which words load across both variables, we can derive the most common, structurally atypical words of some set directly.
 
@@ -33,9 +34,9 @@ In order to simplify the interpretation the words' postion within the two-dimens
 
 
 plot_1 = rank_inconsistency_rank_frequency  %>% 
-  ggplot(aes(freq_rank, consistency_rank)) +
+  ggplot(aes(tasa_rank, consistency_rank)) +
   geom_hline(aes(yintercept = mean(consistency_rank))) +
-  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_vline(aes(xintercept = mean(tasa_rank))) +
   theme_apa() +
   labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Key")+ 
   annotate("text", x = 170, y = 650, label = "Consistent & Frequent", size = 2.5) +
@@ -47,12 +48,12 @@ plot_1 = rank_inconsistency_rank_frequency  %>%
   scale_x_continuous(limits = c(0, 800))
 
 plot_2 = rank_inconsistency_rank_frequency %>% 
-  mutate(lower_left = case_when(consistency_rank < mean(consistency_rank) & freq_rank < mean(freq_rank) ~ T,
+  mutate(lower_left = case_when(consistency_rank < mean(consistency_rank) & tasa_rank < mean(tasa_rank) ~ T,
                                 TRUE ~ F)) %>% 
-  ggplot(aes(freq_rank, consistency_rank, label = word, color = lower_left)) +
+  ggplot(aes(tasa_rank, consistency_rank, label = word, color = lower_left)) +
   #geom_abline(intercept = 0, slope = 1) + 
   geom_hline(aes(yintercept = mean(consistency_rank))) +
-  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_vline(aes(xintercept = mean(tasa_rank))) +
   #geom_text(position = position_jitter(height = 100)) +
   geom_point(size = 1) +
   labs(x = "Rank Frequency", title = "Target Quadrant (in black)") +
@@ -73,7 +74,7 @@ rank_inconsistency_rank_frequency$distance = NA
 
 for (i in seq(nrow(rank_inconsistency_rank_frequency))){
   ic_ = rank_inconsistency_rank_frequency$consistency_rank[i]
-  f = rank_inconsistency_rank_frequency$freq_rank[i]
+  f = rank_inconsistency_rank_frequency$tasa_rank[i]
   
   distance = l2(c(0, 0), c(ic_, f))
   
@@ -85,13 +86,13 @@ for (i in seq(nrow(rank_inconsistency_rank_frequency))){
 rank_inconsistency_rank_frequency = rank_inconsistency_rank_frequency %>% 
   arrange(-desc(distance)) %>% 
   mutate(rank = seq_len(n())) %>% 
-  select(rank, word, distance, freq_rank, consistency_rank)
+  select(rank, word, distance, tasa_rank, consistency_rank)
 
 
 rank_inconsistency_rank_frequency %>% 
   filter(rank <= 20) %>% 
   rename(Rank = rank, Word = word, `Distance (L2)` = distance,
-         `Inconsistency (Rank)` = consistency_rank, `Frequency (Rank)` = freq_rank) %>% 
+         `Inconsistency (Rank)` = consistency_rank, `Frequency (Rank)` = tasa_rank) %>% 
   apa_table(caption = "Top Ranked Words across Sources based Jointly on Inconsistency and Frequency", note = "Rankings derived from Euclidean distance of inconsistency and frequency ranking against the origin (0, 0). The calculated distance is also provided.")
 
 ```
@@ -132,9 +133,9 @@ The critical observations here are (1) the sources vary in terms of their covera
 plot_dolch = rank_inconsistency_rank_frequency %>% 
   mutate(in_program = case_when(word %in% all_lists_$Dolch ~ TRUE,
                                 TRUE ~ FALSE)) %>% 
-  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
   geom_hline(aes(yintercept = mean(consistency_rank))) +
-  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_vline(aes(xintercept = mean(tasa_rank))) +
   geom_point(size = .5) +
   labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Dolch") +
   scale_color_manual(values = c("grey88", "black")) +
@@ -145,9 +146,9 @@ plot_dolch = rank_inconsistency_rank_frequency %>%
 plot_fp = rank_inconsistency_rank_frequency %>% 
   mutate(in_program = case_when(word %in% all_lists_$Fountas_Pinnell ~ TRUE,
                                 TRUE ~ FALSE)) %>% 
-  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
   geom_hline(aes(yintercept = mean(consistency_rank))) +
-  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_vline(aes(xintercept = mean(tasa_rank))) +
   geom_point(size = .5) +
   labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Fountas & Pinnell") +
   scale_color_manual(values = c("grey88", "black")) +
@@ -159,9 +160,9 @@ plot_fp = rank_inconsistency_rank_frequency %>%
 plot_fry = rank_inconsistency_rank_frequency %>% 
   mutate(in_program = case_when(word %in% all_lists_$Fry ~ TRUE,
                                 TRUE ~ FALSE)) %>% 
-  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
   geom_hline(aes(yintercept = mean(consistency_rank))) +
-  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_vline(aes(xintercept = mean(tasa_rank))) +
   geom_point(size = .5) +
   labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Fry") +
   scale_color_manual(values = c("grey88", "black")) +
@@ -173,9 +174,9 @@ plot_fry = rank_inconsistency_rank_frequency %>%
 plot_fundations = rank_inconsistency_rank_frequency %>% 
   mutate(in_program = case_when(word %in% all_lists_$Fundations ~ TRUE,
                                 TRUE ~ FALSE)) %>% 
-  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
   geom_hline(aes(yintercept = mean(consistency_rank))) +
-  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_vline(aes(xintercept = mean(tasa_rank))) +
   geom_point(size = .5) +
   labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Fundations") +
   scale_color_manual(values = c("grey88", "black")) +
@@ -187,9 +188,9 @@ plot_fundations = rank_inconsistency_rank_frequency %>%
 plot_kilpatrick = rank_inconsistency_rank_frequency %>% 
   mutate(in_program = case_when(word %in% all_lists_$Kilpatrick ~ TRUE,
                                 TRUE ~ FALSE)) %>% 
-  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
   geom_hline(aes(yintercept = mean(consistency_rank))) +
-  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_vline(aes(xintercept = mean(tasa_rank))) +
   geom_point(size = .5) +
   labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Kilpatrick") +
   scale_color_manual(values = c("grey88", "black")) +
@@ -201,9 +202,9 @@ plot_kilpatrick = rank_inconsistency_rank_frequency %>%
 plot_wonders = rank_inconsistency_rank_frequency %>% 
   mutate(in_program = case_when(word %in% all_lists_$Wonders ~ TRUE,
                                 TRUE ~ FALSE)) %>% 
-  ggplot(aes(freq_rank, consistency_rank, color = in_program)) +
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
   geom_hline(aes(yintercept = mean(consistency_rank))) +
-  geom_vline(aes(xintercept = mean(freq_rank))) +
+  geom_vline(aes(xintercept = mean(tasa_rank))) +
   geom_point(size = .5) +
   labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Wonders") +
   scale_color_manual(values = c("grey88", "black")) +

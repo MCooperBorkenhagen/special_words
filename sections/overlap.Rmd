@@ -346,7 +346,7 @@ all_lists %>%
         axis.ticks.y = element_blank(),
         axis.title.y = element_text(size = 11)) +
   labs(x = "Resource",
-       y = "Word (less frequent ↔ more frequent)") 
+       y = "Word (less frequent to more frequent)") 
   
   
 ```
