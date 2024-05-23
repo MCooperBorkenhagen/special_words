@@ -82,6 +82,10 @@ tasa = tasa %>%
 # join with WCBC
 wcbc = read_csv('data/wcbc_freq.csv') %>% 
   rename(word = orth, wcbc_rank = rank) %>% 
+  mutate(source = "wcbc")
+
+# tasa is the reference corpus  
+tasa = tasa %>% 
   mutate(letters = str_length(word)) %>% 
   left_join(read_csv('data/aoa.csv')) %>% 
   left_join(read_csv('data/imageability.csv')) %>% 
@@ -89,9 +93,9 @@ wcbc = read_csv('data/wcbc_freq.csv') %>%
   left_join(consistency) %>% 
   left_join(childes) %>% 
   left_join(coca) %>% 
-  left_join(tasa) %>% 
+  left_join(wcbc) %>% 
   left_join(unl) %>% 
-  mutate(source = 'wcbc') # add this for the join with msd below
+  mutate(source = 'tasa') # add this for the join with msd below
 
 
 # clean up
@@ -102,8 +106,21 @@ msd = wcbc %>%
   summarise(wcbc_m = mean(wcbc_freq, na.rm = T),
             wcbc_sd = sd(wcbc_freq, na.rm = T),
             wcbc_rank_m = mean(wcbc_rank, na.rm = T),
-            wcbc_rank_sd = sd(wcbc_rank, na.rm = T),
-            letters_m = mean(letters, na.rm = T),
+            wcbc_rank_sd = sd(wcbc_rank, na.rm = T)) 
+
+wcbc = wcbc %>% 
+  left_join(msd) %>% 
+  mutate(wcbc_freq_z = (wcbc_freq - wcbc_m)/wcbc_sd,
+         wcbc_rank_z = (wcbc_rank - wcbc_rank_m)/ wcbc_rank_sd) %>% 
+  select(word, wcbc_freq, wcbc_rank, wcbc_freq_z, wcbc_rank_z) %>% 
+  mutate(source = 'wcbc')
+
+rm(msd)
+
+# First calculate the means and SDs to standardize for all words in the TASA set.
+
+msd = tasa %>% 
+  summarise(letters_m = mean(letters, na.rm = T),
             letters_sd = sd(letters, na.rm = T),
             aoa_m = mean(aoa, na.rm = T),
             aoa_sd = sd(aoa, na.rm = T),
@@ -115,28 +132,27 @@ msd = wcbc %>%
             syllables_sd = sd(syllables, na.rm = T), 
             consistency_m = mean(consistency, na.rm = T),
             consistency_sd = sd(consistency, na.rm = T)) %>% 
-  mutate(source = 'wcbc')
+  mutate(source = 'tasa')
 
-wcbc %>% 
+tasa %>% 
   left_join(msd) %>% 
-  mutate(wcbc_freq_z = (wcbc_freq - wcbc_m)/wcbc_sd,
-         wcbc_rank_z = (wcbc_rank - wcbc_rank_m)/ wcbc_rank_sd,
-         letters_z = (letters - letters_m)/ letters_sd,
+  mutate(letters_z = (letters - letters_m)/ letters_sd,
          morphemes_z = (morphemes - morphemes_m)/ morphemes_sd,
          syllables_z = (syllables - syllables_m)/ syllables_sd,
          aoa_z = (aoa - aoa_m)/ aoa_sd,
          imageability_z = (imageability - imageability_m)/ imageability_sd,
          consistency_z = (consistency - consistency_m)/ consistency_sd) %>% 
-  select(word, wcbc_freq_z, wcbc_rank_z, tasa_freq_z, tasa_rank_z, coca_freq_z, coca_rank_z,
+  left_join(wcbc, by = "word") %>% 
+  select(word, tasa_freq_z, tasa_rank_z, wcbc_freq_z, wcbc_rank_z, coca_freq_z, coca_rank_z,
          childes_freq_z, childes_rank_z, morphemes_z, syllables_z, aoa_z, letters_z, imageability_z, consistency_z) %>%
-  write_csv('data/wcbc_with_z.csv')
+  write_csv('data/tasa_with_z.csv')
 
 rm(msd)
 
 # Generate the Z scores
 
 d = read_csv('data/all_lists_v2.csv') %>% # old version calls ...read_csv('data/all_lists.csv')
-  left_join(read_csv('data/wcbc_with_z.csv'))
+  left_join(read_csv('data/tasa_with_z.csv'))
 
 factor_vars = function(df, src){
   
@@ -238,6 +254,10 @@ Zs = rbind(dolch, fry, fundations, kilpatrick, wonders, fountas_pinnell) %>%
                             source == 'kilpatrick' ~ 'Kilpatrick',
                             source == 'wonders' ~ 'Wonders',
                             source == 'fountas_pinnell' ~ 'Fountas & Pinnell'))
+
+
+Zs %>% 
+  write_csv('data/Zs.csv')
 
 
 rm(dolch, fry, fundations, kilpatrick, wonders, d, factor_vars, childes_msd, coca_msd, consistency, tasa_msd)

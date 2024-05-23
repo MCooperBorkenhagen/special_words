@@ -16,7 +16,7 @@ tmp = Zs %>%
 z_tests = split(tmp$Z, tmp$source) %>% 
   map(t.test)
 
-z_table_tasa = z_tests_to_table(z_tests) %>% 
+z_table_tasa = z_tests_to_table(z_tests, latex = F) %>% # you will want to change latex = T if rendering into PDF
   mutate(var = 'TASA')
 
 

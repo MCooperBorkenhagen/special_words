@@ -73,17 +73,22 @@ z_tests_to_table = function(l, nsmall = 2, latex = TRUE){
   }
   
   df = df %>% 
-    mutate(b = case_when(p_derived < .001 ~ bold_cell(b, nsmall = nsmall),
-                         TRUE ~ format(b, nsmall = nsmall)), 
-           p = case_when(p_derived == 0 ~ '<.001', # an idiosyncracy of t.test() is that is sometimes give
+    mutate(p = case_when(p_derived == 0 ~ '<.001', # an idiosyncracy of t.test() is that is sometimes give
                          p_derived < .001 ~ '<.001',
                          p_derived < .01 & p_derived >= .001 ~ '<.01',
                          p_derived < .05 & p_derived >= .01 ~ '<.01',
                          p_derived >= .05 ~ as.character(round(p_derived, digits = 2))))
   
   if (latex){
+
+    df = df %>% 
+      mutate(b = case_when(p_derived < .001 ~ bold_cell(b, nsmall = nsmall),
+                           TRUE ~ format(b, nsmall = nsmall)))
+    
     colnames(df) = c('Source', '\\textit{b}', '\\textit{t}', '\\textit{df}', '\\textit{SE}', '95\\% CI', 'CI_low', 'CI_hi', 'p_derived', '\\textit{p}')
-  }
+
+    
+    }
   
   return(df)}
 
@@ -153,3 +158,5 @@ l2 <- function(coordinate_a, coordinate_b) {
 
   return(sqrt(sum((coordinate_b - coordinate_a)^2)))
 }
+
+round_axis_text = function(x) sprintf("%.2f", x)
