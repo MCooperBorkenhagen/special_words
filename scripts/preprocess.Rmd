@@ -1,0 +1,49 @@
+---
+title: "Preprocess"
+output: html_document
+date: "2024-05-21"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Overview
+Just some preprocessing for datasets to reduce the burden on comp time when knitting. This is only done for large datasets - maybe only CHILDES will be necessary here, we will see.
+
+
+```{r read}
+load(file = '../words/childes/data/clean/childes-types.rda')
+childes = childes_eng_na_types_0_71_months %>% 
+  mutate(word = tolower(gloss)) %>% 
+  group_by(word) %>% 
+  summarise(childes = sum(count, na.rm = T)) %>% 
+  arrange(desc(childes)) %>% 
+  mutate(childes_rank = seq_len(n()),
+         source = 'childes') %>% 
+  filter(word %nin% c('xxx'))
+```
+
+
+## Generate ranks, standardize
+
+```{r}
+
+childes_msd = childes %>% 
+  summarise(childes_m = mean(childes, na.rm = T),
+            childes_sd = sd(childes, na.rm = T),
+            childes_rank_m = mean(childes_rank, na.rm = T),
+            childes_rank_sd = sd(childes_rank, na.rm = T)) %>% 
+  mutate(source = 'childes')
+
+childes %>% 
+  left_join(childes_msd) %>% 
+  mutate(childes_freq_z = (childes - childes_m)/ childes_sd,
+         childes_rank_z = (childes_rank - childes_rank_m)/ childes_rank_sd) %>% 
+  select(word, childes, childes_rank, childes_freq_z, childes_rank_z) %>% 
+  write_csv('data/childes.csv')
+
+rm(childes, childes_eng_na_types_0_71_months, childes_msd)
+```
+
+
+
