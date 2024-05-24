@@ -160,3 +160,7 @@ l2 <- function(coordinate_a, coordinate_b) {
 }
 
 round_axis_text = function(x) sprintf("%.2f", x)
+
+whole_axis_text <- function(x) {
+  format(round(x, digits = 0), big.mark = "", scientific = FALSE)
+}
