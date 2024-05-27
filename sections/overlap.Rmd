@@ -219,7 +219,7 @@ plot_a_data = all_lists %>%
 
 ```
 
-The number of words that are unique to a single resource (i.e., selected by one resource and no other) is quite high by comparison, with `r max(plot_a_data$n)` (representing `r max(plot_a_data$prop)`% of all unique words). The number of unique words decreases as the number of resources increases (Figure XX), which again demonstrates the general tendency for programs to select words in an idiosyncratic fashion; it becomes increasingly unlikely that programs agree on important words for instruction the more programs one considers. This trend holds even when removing the words in Kilpatrick's program (Panel B), though the number of words that all the other five programs share increases considerably (from 28 words to 79 words).
+The number of words that are unique to a single resource (i.e., selected by one resource and no other) is quite high by comparison, with `r max(plot_a_data$n)` (representing `r max(plot_a_data$prop)`% of all words). The number of unique words (to a quantity of _n_ sources) decreases as the number of resources increases (Figure XX), which again demonstrates the general tendency for programs to select words in an idiosyncratic fashion; it becomes increasingly unlikely that programs agree on important words for instruction the more words one considers. This trend holds even when removing the words in Kilpatrick's program (Panel B), though the number of words that all the other five programs share increases considerably (from 28 words to 79 words). The results also indicate that the overlap between programs can't be characterized by a lot of near-misses (i.e., programs containing mostly the same words). Such a distribution would skew the other direction.
 
 ```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap='Both panels show how many words are shared by each quantity of resources. Panel A shows these values when considering all six possible resources. Panel B shows the data when removing the words in the Kilpatrick program (5 total programs possible). The leftmost bar in each panel shows the number of words that only appear in a single resource and no others. The rightmost bar shows the words shared by all resources. Few words are shared by all resources: 28 words when considering all six lists, and 79 when considering all lists except Kilptrick.', fig.width=7}
 plot_a = plot_a_data %>% 
@@ -293,7 +293,7 @@ tibble(word = words_in_one_source) %>%
   select(final) %>% 
   pull(final) %>% 
   matrix(ncol = 5) %>% 
-  apa_table(caption = 'A sample of 50 words unique only to a single resource (and no other resources) is shown. Words are provided with measures of rank frequency taken from the WCBC. Words that are not present in that corpus are marked with "NR", indicating that they are very infrequent in texts written for children.', col.names = NULL)
+  apa_table(caption = 'A sample of 50 unique words uthat appear in only a single resource. Rank frequency taken from the TASA is given in parentheses. Words that are not present in that corpus are marked with "NP" ("not present"), indicating that they are very infrequent in texts written for children.', col.names = NULL)
 
 ```
 
@@ -353,7 +353,7 @@ all_lists %>%
 
 
 ## Discussion
-One might suspect that instructional approaches identify similar words for instruction in the classroom. This would indicate shared assumptions about the words that are important for the development of early reading vocabulary. Based on the lists included in this study, this is clearly not the case. Only 28 words are shared by all six resources analyzed here, representing only 3% of the all unique words across all resources.
+The concept of treating words as special is common to all the resources, but the words they identify as such are not. Only 28 words are shared by all six resources analyzed here, representing only 3% of the all unique words across all resources.
 
 ```{r}
 number_of_words_in_only_one_resource_without_kilpatrick = counts_by_source_without_kilpatrick %>% 

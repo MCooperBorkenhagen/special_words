@@ -1,30 +1,8 @@
 # General Discussion
-Words are an organizing unit of the language in reading instruction. These instructional resources all have in common that certain words in English are prioritized for teaching, all focusing on some combination of (a) words that have atypical structure and (b) those that are very common. It turns out that there is noteworthy disagreement among programs both about which matter most and about those properties that matter most in selecting words. Only 3% of the words across all unique words are present in all six resources (3% of unique words), and most words belong to a single source and no others (56% of all words).
+Words are an organizing unit of the language in reading instruction. These instructional resources all have in common that certain words in English are prioritized for teaching, all focusing on some combination of (a) the words' structural properties in terms of letters and sounds and (b) the words' frequencies. There is noteworthy disagreement among programs both about which matter most and about those properties that matter most in selecting words. Only 3% of the words across all unique words are present in all six resources (3% of words), and most words belong to a single source and no others (56% of words). Programs vary considerably in terms of the properties of the words they contain. Some select the most frequent words in print, like the Fry (1980) list, which contains words that are on average 1.69 standard deviations more frequent than the average of words from the TASA corpus. Kilpatrick, on the other hand, tends to select words that are much closer to the average frequency of words from child-directed print (.68 standard deviations in frequency). High variation is also seen for other lexical variables: age of acquisition, consistency, imageability, number of letters, and number of syllables. If educational approaches agreed on the properties of the language that matter for instruction, we'd likely not see such noteworthy variability across the different measures considered in the analyses here.
 
 ## A Different Conception of Special Words
-We've also demonstrated that words can be specified using empirical means based on observable properties known to be important for learning: their frequency and consistency. Figure XX outlines such a distribution, showing the top 100 words based on a joint ordering of these two variables.
+We've also demonstrated a method that considers word frequency and inconsistency jointly, given the relevance of these two variables in selecting words for early print vocabulary. This method measures the distance of a word in the frequency-inconsistency distribution from the extreme point in the distribution. The approach offers a reproducible method with a concrete (visual) interpretation. When comparing programs on the distribution of words using this method, we see additional variability. Again here, the Fry, Dolch, and Wonders lists tend toward one extreme (selecting words that are highly ranked in frequency-inconsistency) where Fundations and Kilpatrick tend towards the other (see Figure XX above). 
 
-
-
-```{r fig.cap='The plot shows the top 100 words ranked jointly in terms of frequency and inconsistency. The word closest to the origin is "and", representing the word that is most frequent and atypical when both properties are considered. Words that fall toward the diagonal have similar values in the rank of each variable. Note that the word "and" is measured as a low consistency word in the Chee et al. (2020) data despite it having many neighbors with similar pronunciations, as in "hand" and "band".'}
-tasa %>% 
-  filter(word %in% unique(all_lists$word)) %>%
-  arrange(-desc(consistency)) %>% 
-  mutate(consistency_rank = seq_len(n())) %>%
-  arrange(desc(wcbc_freq)) %>% 
-  mutate(freq_rank = seq_len(n()),
-         word = case_when(word == "i" ~ "I",
-                          TRUE ~ word)) %>% 
-  filter(freq_rank < 300 & consistency_rank < 300) %>%
-  ggplot(aes(freq_rank, consistency_rank, label = word)) +
-  geom_abline(intercept = 0, slope = 1, color = "grey45", linetype = "dashed") +
-  geom_label_repel() +
-  theme_apa() +
-  labs(x = "Rank Frequency", y = "Rank Inconsistency")
-
-```
-
-
-The resources studied in this paper vary substantially with respect to how well the words they contain account for properties defined by the two-dimensional space defined for all words across all sets (see Figure XX above). Some lists (Dolch and Fry for example) have fairly good coverage with relatively few words. The Wonders program has strong coverage of the space (from Figure XX), but this is at the expense of including vastly more words than other programs; the more words you select, the more likely you are to cover all ranges of the distribution of frequency and consistency.
-
-## Causes of variation
+## Limitations
+Only a subset of possible programs have been selected for analysis here. Those that participated in analyses were included due to their historic and current popularity, and a more comprehensive sample could no doubt be obtained. Likewise, the programs here were selected not because they are matched perfectly with repsect to their instructional priorities. In fact, the approaches represented here often differ in how they describe learning priorities in the reading classroom. The Dolch and Fry approaches, for example, focus on word frequency and selecting words that appear in many different contexts. Conversely, Fundations' approach seeks to teach words that aren't captured by the phonic patterns also taught within the program. The work we've done here considers word selection more broadly: given that programs agree on the importance of early print vocabulary despite differences in approaches, how do the words selected differ? Future work could consider these differences as a function of the specific priorities set by programs themselves.

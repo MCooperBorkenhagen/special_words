@@ -3,7 +3,7 @@
 
 ```{r forAppendixAOA, echo=FALSE, warning=FALSE, message=FALSE}
 z_tables_lexical %>% 
-  filter(var == 'aoa') %>% 
+  filter(var == 'aoa') %>% view()
   select(-c(var, source_order)) %>% 
   apa_table(caption = 'Parameter Estimates for Source Means on Age-of-Acquisition Relative to Normative Sample from WCBC',
             note = "Bolded coefficients are statistically significant and can be interpreted as Cohen's *d* based on the statistical test performed.", escape = FALSE)
