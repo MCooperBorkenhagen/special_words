@@ -88,7 +88,7 @@ $$
 d\left( c,f\right)   = \sqrt {\sum _{i=1}^{n=2}  \left( c_{i}-f_{i}\right)^2 }
 $$
 
-Deriving the set in this way is useful because it is simple and empirically motivated. Table X shows the top 20 words based on this ranking (a full list of rankings can be found in the supplementary materials online).
+Deriving the set in this way is useful because it is simple, empirically motivated, and permits a straightforward interpretation with respect to the multivariate distribution from which the measure is calculated. Table X shows the top 20 words based on this ranking (a full list of rankings can be found in the supplementary materials online).
 
 
 ```{r EuclideanDistances1}
@@ -112,7 +112,7 @@ rank_inconsistency_rank_frequency = rank_inconsistency_rank_frequency %>%
 
 
 rank_inconsistency_rank_frequency %>% 
-  filter(rank <= 20) %>% 
+  filter(rank <= 50) %>% 
   mutate(word = case_when(word == "i'm" ~ "I'm",
                           word == "i'll" ~ "I'll",
                           TRUE ~ word)) %>% 
@@ -125,8 +125,7 @@ rank_inconsistency_rank_frequency %>%
 Notice how different this method is from one that selects for frequency or inconsistency alone. Words with relatively high rankings on frequency or inconsistency are positioned at the top of this distribution. This can be seen even in the table showing the top ranking words (for example, "who" or "have" by frequency, or "one" or "of" by inconsistency). Importantly, an empirical method along these lines allows us to derive a measure or instructional importance based on concrete principles, as opposed to other methods that select for structural variables in arbitrary ways, which often rely on unvalidated educational theories, subjective measures of importance or both.
 
 ## Results
-### Where Programs Fall in the Two Dimensions
-
+### Where Programs Fall Overall in the Two Dimensions
 We can compare different sets of words as to where in this two-dimensional space they fall, expressing how well each program covers these words as a proportion, shown in Table X.
 
 ```{r CoverageProgramsLowerQuadrantTable}
@@ -153,7 +152,7 @@ table_data %>%
 
 ```
 
-The critical observations here are (1) the sources vary in terms of their coverage of the words in the lower left quadrant with all covering a some portion of those `r length(lower_left_quadrant_words)` words, but (2) this coverage represents only portion of the total number of words in each program (rightmost column of Table XX). This can be seen by plotting the two-dimensional distribution for each program as well, shown in Figure XX. The tension between proportion of coverage of the target words and those additional words that programs include outside this distribution can be seen most clearly in the Wonders pane. This program has approximately half coverage (Table XX) of the target quadrant. However, the distribution of words in that program spreads robustly across all quadrants of the figure, including many words in the "infrequent and inconsistent" category.
+The critical observations here are (1) the sources vary in terms of their coverage of the words in the lower left quadrant with all covering a some portion of those `r length(lower_left_quadrant_words)` words, and (2) this coverage represents only portion of the total number of words in each program (rightmost column of Table XX). This can be seen by plotting the two-dimensional distribution for each program as well, shown in Figure XX. The tension between proportion of coverage of the target words and those additional words that programs include outside this distribution can be seen most clearly in the Wonders pane. This program has approximately half coverage (Table XX) of the target quadrant. However, the distribution of words in that program spreads robustly across all quadrants of the figure, including many words in the "infrequent and inconsistent" category.
 
 ```{r FrequencyConsistencyPlot2, fig.width=7, fig.cap="Words (shown in hexbins, smoothing across proximal points) for all resources are shown in two-dimensional space defined by rank frequency and rank inconsistency. Darker hexbins indicate more points. The dimensions of the space are defined by all words in the TASA sample (K-3). Each plot corresponds to a program, where that program's words are plotted as black points against the words in all other programs (grey points)."}
 
@@ -305,7 +304,39 @@ plot_grid(plot_dolch, plot_fp, plot_fry, plot_fundations, plot_kilpatrick, plot_
 
 ```
 
-All programs have some amount of coverage in all four quadrants, though a few more specific trends can be ssen in the graphical depiction. Wonders, Fountas & Pinnell, Fry, and Dolch contain the most dense clustering (darkest hex portions) on the left side of the space, including in the target region if we are identifying frequent and inconsistent words specifically. They contain 89% (Wonders), 67% (F&P), 66% (Fry), and 58% (Dolch) of the lower left quadrant words. These four programs also contain the most densely populated upper left quadrant (frequent and consistent), shown with the darker hex regions in that portion of each graph. Fundations is more evenly spread out across both dimensions, with less clustering in general (a property made possible given that the program has a smaller set of words). The Kilpatrick program loads most heavily towards the righthand portion of the space, with dense clustering in both the infrequent and inconsistent and infrequent and consistent quadrants, consistent with other analyses here that demonstrate its outlier status among the programs.
+All programs have some amount of coverage in all four quadrants, though a few more specific trends can be seen in the graphical depiction. Wonders, Fountas & Pinnell, Fry, and Dolch contain the most dense clustering (darkest hex portions) on the left side of the space, including in the target region if we are identifying frequent and inconsistent words specifically. They contain 89% (Wonders), 67% (F&P), 66% (Fry), and 58% (Dolch) of the lower left quadrant words. These four programs also contain the most densely populated upper left quadrant (frequent and consistent), shown with the darker hex regions in that portion of each graph. Fundations is more evenly spread out across both dimensions, with less clustering in general (a property made possible given that the program has a smaller set of words). The Kilpatrick program loads most heavily towards the righthand portion of the space, with dense clustering in both the "infrequent and inconsistent" and "infrequent and consistent" quadrants. This accords with other analyses here that demonstrate its outlier status among the programs.
+
+### Top Words from Origin by Distance
+By measuring each word from point 0, 0 and rank ordering based on distance, we achieve a distribution of words that is arranged in similarity from the point representing the extreme of rank frequency and rank inconsistency (i.e., the most frequent, inconsistent position in the 2-dimensional space). Table XX showed the top 50 words in the distribution calculated in this way, and Figure XX visualizes these 50 words in the two dimensional space, where the origin is located in the bottom right corner.
+
+
+```{r fig.cap='The plot shows the top 50 words ranked jointly in terms of frequency and inconsistency using Euclidean distance to calculate the rankings. The word closest to the origin is "and", representing the word that is most frequent and atypical when both properties are considered. Words that fall toward the diagonal have similar values in the rank of each variable. Note that the word "and" is measured as a low consistency word in the Chee et al. (2020) data despite it having neighbors with similar pronunciations, as in "hand" and "band".'}
+
+rank_inconsistency_rank_frequency %>% 
+  slice_min(n = 50, order_by = distance) %>% 
+  ggplot(aes(tasa_rank, consistency_rank, label = word)) +
+  geom_abline(intercept = 0, slope = 1, color = "grey45", linetype = "dashed") +
+  geom_label_repel(max.overlaps = 50) +
+  theme_apa() +
+  labs(x = "Rank Frequency", y = "Rank Inconsistency")
+
+```
 
 # Discussion
-Educational approaches to the instruction of special words tend to focus on words based on their joint properties of frequency and consistency, though instructional schemes for early print vocabulary vary. Traditionally, lists focus at least on the identification of frequent words, given that they are most likely to be useful to the developing child because they are most likely to be encountered. 
+Educational approaches to the instruction of special words tend to focus on words based on their joint properties of frequency and consistency, though instructional schemes for early print vocabulary vary (see General Discussion for more on this point). Traditionally, lists focus at least on the identification of frequent words, given that they are most likely to be useful to the developing child because they are most likely to be encountered in print. The relevance of word consistency is more variable, depending on the specific goals and theoretical framing of the instruction. The earliest "sight word" list [@Dolch1937] and its successors [@Fry1957; @Fry1980] focused on word frequency and the contextual diversity of the words selected (Dolch precluded nouns because of how closely they tend to be tied to the context in which they are used; "...because each noun is tied to special subject matter", p. 459). Modern extensions of the "sight word" idea consider a second property, _consistency_, on the assumption that words that are common and have atypical structure (i.e., those that are inconsistent) should be taught directly to students and those that contain structure that is easily explained by phonic rules will handle the groups of words not taught during this form of instruction.
+
+By using established data to identify these properties we have specified sets of words that are jointly defined based on their distributional characteristics of frequency and inconsistency. Words that have a low value of the joint rank of both represent possible savings in instruction because they are likely to be experienced in print and will have structure that isn't easily generalized from other words that contain similar letters. In the demonstration here the point in the 2-dimensional space representing the extreme on rank frequency and rank inconsistency, where the extreme corresponds to the most frequent and most inconsistent word (the origin of the space), serves as a reasonable starting point if our goal is to teach children to read words that are very common and also contain idiosyncratic structure.
+
+```{r}
+rank_inconsistency_rank_frequency %>% 
+  left_join(read_csv('../words/elp/elp_full_5.27.16.csv') %>% 
+    select(word = Word, rt = I_NMG_Mean_RT, acc = I_NMG_Mean_Accuracy)) %>% 
+  #summarise(cor(rt, distance, use = "pairwise.complete.obs", method = "spearman"))
+  ggplot(aes(distance, rt, label = word)) +
+  geom_point() +
+  geom_smooth(method = "loess") +
+  geom_text()
+
+```
+
+The six programs studied here differ in the extent to which they jointly consider these two variables in selecting instructional words. This can be seen in terms of examining the lower left quadrant of the bivariate distribution of rank frequency and rank inconsistency, as well as examining the top 20, 50, 100, and 250 words in the joint rank distribution (defined by the Euclidean calculation from origin).
