@@ -147,27 +147,20 @@ source('scripts/top_n.R')
 
 
 ```{r frequency_and_inconsistency_data, include=FALSE}
-chee_token_consistency = rank_inconsistency_rank_frequency %>% 
-        left_join(readxl::read_xlsx('../words/consistency/13428_2020_1391_MOESM1_ESM.xlsx', sheet = 2) %>% 
-          filter(word %in% rank_inconsistency_rank_frequency$word) %>% 
-          mutate(consistency = case_when(n_syll == 1 ~ ff_1_r,
-                                         n_syll > 1 ~ ff_all_r)) %>% 
-          select(word, consistency) %>% 
-          arrange(-desc(consistency)) %>% 
-          mutate(token_consistency_rank = seq_len(n())) %>% 
-          select(word, token_consistency_rank))
 
 programs_by_rank_inconsistency_rank_frequency = read_csv(file = "data/programs_by_rank_inconsistency_rank_frequency.csv")
 
 ```
 
 ```{r child='sections/frequency_and_consistency.Rmd'}
+
 ```
 
 
 ```{r child='sections/discussion.Rmd'}
 ```
 
-```{r child='sections/appendix.Rmd'}
-```
+
+#```{r child='sections/appendix.Rmd'}
+#```
 
