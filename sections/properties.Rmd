@@ -301,41 +301,41 @@ The trends for all six programs follow a common pattern. Programs tend to exhibi
 
 Wonders contains the most words, with 801, so it is perhaps unsurprising that its coverage is greatest. With this quantity of words, it stands out that it only contains 65% of the most frequent 500 words from TASA. That list is the only one with enough to potentially contain 100% of those words (which it does not). By contrast, the Dolch and Fry words obtain comparable coverage with fewer words, each with less than half of that than Wonders. Nonetheless, Wonders, Fry, and Dolch demonstrate very similar levels of coverage. All three have greater than 75% coverage for TASA on the top 50 and top 100 words and around half of the top 500 words. Fountas and Pinnell exhibit slightly lower levels of coverage than those three, with Fundations demonstrating even less coverage than Fountas and Pinnell. The coverage for Kilpatrick is very low, even for the most frequent 50 words. This is fact can be emphasized given that Kilpatrick contains the second most number of words behind Wonders, and over 100 words more than the Dolch list.
 
-```{r coverageKidCorpusTable, echo=FALSE, warning=FALSE, message=FALSE}
-coverage %>% 
-  select(-in_program) %>% 
-  mutate(proportion = round(proportion, digits = 2)) %>% 
-  pivot_wider(names_from = top_n, values_from = proportion) %>% 
-  filter(corpus == "tasa") %>% 
-  select(-corpus) %>% 
-  left_join(coverage %>% 
-              group_by(source) %>% 
-              summarise(proportion_ = mean(proportion)) %>% 
-              arrange(desc(proportion_)) %>% 
-              mutate(order = seq_len(n()))) %>% 
-  arrange(order) %>% 
-  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
-                            source == 'fry' ~ 'Fry',
-                            source == 'fundations' ~ 'Fundations',
-                            source == 'kilpatrick' ~ 'Kilpatrick',
-                            source == 'wonders' ~ 'Wonders',
-                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
-  left_join(all_lists %>% 
-              group_by(source) %>% 
-              summarise(n_ = n()) %>% 
-              mutate(source = case_when(source == 'dolch' ~ 'Dolch',
-                            source == 'fry' ~ 'Fry',
-                            source == 'fundations' ~ 'Fundations',
-                            source == 'kilpatrick' ~ 'Kilpatrick',
-                            source == 'wonders' ~ 'Wonders',
-                            source == 'fountas_pinnell' ~ 'F&P'))) %>% 
-  mutate(source = str_c(source, " (", n_, ")")) %>%             
-  select(`Resource (N)` = source, `50`, `100`, `500`, `1000`) %>% 
-  apa_table(caption = "Proportion Coverage of Top 50, 100, 500, and 1000 Words from TASA for the Six Resources.",
-            note = "Number of words in each resource is provided next to the name of the resource for reference.",
-            col_spanners = list("Top N" = c(2, 5)))
+<!-- ```{r coverageKidCorpusTable, echo=FALSE, warning=FALSE, message=FALSE} -->
+<!-- coverage %>%  -->
+<!--   select(-in_program) %>%  -->
+<!--   mutate(proportion = round(proportion, digits = 2)) %>%  -->
+<!--   pivot_wider(names_from = top_n, values_from = proportion) %>%  -->
+<!--   filter(corpus == "tasa") %>%  -->
+<!--   select(-corpus) %>%  -->
+<!--   left_join(coverage %>%  -->
+<!--               group_by(source) %>%  -->
+<!--               summarise(proportion_ = mean(proportion)) %>%  -->
+<!--               arrange(desc(proportion_)) %>%  -->
+<!--               mutate(order = seq_len(n()))) %>%  -->
+<!--   arrange(order) %>%  -->
+<!--   mutate(source = case_when(source == 'dolch' ~ 'Dolch', -->
+<!--                             source == 'fry' ~ 'Fry', -->
+<!--                             source == 'fundations' ~ 'Fundations', -->
+<!--                             source == 'kilpatrick' ~ 'Kilpatrick', -->
+<!--                             source == 'wonders' ~ 'Wonders', -->
+<!--                             source == 'fountas_pinnell' ~ 'F&P')) %>%  -->
+<!--   left_join(all_lists %>%  -->
+<!--               group_by(source) %>%  -->
+<!--               summarise(n_ = n()) %>%  -->
+<!--               mutate(source = case_when(source == 'dolch' ~ 'Dolch', -->
+<!--                             source == 'fry' ~ 'Fry', -->
+<!--                             source == 'fundations' ~ 'Fundations', -->
+<!--                             source == 'kilpatrick' ~ 'Kilpatrick', -->
+<!--                             source == 'wonders' ~ 'Wonders', -->
+<!--                             source == 'fountas_pinnell' ~ 'F&P'))) %>%  -->
+<!--   mutate(source = str_c(source, " (", n_, ")")) %>%              -->
+<!--   select(`Resource (N)` = source, `50`, `100`, `500`, `1000`) %>%  -->
+<!--   apa_table(caption = "Proportion Coverage of Top 50, 100, 500, and 1000 Words from TASA for the Six Resources.", -->
+<!--             note = "Number of words in each resource is provided next to the name of the resource for reference.", -->
+<!--             col_spanners = list("Top N" = c(2, 5))) -->
 
-```
+<!-- ``` -->
 
 ```{r coverageKidCorpusFigure, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Coverage for each program (panel) for each level of most frequent 50, 100, 500, and 1000 words for TASA. Programs exhibit variable coverage at each level for the corpus, with Wonders, Fry, and Dolch showing comparable levels of coverage at one extreme, and Kilpatrick at the other.", fig.width=7}
 
@@ -349,8 +349,8 @@ coverage %>%
                             source == 'fountas_pinnell' ~ 'F&P')) %>% 
   ggplot(aes(as.factor(top_n), proportion, fill = as.factor(top_n))) +
   geom_bar(stat = "identity", position = "dodge", color = "black") +
-  geom_text(aes(label = sub("^0\\.", ".", round(proportion, digits = 2))), size = 2.5, vjust = 1.8, alpha = .8) +
-  facet_grid(~factor(source, levels = c("Wonders", "Fry", "Dolch", "F&P", "Fundations", "Kilpatrick"))) +
+  #geom_text(aes(label = sub("^0\\.", ".", round(proportion, digits = 2))), size = 2.5, vjust = 1.8, alpha = .8) +
+  facet_grid(~factor(source, levels = c("Dolch",  "Fry", "F&P", "Fundations", "Wonders", "Kilpatrick"))) + # change order here
   theme_apa() +
   labs(x = "N most frequent", y = "Proportion covered", fill = "N most frequent") +
   theme(text = element_text(family = "Times"),

@@ -364,3 +364,57 @@ bardata %>%
 
 
 ```
+
+
+In the paper we report the following figure. Also include a table in the supplement that provides the proportions themselves and the number of words associated with each value. For example, Dolch has X number of word that appear in one other resource, which represents Y proportion.
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap='Each resource is broken down in terms of the number of resources its words appear in. Bars are labeled with the number of resources those words appear in (i.e., the number six indicates that those words appear in all six resources), and the size of each bar segment corresponds to a proportion of words in that resource (e.g., over 75% of the words in Kilpatrick appear only in that resource). Panel A shows these data for all six lists, and Panel B shows these data with Kilpatrick removed.', fig.height=8, fig.width=7}
+
+# stacked barplot (with kilpatrick)
+plot_a = counts_by_source %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
+  ungroup() %>% 
+  arrange(desc(source)) %>% 
+  mutate(order = seq_len(n())) %>%
+  ggplot(aes(prop, reorder(source, order), fill = count)) +
+  geom_bar(position = "stack", stat = "identity", color = "black") +
+  geom_text(aes(label = count), position = position_stack(vjust = 0.5)) +
+  scale_fill_continuous(low = "grey22", high = "white") +
+  theme_apa() +
+  labs(x = "Proportion",
+       y = "Resource",
+       fill = "# of Resources") +
+  theme(legend.position = "none")
+
+
+# version without Kilpatrick
+plot_b =  counts_by_source_without_kilpatrick %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
+  ungroup() %>% 
+  arrange(desc(source)) %>% 
+  mutate(order = seq_len(n())) %>% 
+  ggplot(aes(prop, reorder(source, order), fill = count)) +
+  geom_bar(position = "stack", stat = "identity", color = "black") +
+  geom_text(aes(label = count), position = position_stack(vjust = 0.5)) +
+  scale_fill_continuous(low = "grey22", high = "white") +
+  theme_apa() +
+  labs(x = "Proportion",
+       y = "Resource",
+       fill = "# of Resources") +
+  theme(legend.position = "none")
+
+
+plot_grid(plot_a, plot_b, labels = c("A", "B"), ncol = 1)
+
+
+```
+
+

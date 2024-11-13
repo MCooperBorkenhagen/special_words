@@ -15,7 +15,7 @@ Dolch (1936) presented “a basic sight vocabulary” of 220 words that were con
 The Fundations curriculum incorporates extensive instruction about systematic correspondences from spelling to sound and sound to spelling, using methods such as “tapping out” component sounds. The teacher’s manual notes that common, high frequency words need to be recognized and spelled quickly even if these correspondences have not yet be taught. These words include both “phonetically regular” and “phonetically irregular” words (i.e., words with typical and atypical mappings). The curriculum designates 193 words in K-3 as “trick” words that are to be memorized (see Table XX for the number of words per grade level). These words have irregular spelling-sound mappings according to most theories. Students are told that these words “do not follow the ‘system’ of the language…[they] are phonetically irregular”.
 
 ```{r fundations_counts_by_grade, echo=FALSE, warning=FALSE, message=FALSE}
-all_lists %>% 
+tmp_fundations = all_lists %>% 
   filter(source == 'fundations') %>% 
   mutate(order = case_when(level == "k" ~ 1,
                            level == "g1" ~ 2,
@@ -30,8 +30,13 @@ all_lists %>%
   ungroup() %>% 
   group_by(level) %>%
   summarise(n = n()) %>% 
-  select(Grade = level, n) %>% 
-  apa_table(caption = "Number of Words per Grade Level from Wilson's Fundations")
+  select(Grade = level, Fundations = n)  %>% 
+  rbind(all_lists %>% 
+  filter(source == 'fundations') %>% 
+  distinct(word) %>% 
+  summarise(n = n()) %>% 
+  mutate(Grade = "Total") %>% 
+  rename(`Fundations` = n))
 
 ```
 
@@ -41,7 +46,8 @@ Fountas & Pinnell's words are high-frequency words, though the origin of their l
 
 ```{r fp_counts_by_grade, echo=FALSE, warning=FALSE, message=FALSE}
 
-all_lists %>% 
+
+tmp_fp = all_lists %>% 
   filter(source == 'fountas_pinnell') %>%
   mutate(order = case_when(level == "k" ~ 1,
                            level == "g1" ~ 2,
@@ -56,8 +62,13 @@ all_lists %>%
   ungroup() %>% 
   group_by(level) %>%
   summarise(n = n()) %>% 
-  select(Grade = level, n) %>% 
-  apa_table(caption = "Number of Words per Grade Level from Fountas & Pinnell's Words to Know")
+  select(Grade = level, `F&P` =  n) %>% 
+  rbind(all_lists %>% 
+  filter(source == 'fountas_pinnell') %>% 
+  distinct(word) %>% 
+  summarise(n = n()) %>% 
+  mutate(Grade = "Total") %>% 
+  rename(`F&P` = n))
 
 ```
 
@@ -69,7 +80,7 @@ The Wonders curriculum is similar to Wilson's Fundations in their use of special
 
 ```{r wonders_counts_by_grade, echo=FALSE, warning=FALSE, message=FALSE}
 
-all_lists %>% 
+tmp_wonders = all_lists %>% 
   filter(source == 'wonders') %>% 
   mutate(order = case_when(level == "k" ~ 1,
                            level == "g1" ~ 2,
@@ -84,8 +95,14 @@ all_lists %>%
   ungroup() %>% 
   group_by(level) %>%
   summarise(n = n()) %>% 
-  select(Grade = level, n) %>% 
-  apa_table(caption = "Number of Words per Grade Level from Wonders Curriculum")
+  select(Grade = level, Wonders = n) %>% 
+  rbind(all_lists %>% 
+  filter(source == 'wonders') %>% 
+  distinct(word) %>% 
+  summarise(n = n()) %>% 
+  mutate(Grade = "Total") %>% 
+  rename(Wonders = n))
+
 
 ```
 
@@ -94,7 +111,35 @@ The "irregular words" in Kilpatrick's (2016) materials are taught on the basis t
 
 An additional explanation in the materials points to the utility of identifying the "irregular letter/sound connection" in an irregular word (p. 58). The author notes that irregular words are most often so because of one small segment in the word comprising the irregularity. The examples provided in the text are the AI in SAID and the S in ISLAND. Correspondingly, learning can be enhanced by focusing the child's attention on the portion of the word other than the irregularity, which the author refers to as the "phonological framework". The child then will "use the normally performing letter-sound combinations to 'anchor' [the] irregular word in memory." The teacher's job, then, is to "point out the regular elements within all words". While these segments are not exhaustively identified by the manual, the word list given in the appendix provides example words to use during instruction. Nonetheless, the critical detail to keep in mind for this instructional resource is that words are included because of their atypical structure, first and foremost. The instructional approach involves identifying the regular structure of these words support learning and subsequent retrieval. Their status as common words is secondary, but also noted.
 
-Table XX displays the terms used by each program or author when referring to their special words.
+Table XX shows the number of words per program (broken out by grade where relevant), and Table XX displays the terms used by each program or author when referring to their special words.
+
+```{r}
+tmp_fp %>%
+  left_join(tmp_fundations) %>% 
+  left_join(tmp_wonders) %>% 
+  left_join(all_lists %>% 
+  filter(source == 'fry') %>% 
+  distinct(word) %>% 
+  summarise(n = n()) %>% 
+  mutate(Grade = "Total") %>% 
+  rename(Fry = n)) %>% 
+  left_join(all_lists %>% 
+  filter(source == 'dolch') %>% 
+  distinct(word) %>% 
+  summarise(n = n()) %>% 
+  mutate(Grade = "Total") %>% 
+  rename(Dolch = n)) %>% 
+  left_join(all_lists %>% 
+  filter(source == 'kilpatrick') %>% 
+  distinct(word) %>% 
+  summarise(n = n()) %>% 
+  mutate(Grade = "Total") %>% 
+  rename(Kilpatrick = n)) %>% 
+  apa_table(caption = "Number of Words in Each Instructional Source",
+            note = "Number of unique words are shown. Empty cells indicate that the source does not specify words at the level of individual grades.", na = "--")
+
+```
+
 
 ```{r SourcesTerms, echo=FALSE, message=FALSE, warning=FALSE}
 

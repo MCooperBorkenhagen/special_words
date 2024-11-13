@@ -26,9 +26,7 @@ We have seen that resources vary in terms of the words selected for instruction,
 The prevailing educational approach involves using words that are common, and those that exhibit atypical structure, or some combination therein. Some approaches load more heavily on one than the other. Wonders, for example, contains many very frequent words, but is close to the average for consistency are across the six lists. The Dolch and Fry words were selected because they are common, and they tend to contain words that are about average in consistency to the TASA words (though the lists do contain atypical words like "one", "two", and "the" because they are frequent). Fundations and Kilpatrick, on the other hand, contain words that are the most inconsistent on average, and tend to be less frequent. Regardless of how any given set is described, approaches differentially weight these two factors. Of course, each of these dimensions can be measured, and therefore we can derive sets that are load across both variables simultaneously.
 
 ### An Empirical Approach
-A simple approach that lends itself well to visual interpretation is placing a set of words in the two-dimensional space defined by the two variables. Within the two-dimensional space words can be measured based on their position relative to some reference point (i.e., point 0, 0 - the origin). In a two-dimensional space where the x-axis is ordered in terms of ranked frequency (further right indicates less frequent) and the y-axis is ordered in terms of rank inconsistency (further up the axis indicates more typical structure) the origin (lowest left point of the plot) represents the most jointly frequent and inconsistent (i.e., atypical) word in terms of its print-speech properties. This method is a straightforward one because it affords a simple visual interpretation: words that fall towards the lower left portion of the plot are common and contain idiosyncratic structure, and likely to be useful for "sight word"-type instruction[^frequency_and_consistency-1].
-
-[^frequency_and_consistency-1]: Identifying a single quadrant is somewhat arbitrary. Other regions closer to the origin of the two-dimensional space could be considered, or some quantity of words could be identified based on the amount of time available for instruction.
+A simple approach that lends itself well to visual interpretation is placing a set of words in the two-dimensional space defined by the two variables. Within the two-dimensional space words can be measured based on their position relative to some reference point (i.e., point 0, 0 - the origin). In a two-dimensional space where the x-axis is ordered in terms of ranked frequency (further right indicates less frequent) and the y-axis is ordered in terms of rank inconsistency (further up the axis indicates more typical structure) the origin (lowest left point of the plot) represents the most jointly frequent and inconsistent (i.e., atypical) word in terms of its print-speech properties. This method is a straightforward one because it affords a simple visual interpretation: words that fall towards the lower left portion of the plot are common and contain idiosyncratic structure, and likely to be useful for "sight word"-type instruction.
 
 In order to simplify the interpretation the words' position within the two-dimensional space, we can think of the four resulting quadrants each defining its own category within the frequency-inconsistency distribution (starting from bottom left): inconsistent and frequent (the target region for instructional words), consistent and frequent, consistent and infrequent, and inconsistent and infrequent. Quadrants are used for this purpose because they offer a simple way of delineating a two-dimensional space. An alternative based on a joint ranking is considered later. Figure 6, Panel A shows this organization, where Panel B illuminates points (in black) in the target quadrant for special words: those that are both the most frequent and least consistent. The resulting distribution in the lower left quadrant consists of `r length(lower_left_quadrant_words)` total words[^frequency_and_consistency-2].
 
@@ -43,7 +41,7 @@ plot_1 = rank_inconsistency_rank_frequency  %>%
   geom_hline(aes(yintercept = middle_y)) +
   geom_vline(aes(xintercept = middle_x)) +
   theme_apa() +
-  labs(x = "Rank Frequency", y = "Rank Inconsistency", title = "Key") + 
+  labs(x = "Frequency", y = "Consistency", title = "Key") + 
   annotate("text", x = 200, y = 700, label = "Consistent & Frequent", size = 2.5) +
   annotate("text", x = 200, y = 190, label = "Inconsistent & Frequent", size = 2.5) +
   annotate("text", x = 200, y = 220, label = "(target region)", size = 2.5) +
@@ -64,7 +62,7 @@ plot_2 = rank_inconsistency_rank_frequency %>%
   geom_vline(aes(xintercept = middle_x)) +
   geom_hex(color = "black") +
   annotate("rect", xmin = c(-10, -10), xmax = c(450, -10), ymin = c(-10, -10), ymax = c(450, 450), color = NA, fill = "pink", alpha = .3) +
-  labs(x = "Rank Frequency", title = "Target Quadrant (in shaded lower left)") +
+  labs(x = "Frequency", title = "Target Quadrant (in shaded lower left)") +
   scale_fill_gradient(low = "grey92", high = "black") +
   theme_apa() +
   theme(legend.position = "none",
@@ -85,23 +83,8 @@ $$
 d\left( c,f\right)   = \sqrt {\sum _{i=1}^{n=2}  \left( c_{i}-f_{i}\right)^2 }
 $$
 
-```{r chee_token_consistency_data, include=FALSE}
-chee_token_consistency_corr = rank_inconsistency_rank_frequency %>% 
-        left_join(readxl::read_xlsx('../words/consistency/13428_2020_1391_MOESM1_ESM.xlsx', sheet = 2) %>% 
-          filter(word %in% rank_inconsistency_rank_frequency$word) %>% 
-          mutate(consistency = case_when(n_syll == 1 ~ ff_1_r,
-                                         n_syll > 1 ~ ff_all_r)) %>% 
-          select(word, consistency) %>% 
-          arrange(-desc(consistency)) %>% 
-          mutate(token_consistency_rank = seq_len(n())) %>% 
-          select(word, token_consistency_rank)) %>% 
-          summarise(cor(distance, token_consistency_rank, use = "pairwise.complete.obs"))
-```
 
-Deriving the set in this way is useful because it is simple, empirically motivated, and permits a straightforward visual understanding. It is conceptually similar to calculating consistency over word tokens rather than types given that token-based estimation takes into consideration the frequency of the pattern defining the consistency metric (here we use feedforward average body-rime consistency from @Chee2020). The measure calculated using distance, rather, is conditioned on the frequency of the _word_ rather than the sublexical pattern defining consistency. This has the effect of privileging the word's frequency beyond the frequency of the body-rime unit.  The correlation between the distance-based measure with the rank ordered token-based consistency^[The token-based measure we use here is identical to the type-based measure reported everywhere else here except that it is taken from the Chee et al. (2020) "token" data sheet rather than than their "type" data sheet.] from @Chee2020 is _r_ = `r round(chee_token_consistency_corr$`cor(distance, token_consistency_rank, use = "pairwise.complete.obs")`, digits = 2)`.  Table XX shows the top 50 words based on the ranking by distance (a full list of rankings can be found in the supplementary materials online).
-
-
-```{r EuclideanDistances1}
+```{r EuclideanDistances1, include=FALSE, warning=FALSE}
 rank_inconsistency_rank_frequency$distance = NA
 
 for (i in seq(nrow(rank_inconsistency_rank_frequency))){
@@ -119,7 +102,29 @@ rank_inconsistency_rank_frequency = rank_inconsistency_rank_frequency %>%
   arrange(-desc(distance)) %>% 
   mutate(rank = seq_len(n())) %>% 
   select(rank, word, distance, tasa_rank, consistency_rank)
+```
 
+
+```{r chee_token_consistency_data, include=FALSE}
+chee_token_consistency_corr = rank_inconsistency_rank_frequency %>% 
+        left_join(readxl::read_xlsx('../../words/consistency/13428_2020_1391_MOESM1_ESM.xlsx', sheet = 2) %>% 
+          filter(word %in% rank_inconsistency_rank_frequency$word) %>% 
+          mutate(consistency = case_when(n_syll == 1 ~ ff_1_r,
+                                         n_syll > 1 ~ ff_all_r)) %>% 
+          select(word, consistency) %>% 
+          arrange(-desc(consistency)) %>% 
+          mutate(token_consistency_rank = seq_len(n())) %>% 
+          select(word, token_consistency_rank)) %>% 
+          summarise(cor(distance, token_consistency_rank, use = "pairwise.complete.obs"))
+
+chee_token_consistency_corr = chee_token_consistency_corr[[1]]
+```
+
+Deriving the set in this way is useful because it is simple, empirically motivated, and permits a straightforward visual understanding. It is conceptually similar to calculating consistency over word tokens rather than types given that token-based estimation takes into consideration the frequency of the pattern defining the consistency metric (here we use feedforward average body-rime consistency from @Chee2020). The measure calculated using distance, rather, is conditioned on the frequency of the _word_ rather than the sublexical pattern defining consistency. This has the effect of privileging the word's frequency beyond the frequency of the body-rime unit.  The correlation between the distance-based measure with the rank ordered token-based consistency^[The token-based measure we use here is identical to the type-based measure reported everywhere else here except that it is taken from the Chee et al. (2020) "token" data sheet rather than than their "type" data sheet.] from @Chee2020 is _r_ = `r round(chee_token_consistency_corr, digits = 2)`.  Table XX shows the top 50 words based on the ranking by distance (a full list of rankings can be found in the supplementary materials online).
+
+
+
+```{r top_ranked_words_by_inconsistency_frequency}
 
 rank_inconsistency_rank_frequency %>% 
   filter(rank <= 50) %>%
@@ -349,7 +354,7 @@ programs_by_rank_inconsistency_rank_frequency %>%
                             source == 'Fountas_Pinnell' ~ 'F&P')) %>% 
   ggplot(aes(factor(n), Proportion, fill = as.factor(n))) +
   geom_bar(stat = "identity", position = "dodge", color = "black") +
-  geom_text(aes(label = sub("^0\\.", ".", round(Proportion, digits = 2))), size = 2.5, vjust = 1.8, alpha = .8) +
+  #geom_text(aes(label = sub("^0\\.", ".", round(Proportion, digits = 2))), size = 2.5, vjust = 1.8, alpha = .8) +
   facet_grid(~factor(Source, levels = c("Wonders", "Fry", "Dolch", "F&P", "Fundations", "Kilpatrick"))) +
   theme_apa() +
   labs(x = "N furthest from origin", y = "Proportion covered", fill = "N furthest from origin") +

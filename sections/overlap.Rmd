@@ -152,7 +152,7 @@ plot_a = counts_by_source %>%
   labs(x = "Proportion",
        y = "Resource",
        fill = "# of Resources") +
-  theme(legend.position = "right")
+  theme(legend.position = "none")
 
 
 # version without Kilpatrick
@@ -173,7 +173,7 @@ plot_b =  counts_by_source_without_kilpatrick %>%
   labs(x = "Proportion",
        y = "Resource",
        fill = "# of Resources") +
-  theme(legend.position = "right")
+  theme(legend.position = "none")
 
 
 plot_grid(plot_a, plot_b, labels = c("A", "B"), ncol = 1)
@@ -406,8 +406,8 @@ number_of_words_in_kilpatrick = all_lists %>%
 
 ```
 
-By contrast, many more words (`r number_of_words_in_only_one_resource`) are present in a single resource, representing over half (`r round(number_of_words_in_only_one_resource/length(unique(all_lists$word)), digits = 2)`%) of the unique words that can be found across all six programs. While this value drops considerably when removing the Kilpatrick program (`r number_of_words_in_only_one_resource_without_kilpatrick`; `r format(round(number_of_words_in_only_one_resource_without_kilpatrick/number_unique_words_without_kilpatrick, digits = 2), nsmall = 2)`), the observation still holds. This suggests that instructional approaches tend to select words in an idiosyncratic way, not bound by selection principles that are similar to those of other programs. The tendency to idiosyncratically select words that are in no (or few) other programs varies across the resources as well. For example, the Kilpatrick program has the strong tendency to select words not selected by other programs (`r number_of_words_in_kilpatrick_and_no_other` of all words across six programs are unique to Kilpatrick; `r round(number_of_words_in_kilpatrick_and_no_other/number_of_words_in_kilpatrick, digits = 2)`% of words). Fountas & Pinnell is the next most likely to select words not present in any other programs with `r number_of_words_in_fp_and_no_other` words (`r round(number_of_words_in_fp_and_no_other/number_of_words_in_fp, digits = 2)`%).
+By contrast, many more words (`r number_of_words_in_only_one_resource`) are present in a single resource, representing over half (`r round(number_of_words_in_only_one_resource/length(unique(all_lists$word)), digits = 2)*100`%) of the unique words that can be found across all six programs. While this value drops considerably when removing the Kilpatrick program (`r number_of_words_in_only_one_resource_without_kilpatrick`; `r format(round(number_of_words_in_only_one_resource_without_kilpatrick/number_unique_words_without_kilpatrick, digits = 2), nsmall = 2)`), the observation still holds. This suggests that instructional approaches tend to select words in an idiosyncratic way, not bound by selection principles that are similar to those of other programs. The tendency to idiosyncratically select words that are in no (or few) other programs varies across the resources as well. For example, the Kilpatrick program has the strong tendency to select words not selected by other programs (`r number_of_words_in_kilpatrick_and_no_other` of all words across six programs are unique to Kilpatrick; `r round(number_of_words_in_kilpatrick_and_no_other/number_of_words_in_kilpatrick, digits = 2)*100`% of words). Fountas & Pinnell is the next most likely to select words not present in any other programs with `r number_of_words_in_fp_and_no_other` words (`r round(number_of_words_in_fp_and_no_other/number_of_words_in_fp, digits = 2)*100`%).
 
-Other programs are more likely to select words that at least some of the other programs also select. Fundations contains a distribution more indicative of such a profile, with `r counts_by_source %>% filter(source == "fundations" & count == 6) %>%  pull(prop) %>% round(digits = 2)`% of those words appearing in all other resources and `r counts_by_source %>% filter(source == "fundations" & count == 5) %>%  pull(prop) %>% round(digits = 2)`% of words appearing in five other resources. However, even here many words are idiosyncratic to this program, with `r counts_by_source %>% filter(source == "fundations" & count == 1) %>%  pull(prop) %>% round(digits = 2)`% of words (`r counts_by_source %>% filter(source == "fundations" & count == 1) %>%  pull(counts)` words) found only in this list and no other.
+Other programs are more likely to select words that at least some of the other programs also select. Fundations contains a distribution more indicative of such a profile, with `r counts_by_source %>% filter(source == "fundations" & count == 6) %>%  pull(prop) %>% round(digits = 2)*100`% of those words appearing in all other resources and `r counts_by_source %>% filter(source == "fundations" & count == 5) %>%  pull(prop) %>% round(digits = 2)*100`% of words appearing in five other resources. However, even here many words are idiosyncratic to this program, with `r counts_by_source %>% filter(source == "fundations" & count == 1) %>%  pull(prop) %>% round(digits = 2)*100`% of words (`r counts_by_source %>% filter(source == "fundations" & count == 1) %>%  pull(counts)` words) found only in this list and no other.
 
 In summary, these findings suggest something troubling about the experiences of children learning to read from these popular instructional resources: their experiences differ in terms of the words that they learn how to read. The next section concerns the properties of the words found in these resources, considering the possibility that programs agree on the _structure_ (and other properties) of the words selected despite selecting different words for use in the classroom.
