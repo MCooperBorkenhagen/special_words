@@ -1,0 +1,1060 @@
+# Results
+## Words Included in Instructional Resources and Amount of Overlap
+Do these instructional resources agree about the words identified as needing special attention in early reading? The short answer to this question is no: only 28 of the 973 different words (3%) occur in all 6 resources (Table XX).  All are high frequency words, ranking in the top 20% of words by frequency; all have atypical spelling-sound correspondences (e.g., SAID does not rhyme with other -AID words).  This overall result indicates that there is not an obvious or consensus set of words treated as special.   
+
+```{r intersect_sources, include=FALSE}
+
+intersect_words_ = wcbc %>% 
+  filter(word %in% intersect_words) %>% 
+  select(word, wcbc_rank) %>% 
+  arrange(-desc(wcbc_rank)) %>% 
+  mutate(final = str_c(word, ' (*', wcbc_rank, '*)')) %>% 
+  select(final) %>% 
+  pull(final)
+
+#intersect_words_ = c(intersect_words_, c('', ''))
+
+intersect_words_table = matrix(intersect_words_, nrow = 4, ncol = 7)
+
+```
+
+
+```{r intersectTable, echo=FALSE, warning=FALSE, message=FALSE}
+intersect_words_table %>% 
+  apa_table(caption = "The 28 Words That Occur in All Instructional Sources (with Rank Frequency)", note = "Rank frequency (in parentheses) is from Wisconsin Children's Book Corpus.", col.names = NULL, escape = FALSE)
+```
+
+In contrast to the small number of words common to all the resources, the number of words that are only included in a single resource is high, 526 (54%). These words vary greatly with respect to structural properties such as typicality of spelling or pronunciation, frequency, and meaning.  They include relatively uncommon words like “yacht”, “sovereign”, “spatula”, “whom”, “etiquette”, and “gnat” as well as very commonly used words such as “shoe”, “snow”, “dry”, “last”, “seem”, and “easy”. See Table XX for a sample of 50 of these words and their frequencies and the supplemental materials for the complete list. The variability among these words speaks to a lack of common criteria for selecting words and word properties in these materials. See appendix for descriptive statistics for frequency for a number of different corpora.    
+
+
+```{r WordInOneSource, include=FALSE}
+words_in_one_source = c("mountains", "next", "plant", "real", "sea", "seem", "state", "area", "birds", "covered", "cried", "easy", "figure", "himself", "hours", "king", "map", "mark", "music", "north", "numeral", "pattern", "plan", "products", "pulled", "reached", "rock",  "room", "stand", "step",  "told",  "town", "travel", "unit",  "usually",    "vowel", "waves", "breakfast", "cousin", "dance", "daughter", "neighbor", "library", "paste", "ache", "acne", "acreage", "actual", "aisle", "algae")
+
+```
+
+```{r}
+
+tibble(word = words_in_one_source) %>% 
+  left_join(wcbc) %>% 
+  select(word, wcbc_rank) %>%
+  arrange(-desc(wcbc_rank)) %>%
+  mutate(wcbc_rank = as.character(wcbc_rank),
+         wcbc_rank = case_when(is.na(wcbc_rank) ~ "NP",
+                               TRUE ~ wcbc_rank)) %>%
+  mutate(final = str_c(word, ' (*', wcbc_rank, '*)')) %>%
+  select(final) %>% 
+  pull(final) %>% 
+  matrix(ncol = 5) %>% 
+  apa_table(caption = 'An illustrative sample of 50 unique words that appear in only a single resource. Rank frequency taken from the TASA is given in parentheses. Words that are not present in that corpus are marked with “NP” (“not present”), indicating that they are very infrequent in texts written for children.', col.names = NULL)
+
+```
+
+Turning to the occurrences of words across resources, Figure XX (Panel A) shows how many words appear in how many of the resources. The bar on the left shows that most words occur in only one resource (54%). Much smaller percentages occur in 2-6 resources. For 2-5 resources the percentages range from 7-15%. The value drops to 3% for all 6, due to the impact of the Kilpatrick materials, which overlap least with other resources. The lack of agreement across resources is not due to a few idiosyncratic items, insofar as the percentages of words shared by either 4 or 5 resources are similar to those for 2-3 (A). Figure XX (Panel B) shows the number of words that appear in 2-5 resources, excluding the Kilpatrick data. Overlap increases but is still relatively low (12-19%).  The number of words appearing in all resources increases from 28 to 79 (3-12%).  With the Kilpatrick program excluded (B), levels of overlap are somewhat higher, but there still are not a large number of near-misses (i.e., high percentages of words in the 4-5 overlap groups).  
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap='Number of words shared by number of resources. Panel A shows data from all 6 resources; Panel B shows these data with Kilpatrick program excluded. The leftmost bar in each panel shows the number of words that only appear in a single resource. The rightmost bar shows the words shared by all resources.', fig.width=7}
+plot_a_data = all_lists %>% 
+  group_by(word) %>% 
+  summarise(count = first(count)) %>%
+  ungroup() %>% 
+  group_by(count) %>% 
+  summarise(n = n()) %>% 
+  mutate(prop = n/length(unique(all_lists$word)),
+         n_prop = paste(n, ' (', round(prop*100, digits = 0), '%)', sep = ''))
+
+
+
+plot_a = plot_a_data %>% 
+  ggplot(aes(count, n)) +
+  geom_bar(stat = 'identity', color = 'black', fill = 'grey57') +
+  #geom_smooth(color = 'grey36', linetype = 'dashed') +
+  geom_text(aes(label = n_prop), size = 2, vjust = -.9, alpha = .8) +
+  ylim(c(0, 600)) +
+  labs(x = 'Number of resources', y = 'Number of words',
+       title = '# of words in each quantity of resource',
+       subtitle = "(6 = all resources, 1 = a single resource)") +
+  theme_apa() +
+  theme(legend.position = 'none',
+        plot.title = element_text(size = 11),
+        plot.subtitle = element_text(size = 10))
+
+plot_b_data = all_lists %>% 
+  filter(source != 'kilpatrick') %>% 
+  distinct(word) %>% 
+  nrow()
+
+
+N =  all_lists %>% 
+  filter(source != 'kilpatrick') %>% 
+  distinct(word) %>% 
+  nrow()
+
+plot_b = all_lists %>% 
+  filter(source != 'kilpatrick') %>% 
+  group_by(source, word) %>% 
+  summarise(i = first(level)) %>% # this is an arbitrary selection within first() just to grab one per source and word
+  ungroup() %>% 
+  group_by(word) %>% 
+  summarise(n = n()) %>% 
+  ungroup() %>% 
+  group_by(n) %>% 
+  summarise(sum = n()) %>%
+  mutate(prop = sum/N,
+         n_prop = paste(sum, ' (', round(prop*100, digits = 0), '%)', sep = '')) %>% 
+  ggplot(aes(n, sum)) +
+  geom_bar(stat = 'identity', color = 'black', fill = 'grey57') +
+  geom_text(aes(label = n_prop), size = 2, vjust = -.9, alpha = .8) +
+  labs(x = 'Number of resources', y = 'Number of words',
+       title = 'Data without Kilpatrick list',
+       subtitle = "(5 = all resources, 1 = a single resource)") +
+  theme_apa() +
+  theme(legend.position = 'none',
+        plot.title = element_text(size = 11),
+        plot.subtitle = element_text(size = 10))
+  
+plot_grid(plot_a, plot_b, labels = c("A", "B"))
+```
+
+Figure XX shows for each resource the proportion of its special words that occur in other resources.  Panel A shows the results using all 6 resources. A few main patterns are apparent. The Dolch, Fry, and Fountas & Pinnell results are very similar, likely because the two later resources relied heavily on the earlier Dolch article. Fundations contains the most words that are present in all other resources: 15% of the Fundations words appear in all 6 lists; 41% appear in all 5 lists (excluding Kilpatrick). Kilpatrick’s list is the most idiosyncratic, with most of the words (328, 77%) included in no other resources.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap= 'For each resource, the proportion of words that occur in 1-6 of the resources. (1) indicates words that only occurred in that resource; (6) indicates words that occurred in all resources.  Panel A shows these data for all six lists, and Panel B shows these data with Kilpatrick words removed. See supplement for these data along with the values for each proportion and the number of words associated with each proportion shown in the graph.', fig.height=8, fig.width=7}
+
+counts_by_source = all_lists %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  left_join(all_lists %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              ungroup() %>% 
+              group_by(word) %>% 
+              summarise(count = n()) %>% 
+              ungroup()) %>% 
+  ungroup() %>% 
+  group_by(source, count) %>% 
+  summarise(counts = n()) %>% 
+  left_join(all_lists %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              summarise(n = n()) %>% 
+              ungroup()) %>% 
+  mutate(prop = counts/n) %>% 
+  ungroup()
+
+
+counts_by_source_without_kilpatrick = all_lists %>% 
+  filter(source != "kilpatrick") %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  left_join(all_lists %>% 
+              filter(source != "kilpatrick") %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              ungroup() %>% 
+              group_by(word) %>% 
+              summarise(count = n()) %>% 
+              ungroup()) %>% 
+  ungroup() %>% 
+  group_by(source, count) %>% 
+  summarise(counts = n()) %>% 
+  left_join(all_lists %>% 
+              filter(source != "kilpatrick") %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              summarise(n = n()) %>% 
+              ungroup()) %>% 
+  mutate(prop = counts/n) %>% 
+  ungroup()
+
+# stacked barplot (with kilpatrick)
+plot_a = counts_by_source %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
+  ungroup() %>% 
+  arrange(desc(source)) %>% 
+  mutate(order = seq_len(n())) %>%
+  ggplot(aes(prop, reorder(source, order), fill = count)) +
+  geom_bar(position = "stack", stat = "identity", color = "black") +
+  geom_text(aes(label = count), position = position_stack(vjust = 0.5)) +
+  scale_fill_continuous(low = "grey22", high = "white") +
+  theme_apa() +
+  labs(x = "Proportion",
+       y = "Resource",
+       fill = "# of Resources") +
+  theme(legend.position = "none")
+
+
+# version without Kilpatrick
+plot_b =  counts_by_source_without_kilpatrick %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
+  ungroup() %>% 
+  arrange(desc(source)) %>% 
+  mutate(order = seq_len(n())) %>% 
+  ggplot(aes(prop, reorder(source, order), fill = count)) +
+  geom_bar(position = "stack", stat = "identity", color = "black") +
+  geom_text(aes(label = count), position = position_stack(vjust = 0.5)) +
+  scale_fill_continuous(low = "grey22", high = "white") +
+  theme_apa() +
+  labs(x = "Proportion",
+       y = "Resource",
+       fill = "# of Resources") +
+  theme(legend.position = "none")
+
+plot_grid(plot_a, plot_b, labels = c("A", "B"), ncol = 1)
+
+```
+
+
+The extent to which resources contain words that appear in other programs varied considerably. For example, the Kilpatrick program includes the most words specific to one resource (328, 77%). Fountas & Pinnell is the next most likely to select words not present in any other programs with 64 words (0.21%). Other programs are more likely to select words that at least some of the other programs also select. Fundations contains a distribution more indicative of such a profile, with 0.15% of those words appearing in all other resources and 0.34% of words appearing in five other resources. However, even here many words are idiosyncratic to this program, with 10% of words (19 words) found only in this list and no other. 
+
+Figure XX provides a comprehensive summary of the distribution of words over resources and amount of overlap using a Venn Diagram. The 28 words shared across all sources is seen in the center of the figure. The outermost regions show the words that were only found in 1 resource. Other regions of the figure show the number and percentage of words that overlap in two or more resources. The colors of the lines indicate the resources that are used to calculate the region.
+
+```{r venn, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='A diagram depicting the overlap in words across sources. The data are the number of words and percentages of all special words included in a source or in multiple sources. Percentages are calculated relative to all words across all sources. Values  less than 6 represent less than 1% of all words and are shown as 0%. Sources are indicated by line color (Dolch = brown; Fountas & Pinnell = green; Fry = orange; Fundations = light blue; Kilpatrick = purple; Wonders = red). The color of the shade in an area represents the number of words in a given region (darker = more words). The colors of the lines demarcating a region indicate the resources involved. For example, the center of the plot is encircled by all six colors, therefore representing those words that are common to all six programs (28 words; 3% of all words). The figure was generated using the ggVennDiagram package in R (Gao, 2022).'}
+
+#tmp = all_lists_
+#names(tmp) = c("Kilpatrick", "Dolch", "Fry", "Fundations", "Wonders", "Fountas & Pinnell")
+
+#COLORS_SOURCE2 = c('darkblue', 'darkred', 'darkorange', 'turquoise', 'red', 'green')
+#ggVennDiagram(tmp, label_size = 2, label_alpha = 0, set_size = 2.5) +
+#  scale_fill_gradient(low = 'white', high = 'firebrick') +
+#  scale_color_manual(values = COLORS_SOURCE2) +
+#  labs(fill = 'Count') +
+#  theme(legend.title = element_text(size = 11))
+
+knitr::include_graphics('data/venn_figure.png')
+
+```
+
+### Summary of Words Included in Each Resource and Their Overlap
+To summarize, whereas the concept of treating some words as special is common to all the resources, the words they identify as such are not. Few words appear in all six; over half appear in a single resource. With the Kilpatrick items removed, the percentage of unique words decreases to 39% and there is somewhat greater overlap among the remaining resources. Still, the striking aspect of the data is the degree to which the resources differ in words that are selected.
+
+We next consider whether there might be more commonality across resources than the above data suggest. Although they differ in the exact choice of words, perhaps they agree on which types of words should be identified–the properties of words that cause them to require special attention. In order to examine this possibility we looked at each set of words in terms of a range of properties known to be important in reading development: frequency, age-of-acquisition, consistency, imageability, and length (number of letters and number of syllables). 
+
+## Word Frequency
+Early instruction focuses on words that occur frequently in texts. Unlike properties such as  number of letters, frequency can only be estimated, by examining the number of times a word occurs in a relevant sample of text (corpus). Previous research has used sometimes uses several corpora for this purpose, which sometimes yield different results [@Gries2006].  We conducted analyses using several measures of frequency, which yielded similar results for the special words in these resources. (Analyses employing other frequency measures are included in the supplemental materials.)  Here we present analyses using frequencies from the TASA norms [@Zeno1995], which have been widely used in other research. TASA provides grade-level estimates of word frequency, based on samples of books for different grade levels. Data for texts through 3rd grade were used in order to match the grade levels associated with the instructional resources.  
+
+The following analyses employed rank frequencies, where numerically lower values indicate higher frequencies. The 19,468 words from the TASA corpus through grade three were standardized for their rank frequency. This results in a distribution of rank frequency for each word in the corpus set in relation to the variability of rank frequency in the TASA corpus. The standardized rank frequencies were used to examine how much the scores for words in each resource differ from the normative TASA distribution and to compare the resources to each other. Summary statistics for each resource are provided in Table XX.
+
+```{r descriptivesFreqSource, echo=FALSE, warning=FALSE, message=FALSE}
+# old code left here for supplement which should contain values across several corpora
+
+sources = desc_by_var(Zs, 'tasa_rank', combine_ = T)$source
+#wcbc_ = desc_by_var(Zs, 'wcbc_rank', combine_ = T)$var
+tasa_ = desc_by_var(Zs, 'tasa_rank', combine_ = T)$var
+#coca = desc_by_var(Zs, 'coca_rank', combine_ = T)$var
+#childes = desc_by_var(Zs, 'childes_rank', combine_ = T)$var
+
+tasa_2 = all_lists %>% 
+  arrange(desc(tasa_freq)) %>% 
+  mutate(rank = seq_len(n())) %>% 
+  group_by(source) %>% 
+  summarise(rank_mean = round(mean(rank, na.rm = T)),
+            rank_sd = round(sd(rank, na.rm = T)),
+            raw_mean = round(mean(tasa_freq, na.rm = T)),
+            raw_sd = round(sd(tasa_freq, na.rm = T))) %>% 
+  mutate(Rank = str_c(rank_mean, " (", rank_sd, ")"),
+         Raw = str_c(raw_mean, " (", raw_sd, ")")) %>% 
+  mutate(Source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            TRUE ~ NA
+                              )) %>% 
+  select(Source, Rank, Raw)
+
+
+data.frame(cbind(sources, tasa_)) %>% 
+  rename(Source = sources,
+         `Rank (Z)` = tasa_,
+         ) %>% 
+  left_join(tasa_2) %>%
+  select(Source, Rank, everything()) %>% 
+  apa_table(caption = "Frequencies of Words in Each Resource", 
+            note = 'Means and standard deviations (in parentheses) are shown for rank frequency, standardized rank frequency (Rank Z), and raw frequency values for all words in a given instructional resource for the TASA corpus. Frequencies are standardized based on all words in TASA before subsetting and calculating the mean and spread by instructional source. As a result, the mean rank frequency shown represents how far from the mean of all words in TASA the distribution within an instructional resource is.',
+            escape = FALSE)
+
+
+
+```
+
+Figure XX depicts every word in each of the six lists arranged by increasing frequency, where each word appears as a line. The presence of a black line indicates that the word is included in the program. If it is not in the program, the line is blank. The figures provides visual evidence of the inconsistencies in the selection of words and in the treatment word frequency in the 6 resources, abstracting away from the identities of individual words. Inconsistencies across resources is seen as horizontal discontinuities in lines. Differences in the treatment of word frequency are apparent from the density of black lines at different frequency levels. Dolch, Fry, and Wonders contain high concentrations of very high frequency words. Fountas & Pinnel and Fundations contain fewer of these words. The Kilpatrick materials are the obvious outlier, with heavy representation of low frequency words.  
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=4, fig.cap='A tileplot depicts all words in each of the 6 resources, arranged in terms of frequency (increasing vertically on the y-axis). Each word is depicted as a black line within a given resource. A word is shared across all six resources if the black bar extends continuously across all six along the x-axis. Any line that shows a horizontal discontinuity indicates that the word does not appear in all six resources (which is the case for most words).', fig.width=3}
+
+
+all_lists %>% 
+  group_by(word) %>% 
+  summarise(tasa_freq = first(tasa_freq)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "dolch") %>% 
+              distinct(word) %>% 
+              mutate(Dolch = word) %>% 
+              select(word, Dolch)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "fry") %>% 
+              distinct(word) %>% 
+              mutate(Fry = word) %>% 
+              select(word, Fry)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "fundations") %>% 
+              distinct(word) %>% 
+              mutate(Fundations = word) %>% 
+              select(word, Fundations)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "fountas_pinnell") %>% 
+              distinct(word) %>% 
+              mutate(`F&P` = word) %>% 
+              select(word, `F&P`)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "kilpatrick") %>% 
+              distinct(word) %>% 
+              mutate(Kilpatrick = word) %>% 
+              select(word, Kilpatrick)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "wonders") %>% 
+              distinct(word) %>% 
+              mutate(Wonders = word) %>% 
+              select(word, Wonders)) %>% 
+  select(-word) %>% 
+  pivot_longer(Dolch:Wonders, names_to = "source", values_to = "word") %>%
+  mutate(tasa_freq = case_when(is.na(tasa_freq) ~ 1,
+                               TRUE ~ tasa_freq + 1)) %>% 
+  ggplot(aes(source, reorder(word, tasa_freq))) +
+  geom_tile()  +
+  theme_apa() +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.title.y = element_text(size = 11)) +
+  labs(x = "Resource",
+       y = "Word (less frequent to more frequent)") 
+  
+```
+
+
+### Frequencies of Special Words Compared to Words in General
+All instructional resources contain words that are, on average, more frequent (lower standardized rank frequency) than the average word from TASA, as indicated by each mean value for standardized rank frequency being negative (Table XX). This is unsurprising given that all of the resources are intended to contain common words. We also examined a statistical model of each resource’s frequency distribution against zero (the normative mean). Table XX shows the results from for the six resources. 
+
+
+```{r SourcesDesc, echo=FALSE, message=FALSE, warning=FALSE}
+table_desc = all_lists %>% 
+  group_by(source, word) %>% 
+  summarise(tasa_freq = first(tasa_freq)) %>% 
+  ungroup() %>% 
+  group_by(source) %>% 
+  summarise(TASA = round(mean(tasa_freq, na.rm = T)),
+            TASA_sd = round(sd(tasa_freq, na.rm = T))) %>% 
+  mutate(TASA = str_c(TASA, " (", TASA_sd, ")")) %>% 
+  left_join(all_lists %>% 
+    group_by(source) %>% 
+    distinct(word) %>% 
+    summarise(N = n())) %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  left_join(Zs %>% 
+  filter(var == "tasa_rank") %>% 
+  group_by(source) %>% 
+  summarise(TASA_rank = mean(Z, na.rm = T),
+            TASA_rank_sd = sd(Z, na.rm = T))) %>% 
+  mutate(Rank = str_c(round(TASA_rank, digits = 2), " (", round(TASA_rank_sd, digits = 2), ")")) %>% 
+  select(Source = source, N, Raw = TASA, Rank) 
+
+
+table_desc %>% 
+  select(Source, everything()) %>% 
+  apa_table(caption = "Basic Descriptive Data for All Instructional Sources",
+            note = "Values for CHILDES, TASA, WCBC, and COCA are mean raw frequencies. Letters = number of letters. Syllables = number of syllables. Values in parentheses are standard deviations.")
+
+```
+
+
+
+```{r tasaFreqTtest, echo=FALSE, warning=FALSE, message=FALSE}
+z_table_tasa %>% 
+  select(-CI_hi, -CI_low, -p_derived, -var) %>%
+  apa_table(caption = "Model Outputs by Source for Statistical Test against Mean Rank Frequency from the Educator's Word Frequency Guide (TASA)", note = "Statistical test used was t.test() from base R (R Core Team, 2021). Rank frequencies were Z transformed prior to test, so resulting coefficients express the difference in standard deviations of rank frequency from TASA between the source mean on rank frequency and the TASA mean (0 due to Z transformation).", escape = FALSE)
+
+
+```
+
+Fry tends to contain the highest frequency words as well as the least amount of variability. On the other end is Kilpatrick. This set of words is much lower frequency on average than any of the other resources. The variability in frequency for this set is noteworthy as well. Not only are the averages for Kilpatrick much lower frequency than any of the other instructional resources, the spread of frequency values for that source is higher as well. This trend is exhibited in also the extreme values on the low end of frequency for the Kilpatrick set in that the distribution includes words above the mean of words in TASA. It is the only resource that exhibits this property. 
+
+Figure XX shows these trends for the six lists. The point estimate is shown for each resource in each panel, with standard deviations shown as boxes above and below the estimate in Panel A and standard errors in Panels B and C. The scale in Panel A is such that you can see each list’s distribution relative to the mean of TASA, shown as a dashed line. Standard deviations are shown in this panel because the small size of the standard errors render them imperceptible at this scale. The data displayed in this way give a sense of the variation within sources. The idiosyncrasies of the Kilpatrick list are also apparent: that resource contains more variable word frequencies and the lowest frequency words are far towards the extreme (i.e., high on the y-axis). Panel B is a zoomed in version of this plot, but showing standard errors from the statistical test of each distribution against zero (the TASA mean). This view permits better comparison across the resources and relative to the mean across all six resources (dotted line). Panel C shows the same data as in Panel B excluding the . This shows the differentiation of Wonders at one end (reliably containing lower frequency words than the other four) and Fry at the other (tending to contain the highest frequency words). Dolch, Fountas & Pinnell, and Wonders exhibit comparable distributions for word frequency. See Table XX for specific quantitative values (descriptive and inferential) to supplement the graphical depiction in Figure XX. 
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap='In Panel A the raw distribution of words for rank frequency (standardized) from the TASA corpus are shown as points (in grey) with point estimates from the statistical model shown as colored bars. Boxes around the point estimates show standard deviations because standard errors are imperceptibly small. All distributions are significantly different than the corpus mean for TASA (0), which is shown as the dashed line at zero. Panel B shows the same plot but zoomed in so that the differences across resources can be seen, and Panel C shows the same plot but with the Kilpatrick set removed so that the other points (and bars) can be seen more clearly. These panels show standard errors as error bars around the point estimates. In Panels A and B the dotted lines show the mean across the six resources, and in Panel C the dot-dashed line shows the mean for only the five resources shown.', fig.width=7, fig.height=3.5}
+
+# code derivative of this can be used for the supplement because all corpora are included at top level here
+
+VARS = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
+
+
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(var) %>% 
+  summarise(varmean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA')) %>% 
+  filter(var == "TASA")
+
+plot_data = Zs %>% 
+  filter(var %in% VARS) %>% 
+  select(var, source, M = Z) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA')) %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4))
+
+ci_data = z_table_tasa %>% # see frequency_models.R for this object's generation (if rendering to PDF you'll need to change a line there)
+  select(source = Source, ci_ = CI95) %>% # you will want to change this line if rendering into PDF
+  mutate(ci = str_replace(ci_, "\\[", ""),
+         ci = str_replace(ci, "\\]", ""),
+         ci_lo = str_split(ci, ",", simplify = T)[,1],
+         ci_hi = str_split(ci, ",", simplify = T)[,2],) %>% 
+  mutate(ci_lo = as.numeric(ci_lo),
+         ci_hi = as.numeric(ci_hi)) %>% 
+  select(source, ci_lo, ci_hi)
+
+plot_a = Zs %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4)) %>% 
+  filter(var == "tasa_rank") %>% 
+  ggplot(aes(source_, Z, color = source_)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+geom_point(position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
+  #geom_point(size = 2) +
+  stat_summary(fun.data = "mean_sdl", fun.args = list(mult = 1), geom = "crossbar", width = .2) +
+  #geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi, color = source), width = .3) +
+  #ylim(c(-2, .5)) +
+  labs(x = 'Source', y = 'Rank frequency (Z)') +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  geom_hline(data = hlines, aes(yintercept = varmean), color = 'black', linetype = 'dotted') +
+  theme_apa() +
+  theme(legend.position = 'none',
+        strip.background=element_blank(),
+        text = element_text(family = 'Times'),
+        axis.text.x = element_text(angle = 60, hjust = 1))
+
+plot_b = Zs %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  filter(var %in% VARS) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+                source = as.factor(source)) %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4)) %>% 
+  filter(var == "TASA") %>% 
+  left_join(ci_data) %>%
+  ggplot(aes(source_, M, color = source_)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(size = .8) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi, color = source), width = .35) +
+  ylim(c(-1.79, -.5)) +
+  labs(x = 'Source', y = 'Rank frequency (Z)') +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  geom_hline(data = hlines, aes(yintercept = varmean), color = 'black', linetype = 'dotted') +
+  theme_apa() +
+  theme(legend.position = 'none',
+        strip.background=element_blank(),
+        text = element_text(family = 'Times'),
+        axis.text.x = element_text(angle = 60, hjust = 1))
+
+
+hline_for_set_without_kilpatrick = Zs %>% 
+  filter(var == "tasa_rank" & source != "Kilpatrick") %>% 
+  summarise(mean = mean(Z, na.rm = T)) %>% 
+  pull(mean)
+
+plot_c = Zs %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  filter(var %in% VARS) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+                source = as.factor(source)) %>% 
+  mutate(source_ = fct_relevel(source, 'Kilpatrick', after = 4)) %>% 
+  filter(var == "TASA") %>% 
+  filter(source_ != "Kilpatrick") %>% 
+  left_join(ci_data) %>%
+  ggplot(aes(source_, M, color = source_)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(size = 1) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = ci_lo, ymax = ci_hi, color = source), width = .35) +
+  ylim(c(-1.70, -1.60)) +
+  labs(x = 'Source', y = 'Rank frequency (Z)') +
+  geom_hline(yintercept = hline_for_set_without_kilpatrick, color = 'grey37', linetype = 'dotdash') +
+  theme_apa() +
+  theme(legend.position = 'none',
+        strip.background=element_blank(),
+        text = element_text(family = 'Times'),
+        axis.text.x = element_text(angle = 60, hjust = 1)) +
+  scale_y_continuous(labels = round_axis_text)
+
+plot_grid(plot_a, plot_b, plot_c, ncol = 3, nrow = 1, align = "v", labels = c("A", "B", "C"))
+```
+
+
+### Coverage of the Most Frequent Words
+To what extent do these resources include the most frequent words in grade-appropriate texts? We examined this by calculating the proportion of the most frequent words in TASA that a given resource contains. For this purpose frequencies were divided into bands: 50, 100, 500, and 1000 words. The results for all six resources follow a common pattern: they tend to exhibit more coverage for the most frequent 50 and 100 words, less so for the most frequent 500 and even less for the most frequent 1000. This general finding is not surprising. However, the resources vary in how they cover words in these bands. 
+
+Wonders contains the most words, with 440, so it is perhaps unsurprising that it shows greater coverage in all frequency bands. It nonetheless contains only 65% of the most frequent 500 words. By contrast, the Dolch and Fry words obtain almost comparable coverage with fewer words (less than half of Wonders).  All three have greater than 75% coverage for TASA on the top 50 and top 100 words and around half of the top 500 words. Fountas and Pinnell exhibit slightly lower levels of coverage than those three, with Fundations demonstrating even less coverage than Fountas and Pinnell. The coverage for Kilpatrick is very low, even for the most frequent 50 words. This is fact is notable given that Kilpatrick contains the second most number of words behind Wonders, and over 100 words more than the Dolch list.
+
+
+```{r coverageKidCorpus, echo=FALSE, warning=FALSE, message=FALSE}
+ROWS = length(unique(all_lists$source))*length(unique(top_N$corpus))*length(unique(top_N$top_n))
+COLS = c("source", "corpus", "top_n", "in_program", "proportion")
+
+
+coverage = data.frame(matrix(nrow = ROWS, ncol = length(COLS)))
+colnames(coverage) = COLS
+
+i = 1
+
+for (source_ in unique(all_lists$source)){
+  
+  trigger = all_lists %>% 
+        filter(source == source_) %>% 
+        distinct(word) %>% 
+        pull(word)
+  
+  for (corpus_ in unique(top_N$corpus)){
+    for (N in unique(top_N$top_n)){
+      
+      # get all the words for a given source (program)
+      
+      
+      # get all the words from a given corpus as a specific level of "top N" (i.e. 100, 500, 1000)
+      target = top_N %>% 
+        filter(corpus == corpus_) %>% 
+        filter(top_n == N) %>% 
+        pull(word)
+
+      coverage$source[i] = source_
+      coverage$corpus[i] = corpus_
+      coverage$top_n[i] = as.numeric(N)
+      coverage$in_program[i] = length(intersect(target, trigger))
+      coverage$proportion[i] = length(intersect(target, trigger))/as.numeric(N)
+      
+      i = i + 1
+      
+    }}}
+```
+
+
+```{r coverageKidCorpusFigure, echo=FALSE, warning=FALSE, message=FALSE, fig.cap="Coverage for each program (panel) for each level of most frequent 50, 100, 500, and 1000 words for TASA. Programs exhibit variable coverage at each level for the corpus, with Wonders, Fry, and Dolch showing comparable levels of coverage at one extreme, and Kilpatrick at the other.", fig.width=7}
+
+coverage %>%
+  filter(corpus == "tasa") %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
+  left_join(source_order) %>% 
+  ggplot(aes(as.factor(top_n), proportion, fill = as.factor(top_n))) +
+  geom_bar(stat = "identity", position = "dodge", color = "black") +
+  #geom_text(aes(label = sub("^0\\.", ".", round(proportion, digits = 2))), size = 2.5, vjust = 1.8, alpha = .8) +
+  facet_grid(~factor(source, levels = c("Dolch",  "Fry", "F&P", "Fundations", "Kilpatrick", "Wonders"))) + # change order here
+  theme_apa() +
+  labs(x = "N most frequent", y = "Proportion covered", fill = "N most frequent") +
+  theme(text = element_text(family = "Times"),
+        axis.text.x = element_text(angle = 90, vjust = .5, hjust = 1),
+        legend.position = "none") +
+  scale_fill_manual(values = c("burlywood", "gold2", "brown", "darkorchid4"))
+```
+
+### Summary of Word Frequency
+In answer to the question posed at the beginning of this section, Figure XX indicates that the words in Wonders, Fry, Dolch, and Fountas & Pinnel have similar frequencies even though they are largely different words. As other analyses have indicated, the Kilpatrick words differ the most from the others, but the Fundations words stand out because they include fewer of the words in each frequency band.  
+
+Relative to TASA, all resources contain words more frequent than the average frequency from that corpus. However, Kilpatrick’s set contains words that are at or above the mean frequency from TASA, a trend that differentiates this program from the rest. Kilpatrick’s resource aside, all other resources do in fact contain “high frequency” words when comparing against this normative distribution. This is good and expected given that they advertise themselves as such. Nonetheless, the extent to which they do so varies quantitatively. These trends are recapitulated when we examine the coverage of the most frequent words in TASA (e.g., Figure XX), though the relative distributions of each program when examining the data in this way shifts a bit. Here, Wonders, Fry, and Dolch do very well in their coverage of the top 50 and top 100 words from TASA: they contain almost every one of these words. Wonders contains the best coverage of the top 500 and 1000 words from TASA (.65 and .41 of these words, respectively). Analogous to the comparison of average frequency relative to the mean TASA frequency, Fundations and Kilpatrick do least well in coverage of the top 50, 100, 500, and 1000 words. These resources contain only 16% (Fundations) and 1% (Kilpatrick) of the most frequent 1000 words from TASA, which is much lower than the 41% contained by Wonders. It important to keep in mind that Wonders contains the most words in general, with 404. 
+
+To summarize, the concept of “high frequency words” figures prominently in discussions of early reading instruction. The results here suggest that although the concept is familiar, it does not designate a specific set of words.  The six resources differ in terms of which words they contain and the frequency of those words.
+
+## Other Properties
+The following analyses examined other properties of words known to affect reading. Orthography-to-phonology consistency refers to how consistently a spelling pattern is pronounced across words [@Chee2020; @Jared2002].  A word is consistent if its pronunciation is consistent with neighboring words with similar spellings. Consistency varies in degree. MUST, for example, is highly consistent with neighbors such as DUST, LUST, and MUSK. HAVE is inconsistent because most -AVE words are pronounced as in SAVE. SAVE is less consistent than MUST (because one of its neighbors is HAVE). For these analyses we used the average feedforward consistency for body-rime units across syllables, an aggregate measure of the consistency of a word regardless of length. Numerically lower scores indicate lower consistency. Age of acquisition (AoA) is a rating of the age at which words were learned [@Kuperman2012]. Numerically lower scores indicate earlier acquisition. AoA is correlated with word frequency but accounts for additional variance associated with early experience with words. Imageability [@Stadthagen-Gonzalez2006] is a rating of how much a word evokes a visual image; it is correlated with concreteness but somewhat more sensitive (e.g., a word such as "red" rates low on concreteness but high on imageability). Lower scores indicate lower imageability. Number of letters and number of syllables were counted.  
+
+As with word frequency, the measures of these additional word-level variables were standardized in the TASA corpus (levels 1-3) in the same way that frequency was standardized (described previously).  Table XX provides a description of what low values on each scale can be interpreted as, and a few examples. Low values are described because words in all distributions in the data described tend to be on the low end of the scale for each variable (and below the mean on the variable in the TASA corpus). 
+
+```{r WordPropertyScalesDescriptions, warning =FALSE}
+
+tibble(Variable = c("AoA", "Consistency", "Letters", "Syllables", "Imageability"),
+       Description = c("Learned early in life", "Differs in pronunciation to similarly spelled words", "Contains few letters", "Contains few syllables", "Is difficult to create a mental image of"),
+       Example = c("my", "shall", "I", "my", "is")) %>% 
+  apa_table(caption = "Description and Examples of Words for Low Values for Each Variable",
+            note = 'Each example provided comes from the lowest end of the distribution for each variable. For example, the word "my" is low on age of acquisition and the word "shall" is inconsistent in pronunciation to other words that share similar spellings (e.g., "ball" and "call")')
+
+```
+
+### Differences in Word Properties by Resource
+Table XX provides summary data and Figure XX shows the point estimates from statistical tests of each resource against zero (TASA mean) for each variable. See appendix for results of the statistical tests corresponding to the figure. Colors represent the five different variables of interest within each panel and the dotted line refers to the average for the six sources for a given variable. The dashed line shows the mean for all variables in all words in TASA (zero due to standardization). 
+
+```{r desc_other, echo=FALSE, warning=FALSE, message=FALSE}
+
+
+sources = desc_by_var(Zs, VARS[1], combine_ = T)$source
+aoa = desc_by_var(Zs, "aoa", combine_ = T)$var
+
+
+consistency = desc_by_var(Zs, "consistency", combine_ = T)$var
+letters = desc_by_var(Zs, "letters", combine_ = T)$var
+syllables = desc_by_var(Zs, "syllables", combine_ = T)$var
+imageability = desc_by_var(Zs, "imageability", combine_ = T)$var
+
+
+data.frame(cbind(sources, aoa, consistency, letters, syllables, imageability)) %>%
+  rename(Source = sources,
+         AoA = aoa,
+         Consistency = consistency,
+         Letters = letters,
+         Syllables = syllables,
+         Imageability = imageability) %>% 
+  apa_table(caption = 'Descriptive Statistics of Other Word Variables for each Resource', 
+            note = "Means and standard deviations (in parentheses) are shown for standardized values for all words in a given instructional resource. Standardization takes place in TASA (see text). Therefore the mean value for a resource for a given variable indicates the average difference from the overall mean within TASA.", escape = FALSE)
+
+```
+
+```{r profileFigureLexical, echo=FALSE, message=FALSE, warning=FALSE, fig.cap='Point estimates and standard errors for a range of word variables within sources are shown. Means are calculated over standardized measures within TASA, therefore the position of the point for a source for a variable can be interpreted as the average distance away from the mean of all words within TASA (i.e., 0 shown with a red dashed line) for that variable in terms of standard deviation units. The mean on a given variable across all sources is shown as a grey dotted line just for convenience. Estimates were derived using t.test() in base R.', fig.width=7}
+VARS = c('consistency', 'aoa', 'letters', 'syllables', 'imageability')
+
+bardata = z_tables_lexical %>% 
+  select(source = Source, se = `\\textit{SE}`, var, M = `\\textit{b}`) %>% 
+  mutate(se = as.numeric(se),
+         M = latex_to_num(M)) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters')) 
+  
+hlines = nsd %>% 
+  filter(var %in% VARS) %>% 
+  group_by(var) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters')) 
+
+Zs %>% 
+  group_by(source, var) %>% 
+  summarise(source_order = first(source_order)) %>% 
+  filter(var %in% VARS) %>% 
+  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
+                         var == 'syllables' ~ 'Syllables',
+                         var == 'aoa' ~ 'AoA',
+                         var == 'imageability' ~ 'Imageability',
+                         var == 'letters' ~ 'Letters')) %>% 
+  left_join(bardata) %>% 
+  ggplot(aes(reorder(source, source_order), M, color = reorder(source, source_order), group = reorder(var, source_order))) +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'black', linetype = 'dotted') +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-se, ymax = M+se), size = .5, width = .8) +
+  labs(color = 'Source', x = 'Variable', y = 'Standardized value (within TASA)') +
+  facet_grid(~var)  +
+  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
+  theme_apa() +
+  theme(legend.position = 'top',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        text = element_text(family = 'Times'))
+
+```
+
+Scores for the resources almost all land below the TASA mean for each variable (below the dashed line). All resources contain words that are learned earlier than the average word in TASA (lower in AoA), are less consistent (lower consistency; except for Dolch), are less imageable, have fewer letters, and fewer syllables. Additionally, each resource rarely falls on the mean for all resources (i.e., has a bar that falls on the dotted line), which suggests noteworthy variability across resources for each variable. 
+
+Fundations, Kilpatrick, and Dolch are, in general, associated with more extreme positions relative to the group mean across each of the variables - though in different directions. Fundations favors words with lower age-of-acquisition, lower consistency, lower imageability, and more syllables than the rest. Kilpatrick tends towards words with higher AoA (learned later) and more letters. Dolch contain words that are more consistent and more imageable, though shorter (in terms of letters and syllables). Fry, Fountas and Pinnell, and Wonders tend to be more moderate than the others, exhibiting more instances where their distribution straddles the mean for all resources (and each showing no instance of being the extreme value on any given variable). 
+
+Except for the Dolch word’s distribution for consistency, differences between the source distribution on each word-level variable relative to the normative distribution (TASA) are all statistically significant based on a statistical test of the mean against zero (paralleling the tests conducted previously on the frequency distributions).
+
+### Summary of Other Word Properties
+In summary, we asked how the words these resources compared in terms of other properties of words known to affect learning to read.  We found that the different sets of words associated with the resources also differ with respect to other important properties. Noteworthy variability exists across the instructional word lists along all 6 variables studied, greater than that seen with word frequency.  
+
+Regarding spelling-sound consistency, the resources split into two subgroups: those that contain words that are below the mean for the six resources (Fundations, Wonders, Kilpatrick) and those that are above that mean (Dolch, Fry, and Fountas & Pinnell). Fundations and Kilpatrick are most clearly differentiated on their extreme. These two programs contain words that are much more inconsistent than the others. This tendency fits with the characterization of the Fundations and Kilpatrick programs, whose instruction tends to focus on idiosyncratic print structure of words in English. Interestingly, Fundations targets words that are both irregular and frequent, where Kilpatrick’s explanation focuses on the irregularity of the words selected (see Methods section on this program for further description). Nonetheless, Fundations contains words that tend to be more inconsistent than those in Kilpatrick. 
+
+Fundations and Kilpatrick also occupy outlier positions for age of acquisition, though in this case they are on opposite ends: Fundations contains words that are on average the lowest AOA words, and Kilpatrick contains the highest AOA words. The other four programs cluster together, right around the average value for AOA for the six resources. Note that for Fundations, this tendency to contain words that are low in age of acquisition but contain inconsistent print-speech structure characterizes the potential learnability of that program’s words. Their words, while idiosyncratic from the perspective of print and speech are more likely to be words that the child already knows from spoken language. By contrast, Kilpatrick’s words are both inconsistent and are higher in age of acquisition. This will cause words in that set to be more difficult to learn. The words will have fewer neighbors and less likely to be known from speech by the child. This tendency is compounded by their relative infrequency, as described above. 
+
+## Frequency & Consistency
+The final set of analyses examine the intersection between frequency and consistency, which is particularly relevant to decisions about early reading instruction. Such instruction typically focuses on words that are used frequently and/or ones that have atypical pronunciations given their spellings (i.e., words that are low in consistency). These properties are related [@Seidenberg1989]: inconsistent words tend to be high frequency words (e.g., said, give, have) but some are lower in frequency (e.g., aisle, pint, plaid). Words that are inconsistent but used frequently are easier to learn than inconsistent words that are used less often. The following analyses provide a way to visualize this relationship, and how it plays out in the six resources.
+
+A simple approach that lends itself well to visual interpretation is placing a set of words in the two-dimensional space defined by the two variables. The x-axis is ordered in terms of frequency (further right indicates less frequent) and the y-axis is ordered in terms of consistency (further up the axis indicates more typical structure).  The space can be divided into quadrants (Figure 6A):  inconsistent and frequent words are commonly the target of instructional emphasis; consistent and frequent words may be included less often because they can be pronounced using phonics rules; consistent and infrequent words, also correctly specified by phonics rules and also used less often; and inconsistent and infrequent, uncommon words with atypical structure that can be learned later, but only when necessary. 
+
+```{r WordsInLowerLeft}
+
+rank_inconsistency_rank_frequency = #tasa %>% 
+  #filter(word %in% all_lists$word) %>%
+  #filter(is.element(word, unique(all_lists$word))) %>%
+  tasa[tasa$word %in% all_lists$word, ] %>% 
+  arrange(-desc(consistency)) %>% 
+  mutate(consistency_rank = seq_len(n())) %>%
+  arrange(desc(tasa_freq)) %>% 
+  mutate(tasa_rank = seq_len(n())) %>%
+  select(tasa_rank, consistency_rank, word)
+
+middle_x = middle_y = nrow(rank_inconsistency_rank_frequency)/2
+
+lower_left_quadrant_words = rank_inconsistency_rank_frequency %>%
+  filter(tasa_rank < middle_x & consistency_rank < middle_y) %>%
+  pull(word)
+
+
+```
+
+```{r FrequencyConsistencyPlot1, fig.cap="Panel A: Quadrants defined by rank word frequency and rank spelling-sound consistency. Panel B shows the values for all words in the six programs (darker data points indicate more words at that value). The frequency and consistency variables are plotted using their index (rank) in the distribution rather than their raw values, such that frequency is plotted high to low (with the highest frequency word being furthest to the left on the x-axis) and consistency is plotted low to high (with the lowest consistency word being furthest down on the y-axis). Quadrants are defined by the median value for each variable (rank of 444). Higher frequency inconsistent words are highlighted. ", fig.width=7}
+
+plot_1 = rank_inconsistency_rank_frequency  %>% 
+  ggplot(aes(tasa_rank, consistency_rank)) +
+  geom_hline(aes(yintercept = middle_y)) +
+  geom_vline(aes(xintercept = middle_x)) +
+  theme_apa() +
+  labs(x = "Frequency", y = "Consistency", title = "Key") + 
+  annotate("text", x = 200, y = 700, label = "Consistent & Frequent", size = 2.5) +
+  annotate("text", x = 200, y = 190, label = "Inconsistent & Frequent", size = 2.5) +
+  annotate("text", x = 200, y = 220, label = "(target region)", size = 2.5) +
+  annotate("text", x = 700, y = 700, label = "Inconsistent & Infrequent", size = 2.5) +
+  annotate("text", x = 700, y = 210, label = "Consistent & Infrequent", size = 2.5) +
+  scale_y_continuous(limits = c(0, 888)) +
+  scale_x_continuous(limits = c(0, 888)) +
+  theme(text = element_text(family = "Times"),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+plot_2 = rank_inconsistency_rank_frequency %>% 
+  mutate(lower_left = case_when(consistency_rank < middle_y  & tasa_rank < middle_y ~ T,
+                                TRUE ~ F)) %>% 
+  ggplot(aes(tasa_rank, consistency_rank)) +
+  geom_hline(aes(yintercept = middle_y)) +
+  geom_vline(aes(xintercept = middle_x)) +
+  geom_hex(color = "black") +
+  annotate("rect", xmin = c(-10, -10), xmax = c(450, -10), ymin = c(-10, -10), ymax = c(450, 450), color = NA, fill = "pink", alpha = .3) +
+  labs(x = "Frequency", title = "Target Quadrant (in shaded lower left)") +
+  scale_fill_gradient(low = "grey92", high = "black") +
+  theme_apa() +
+  theme(legend.position = "none",
+        axis.title.y = element_blank(),
+        text = element_text(family = "Times"),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+plot_grid(plot_1, plot_2, labels = c("A", "B"))
+
+
+```
+
+We examined the distribution of each resources words in the space defined by these two variables. Figure 6B shows the locations of all words from the six resources. 187 of the words (19%) fall into the lower left _frequent but inconsistent_ quadrant. Differences across the resources can be seen by the fact that the distributions differ across the four quadrants. Furthermore, the distribution of darker patches of points differ for the six resources. This demonstrates that each resource tends to select words that differ from the other resources in terms of these two variables. These differences are further quantified in the next section which describes the amount of coverage of the target (lower left) quadrant of each figure.
+
+### Words in the Lower Left Quadrant of Frequency and Consistency
+All of the resources include some of the 187 higher frequency-higher inconsistency words (words contained in the lower left quadrant). Table XX shows the proportion of coverage of the quadrant for each resource (Column 1) as well as the proportion of the resource the words in the target quadrant represents for that resource (Column 2). Wonders has the highest coverage, covering the vast majority of the target quadrant (.89), but it also has the highest number of special words overall. The distribution of words in that program spreads across all quadrants of the figure, including many words in the “infrequent and inconsistent” category. Compare Wonders to Fry, for example, which contains well more than half the target words (.66), and whose words are less spread across the four quadrants in general.  Consistent with other results, Kilpatrick has the lowest coverage, despite containing a large number of words.  
+
+```{r FrequencyConsistencyPlot2, fig.width=7, fig.cap="Words (shown in hexagonal bins, which bin across proximal points) for all resources are shown in two-dimensional space defined by frequency and consistency. Darker hexbins indicate more points. The dimensions of the space are defined by all words in the TASA sample (1-3)."}
+
+x_limit = max(rank_inconsistency_rank_frequency$tasa_rank)
+y_limit = max(rank_inconsistency_rank_frequency$consistency_rank)
+
+
+plot_dolch = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Dolch ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  filter(in_program == TRUE) %>% 
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = middle_y)) +
+  geom_vline(aes(xintercept = middle_x)) +
+  #geom_point(size = .05) +
+  geom_hex(linewidth = .1) +
+  scale_fill_gradient(low = "grey99", high = "black") +
+  labs(x = "Frequency", y = "Consistency", title = "Dolch") +
+  scale_color_manual(values = c("black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlim(c(0, x_limit)) +
+  ylim(c(0, y_limit))
+
+plot_fp = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Fountas_Pinnell ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  filter(in_program == TRUE) %>% 
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = middle_y)) +
+  geom_vline(aes(xintercept = middle_x)) +
+  #geom_point(size = .05) +
+  geom_hex(linewidth = .1) +
+  scale_fill_gradient(low = "grey99", high = "black") +
+  labs(x = "Frequency", y = "Consistency", title = "Fountas & Pinnell") +
+  scale_color_manual(values = c("black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlim(c(0, x_limit)) +
+  ylim(c(0, y_limit))
+
+
+plot_fry = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Fry ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  filter(in_program == TRUE) %>% 
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = middle_y)) +
+  geom_vline(aes(xintercept = middle_x)) +
+  #geom_point(size = .05) +
+  geom_hex(linewidth = .1) +
+  scale_fill_gradient(low = "grey99", high = "black") +
+  labs(x = "Frequency", y = "Consistency", title = "Fry") +
+  scale_color_manual(values = c("black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlim(c(0, x_limit)) +
+  ylim(c(0, y_limit))
+
+
+plot_fundations = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Fundations ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  filter(in_program == TRUE) %>% 
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = middle_y)) +
+  geom_vline(aes(xintercept = middle_x)) +
+  #geom_point(size = .05) +
+  geom_hex(linewidth = .1) +
+  scale_fill_gradient(low = "grey99", high = "black") +
+  labs(x = "Frequency", y = "Consistency", title = "Fundations") +
+  scale_color_manual(values = c("black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlim(c(0, x_limit)) +
+  ylim(c(0, y_limit))
+
+
+plot_kilpatrick = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Kilpatrick ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  filter(in_program == TRUE) %>% 
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = middle_y)) +
+  geom_vline(aes(xintercept = middle_x)) +
+  #geom_point(size = .05) +
+  geom_hex(linewidth = .1) +
+  scale_fill_gradient(low = "grey99", high = "black") +
+  labs(x = "Frequency", y = "Consistency", title = "Kilpatrick") +
+  scale_color_manual(values = c("black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlim(c(0, x_limit)) +
+  ylim(c(0, y_limit))
+
+
+plot_wonders = rank_inconsistency_rank_frequency %>% 
+  mutate(in_program = case_when(word %in% all_lists_$Wonders ~ TRUE,
+                                TRUE ~ FALSE)) %>% 
+  filter(in_program == TRUE) %>% 
+  ggplot(aes(tasa_rank, consistency_rank, color = in_program)) +
+  geom_hline(aes(yintercept = middle_y)) +
+  geom_vline(aes(xintercept = middle_x)) +
+  #geom_point(size = .05) +
+  geom_hex(linewidth = .1) +
+  scale_fill_gradient(low = "grey99", high = "black") +
+  labs(x = "Frequency", y = "Consistency", title = "Wonders") +
+  scale_color_manual(values = c("black")) +
+  theme_apa() +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = .5),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank()) +
+  xlim(c(0, x_limit)) +
+  ylim(c(0, y_limit))
+
+
+plot_grid(plot_dolch, plot_fp, plot_fry, plot_fundations, plot_kilpatrick, plot_wonders)
+
+```
+
+
+
+```{r CoverageProgramsLowerQuadrantTable}
+table_data = tibble(Source = names(all_lists_),
+                    `Proportion of Quadrant` = NA,
+                    `Prop. of Resource Total` = NA)
+
+for (i in seq(nrow(table_data))){
+  
+  source = table_data$Source[i]
+  source_words = unlist(all_lists_[source])
+  source_subset_in_quadrant = intersect(source_words, lower_left_quadrant_words)
+  table_data$`Proportion of Quadrant`[i] =  length(source_subset_in_quadrant)/length(lower_left_quadrant_words)
+  table_data$`Prop. of Resource Total`[i] = length(source_subset_in_quadrant)/length(source_words)
+  }
+  
+table_data %>% 
+  mutate(Source = str_replace(Source, "_", " & ")) %>% 
+  arrange(-desc(Source)) %>%
+  apa_table(caption = "Coverage of Programs for Words in Lower Left Quadrant",
+            note = "Words in lower left quadrant are those that fall below the median on both axes. The total number of words in that quadrant is 187. The first column shows the proportion of that quadrant that each resource covers. The second column shows the proportion of each resource represented by their words in the lower left quadrant. For example, Wonders has 440 words, 166 of which call in the lower left qudrant, which equals .38.")
+  
+```
+
+### Choosing Words Based on Frequency and Consistency
+All of the evidence we have presented points to a general conclusion: the methods that are used to identify words that merit special instructional attention yield different results rather than converging on a consensus set of items. The six resources identify different numbers of words with differing properties. In this section we offer an alternative method for choosing such words based on quantifiable properties that are highly relevant for early reading. 
+
+ Modern theories of visual word recognition have identified frequency and consistency as properties that affect learning to read and skilled word reading. It seems important for children to be able to read very common words, including ones with atypical pronunciations given their spellings (low consistency). However, choosing words for instruction based on one of these properties lets the other property vary. It would therefore be helpful to have a way to take both factors into account in selecting words. That might also permit both dimensions to be covered using a smaller set of words, which would be desirable because instruction about such words is typically time-consuming. We’ve provided a graphical analysis that demonstrates this by arranging words in their respective quadrants organized in terms of frequency and consistency, however a method of quantifying these joint properties would also be useful.  For this purpose, we used the Euclidean distance of each word from the origin in the space defined by frequency ($f$) and consistency ($c$), using their ranks as in Figure XX. The distance between the two points in this space is denoted as $d(c, f)$. $n$ is defined as 2 given that we are working in 2 dimensions, where $i$ is summed over the two dimensions and then a square root is applied.
+
+
+$$
+d\left( c,f\right)   = \sqrt {\sum _{i=1}^{n=2}  \left( c_{i}-f_{i}\right)^2 }
+$$
+
+
+
+```{r EuclideanDistances1, include=FALSE, warning=FALSE}
+rank_inconsistency_rank_frequency$distance = NA
+
+for (i in seq(nrow(rank_inconsistency_rank_frequency))){
+  ic_ = rank_inconsistency_rank_frequency$consistency_rank[i]
+  f = rank_inconsistency_rank_frequency$tasa_rank[i]
+  
+  distance = l2(c(0, 0), c(ic_, f))
+  
+  rank_inconsistency_rank_frequency$distance[i] = distance
+  
+  
+}
+
+rank_inconsistency_rank_frequency = rank_inconsistency_rank_frequency %>% 
+  arrange(-desc(distance)) %>% 
+  mutate(rank = seq_len(n())) %>% 
+  select(rank, word, distance, tasa_rank, consistency_rank)
+```
+
+
+```{r chee_token_consistency_data, include=FALSE}
+chee_token_consistency_corr = rank_inconsistency_rank_frequency %>% 
+        left_join(readxl::read_xlsx('../../words/consistency/13428_2020_1391_MOESM1_ESM.xlsx', sheet = 2) %>% 
+          filter(word %in% rank_inconsistency_rank_frequency$word) %>% 
+          mutate(consistency = case_when(n_syll == 1 ~ ff_1_r,
+                                         n_syll > 1 ~ ff_all_r)) %>% 
+          select(word, consistency) %>% 
+          arrange(-desc(consistency)) %>% 
+          mutate(token_consistency_rank = seq_len(n())) %>% 
+          select(word, token_consistency_rank)) %>% 
+          summarise(cor(distance, token_consistency_rank, use = "pairwise.complete.obs"))
+
+chee_token_consistency_corr = chee_token_consistency_corr[[1]]
+```
+
+This method identifies a different set of words than if they are chosen on the basis of frequency or consistency alone, and provides a way of quantifying what is otherwise a visual pattern demonstrated in the quadrant-based analyses described previously. Notice how different this method is from one that selects for frequency or consistency alone. Words with high frequency and low consistency are positioned toward the top of this distribution.
+
+
+
+```{r top_ranked_words_by_inconsistency_frequency}
+
+rank_inconsistency_rank_frequency %>% 
+  filter(rank <= 50) %>%
+  mutate(word = case_when(word == "i" ~ "I",
+                          word == "i'm" ~ "I'm",
+                          word == "i'll" ~ "I'll",
+                          TRUE ~ word)) %>% 
+  rename(Rank = rank, Word = word, `Distance (Euclidean)` = distance,
+         `Consistency (high to low)` = consistency_rank, `Frequency (low to high)` = tasa_rank) %>% 
+  apa_table(caption = "Top Ranked Words Based Jointly on Consistency and Frequency", note = "Rankings derived from Euclidean distance of inconsistency and frequency ranking against the origin (0, 0). The calculated distance is also provided. All words for all resources were considered when making the calculation. Consistency is arranged such that a low rank means low consistency. Frequency is arranged so that a low rank means high frquency.")
+
+```
+
+This method identifies a different set of words than if they are chosen on the basis of frequency or consistency alone, and provides a way of quantifying what is otherwise only a visual pattern demonstrated in the quadrant-based analyses described previously. Words with high frequency and low consistency are positioned toward the top of this distribution, where the distance of the word from origin measures that word's priority as a high frequency-low consistency word.
+
+
+```{r fig.cap='he plot shows the top 50 words from Table XX ranked jointly plotted in terms of frequency (high to low) and consistency (low to high). The word closest to the origin is “to”, representing the word that is most frequent and atypical when both properties are considered. Words that fall toward the diagonal have similar values in the rank of each variable.'}
+
+rank_inconsistency_rank_frequency %>% 
+  filter(word %nin% c('and')) %>% 
+  mutate(word = case_when(word == "i" ~ "I",
+                          word == "i'll" ~ "I'll",
+                          TRUE ~ word)) %>% 
+  slice_min(n = 50, order_by = distance) %>% 
+  ggplot(aes(tasa_rank, consistency_rank, label = word)) +
+  geom_abline(intercept = 0, slope = 1, color = "grey45", linetype = "dashed") +
+  geom_label_repel(max.overlaps = 50) +
+  theme_apa() +
+  labs(x = "Frequency", y = "Consistency")
+
+```
+
+The quadrant-based results limit the number of words to those that fall on the median of each axis. Discretizing the words into four groups (quadrants) aids a visual interpretation, but is somewhat arbitrary. Alternatively, using the distance from origin, we can examine how each program falls within sets of words defined by this distance, using several different quantities. Here we consider $n \in \{20, 50, 100, 250\}$. 
+
+```{r top_n_words_frequency_inconsistency, fig.cap="The proportion of n furthest words from origin in the two dimensional space organized by frequency and consistency for values of n = 20, 50, 100, and 250. Panels are arranged left to right from greatest to least overall proportion covered (averaging across proportions of all values of n for a given program).", fig.width=7}
+
+programs_by_rank_inconsistency_rank_frequency %>% 
+  mutate(Source = case_when(source == 'Dolch' ~ 'Dolch',
+                            source == 'Fry' ~ 'Fry',
+                            source == 'Fundations' ~ 'Fundations',
+                            source == 'Kilpatrick' ~ 'Kilpatrick',
+                            source == 'Wonders' ~ 'Wonders',
+                            source == 'Fountas_Pinnell' ~ 'F&P')) %>% 
+  ggplot(aes(factor(n), Proportion, fill = as.factor(n))) +
+  geom_bar(stat = "identity", position = "dodge", color = "black") +
+  #geom_text(aes(label = sub("^0\\.", ".", round(Proportion, digits = 2))), size = 2.5, vjust = 1.8, alpha = .8) +
+  facet_grid(~factor(Source, levels = c("Wonders", "Fry", "Dolch", "F&P", "Fundations", "Kilpatrick"))) +
+  theme_apa() +
+  labs(x = "N furthest from origin", y = "Proportion covered", fill = "N furthest from origin") +
+  theme(text = element_text(family = "Times"),
+        axis.text.x = element_text(angle = 90, vjust = .5, hjust = 1),
+        legend.position = "none") +
+  scale_fill_manual(values = c("burlywood", "gold2", "brown", "darkorchid4"))
+
+```
+
+These results parallel those from the quadrant-based analysis previously. Wonders provides the best coverage across all values of _n_, covering all top 20 words by distance, 98% or the top 50 words, 94% of the top 100 words, and 88% of the top 250 words. Both the Fry and Dolch resources have perfect coverage of the top 20 words, and high coverage of the top 50 words (96% and 92% respectively). Fundations and Kilpatrick lists occupy the other end of the extreme, with Kilpatrick ranking last in all proportions across values for _n_. This is somewhat surprising given the focus of Kilpatrick’s resources is on irregular words. However, because the list contains relatively infrequent words, the coverage of the sets of top 20, 50, 100, and 250 words remains quite low (especially relative to the other programs). The Fundations list ranks next-lowest overall. While Fundations contains 95% of the top 20 words defined by this variable, its coverage of the top 50, 100, and 250 words are low compared to the others. 
+
+### Summary of Frequency and Consistency
+The six programs studied here differ in the extent to which they jointly consider these two variables in selecting instructional words. This can be seen in terms of examining the lower left quadrant of the bivariate distribution of rank frequency and rank inconsistency, as well as examining the top 20, 50, 100, and 250 words in the joint rank distribution (defined by the Euclidean calculation from origin). Wonders shows strong coverage of the top ranking words the join frequency-inconsistency distribution, as do Fry and Dolch. It is noteworthy that the Fry and Dolch wordlists have high coverage here because they also tend to contain more consistent words on average (e.g, see Figure 7). Relatively low coverage is achieved by Fundations and Kilpatrick, again demonstrating that these two resources differ from the others in terms of the properties of the words they contain. Wonders contains the largest number of words overall, and therefore holds an advantage over the other programs in terms of the likelihood of having strong coverage on these and other variables examined. At the other end of the extreme, Kilpatrick’s resource contains a large number of atypical words in terms of spelling-sound structure, but also tends to contain infrequent words. So these results aren’t as surprising. Fundations relatively low coverage here stands out, however. Their program described their approach to sight word instruction as focusing on words that are “tricky” due to their spelling-sound structure in addition to their frequency. However, Fundations contains only 45% of the top 250 words when considering frequency and inconsistency ranked jointly (by distance).
