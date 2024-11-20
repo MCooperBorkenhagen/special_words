@@ -1,5 +1,5 @@
 ---
-title             : "Special words: Instructional resources and the words taught to young readers"
+title             : 'Which words are special? Identification of "sight" words in educational resources'
 shorttitle        : "Special words"
 
 author: 
@@ -38,10 +38,10 @@ affiliation:
   - id            : 4
     institution   : "Department of Psychology, University of Wisconsin - Madison"
 
-abstract: "Which words are important for early reading instruction? A mainstream view maintains that certain words should be privileged early in development due to their being frequent and/or containing idiosyncratic structure. This study sought to answer this question by examining the words from six commonly used instructional resources (1005 total unique words). Results show noteworthy disagreement about the words that should be taught to early readers, and the properties that these words should contain. For example, only 28 words (3%) are shared across the six resources, while the majority of words are present in one resource and shared by no others (560 words; 56%). Results are discussed in the context of established theories of learning that help guide the discussion about the aspects of the language that influence reading development, and an empirical method of selecting words based on observable properties of words is proposed."
+abstract: "Which words are important for early reading instruction? A standard view holds that certain words should be emphasized early in development because they are used with high frequency and/or contained atypical spelling-sound structure. Such words have been labeled “sight,” “trick,” “snap,” or simply “high frequency” words; we refer to them as “special” words. The present study examined whether instructional resources such as commonly used curricula and word lists agree on the identity of such words. We addressed this question using six such resources ranging from the classic Dolch (1937) list to modern commercial curricula. Results show substantial disagreement about the designated words and their properties.  A total of 973 distinct words are identified as special in these materials. Only 28 words (3%) appear in  all six resources, and over half appear in only a single one (560 words; 56%). Additional analyses suggest that the materials differ in their treatment of “high frequency” words and whether words exhibit consistent spelling-sound associations. Together the results indicate a surprising lack of agreement about which words should be treated as special for instructional purposes. The differences in the treatment of special words in these materials suggest that beginning readers’ learning experiences may vary greatly. In the general discussion we describe a new method for identifying special words that facilitates comparisons across curricula and clarifies the alternative bases for identifying special words. This method is based on computational theories of word reading that specify how properties of words such as spelling-sound consistency and word frequency affect learning. Such theories can provide a more systematic basis for identifying words to emphasize in early instruction."
   
 keywords          : "Reading development, reading instruction, sight words"
-wordcount         : "--- words"
+wordcount         : "9607 words"
 bibliography      : ["references.bib"]
 documentclass     : "apa6"
 class             : "man"
@@ -52,8 +52,8 @@ footnotelist      : no
 lineno            : yes
 replaceampersands : no
 #lang              : "en-US"
-#output            : papaja::apa6_pdf
-output            : papaja::apa6_docx
+output            : papaja::apa6_pdf
+#output            : papaja::apa6_docx
 header-includes:
   - \usepackage{booktabs}
   - \usepackage{longtable}[=v4.13]
@@ -79,6 +79,13 @@ source('scripts/utilities.R')
 
 #source('scripts/Zs.R') # replaced with structured data read (see Zs.R for specs on this object)...
 Zs = read_csv("data/Zs.csv")
+
+source_order = Zs %>% 
+  group_by(source) %>% 
+  summarise(source_order = first(source_order)) %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'F&P',
+                            TRUE ~ source))
+
 source('scripts/wcbc.R')
 
 childes = read_csv('data/childes.csv')
@@ -118,7 +125,7 @@ COLORS_SOURCE = c('Kilpatrick' = 'darkblue',
 ```
 
 
-```{r child='sections/methods.Rmd'}
+```{r methods, child='sections/methods.Rmd'}
 
 ```
 
@@ -134,16 +141,11 @@ source('scripts/lexical_models_affil.R')
 source('scripts/overlap.R')
 ```
 
-```{r child='sections/overlap.Rmd'}
-```
 
 ```{r properties_data, include=FALSE}
 source('scripts/top_n.R')
 ```
 
-```{r child='sections/properties.Rmd'}
-
-```
 
 
 ```{r frequency_and_inconsistency_data, include=FALSE}
@@ -152,15 +154,22 @@ programs_by_rank_inconsistency_rank_frequency = read_csv(file = "data/programs_b
 
 ```
 
-```{r child='sections/frequency_and_consistency.Rmd'}
 
+
+```{r results, child='sections/results.Rmd'}
 ```
 
 
-```{r child='sections/discussion.Rmd'}
+```{r discussion, child='sections/discussion.Rmd'}
 ```
 
 
-#```{r child='sections/appendix.Rmd'}
-#```
+```{r appendix, child='sections/appendix.Rmd'}
+```
 
+
+```{r coi, child='sections/coi.Rmd'}
+```
+
+```{r backmatter, child='sections/backmatter.Rmd'}
+```

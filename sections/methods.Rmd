@@ -135,14 +135,14 @@ tmp_fp %>%
   mutate(Grade = "Total") %>% 
   rename(Kilpatrick = n)) %>% 
   apa_table(caption = "Number of Words in Each Instructional Source",
-            note = "Number of unique words are shown. Empty cells indicate that the source does not specify words at the level of individual grades.", na = "--")
+            note = "Number of unique words are shown. NA values indicate that the source does not specify words at the level of individual grades.", na = "--")
 
 ```
 
 
 
 ## Data Collection
-The lists of special words and other information were taken from the original sources. The words are listed in tables in @Dolch1936, @Fry1980 and Kilpatrick (2016), which made identifying these words straightforward. For the remaining resources, each word taught in each unit of instruction (in instruction previously described) was identified and entered in a database for analysis. This required examining instructional materials in order to extract this information about words taught (i.e., the words weren’t identified in a separate table within the resource). The resulting list is comprised of `r length(unique(all_lists$word))` unique words, and `r nrow(all_lists)` total words^[Here this distinction is made to point out that some words are present in more than one resource and that within a resource some words are repeated.]. Table 2 provides terms used by each program or author when referring to their special words. 
+The lists of special words and other information were taken from the original sources. The words are listed in tables in @Dolch1936, @Fry1980 and @Kilpatrick2016, which made identifying these words straightforward. For the remaining resources, each word taught in each unit of instruction (in instruction previously described) was identified and entered in a database for analysis. This required examining instructional materials in order to extract this information about words taught (i.e., the words weren’t identified in a separate table within the resource). The resulting list is comprised of `r length(unique(all_lists$word))` unique words, and `r nrow(all_lists)` total words^[Here this distinction is made to point out that some words are present in more than one resource and that within a resource some words are repeated.]. Table 2 provides terms used by each program or author when referring to their special words. 
 
 ```{r Table2, echo=FALSE, message=FALSE, warning=FALSE}
 
