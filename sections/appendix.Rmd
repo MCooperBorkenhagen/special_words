@@ -138,8 +138,8 @@ rank_inconsistency_rank_frequency %>%
                           word == "i'll" ~ "I'll",
                           TRUE ~ word),
          rank = as.character(as.numeric(rank-1))) %>% 
-  rename(Rank = rank, Word = word, `Dist. (Euclidean)` = distance,
-         `Constncy. (high-low)` = consistency_rank, `Freq. (low-high)` = tasa_rank) %>% 
+  rename(Rank = rank, Word = word, `Dist. (Euclidean)` = distance, `Freq. (high-low)` = tasa_rank,
+         `Constncy. (low-high)` = consistency_rank) %>% 
   apa_table(caption = "Top 50 Ranked Words Based Jointly on Consistency and Frequency", note = "This table extends the shorter table (top 10) provided in the text. Rankings derived from Euclidean distance of inconsistency and frequency ranking against the origin (0, 0). The calculated distance is also provided. All words for all resources were considered when making the calculation. Consistency is arranged such that a low rank means low consistency. Frequency is arranged so that a low rank means high frquency.", longtable = TRUE)
 
 ```
