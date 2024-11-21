@@ -68,6 +68,9 @@ header-includes:
   - \usepackage{threeparttable}
   - \usepackage[normalem]{ulem}
   - \usepackage{scrextend}
+  - \usepackage{caption}
+  - \captionsetup{font=small}
+  
 ---
 
 ```{r setup, include=FALSE}
