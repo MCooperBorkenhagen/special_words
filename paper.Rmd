@@ -70,6 +70,8 @@ header-includes:
   - \usepackage{scrextend}
   - \usepackage{caption}
   - \captionsetup{font=small}
+  - \usepackage{lipsum}
+  - \usepackage{setspace}
   
 ---
 
@@ -118,7 +120,8 @@ COLORS_SOURCE = c('Kilpatrick' = 'darkblue',
            'Fry' = 'darkorange',
            'Fundations' = 'turquoise',
            'Wonders' = 'red',
-           'Fountas & Pinnell' = 'darkgreen')
+           'Fountas & Pinnell' = 'darkgreen',
+           'FP' = 'darkgreen')
 
 ```
 
@@ -176,3 +179,4 @@ programs_by_rank_inconsistency_rank_frequency = read_csv(file = "data/programs_b
 
 ```{r backmatter, child='sections/backmatter.Rmd'}
 ```
+
