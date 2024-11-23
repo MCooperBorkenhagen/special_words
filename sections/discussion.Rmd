@@ -7,3 +7,5 @@ Our results suggest that both researchers and educators, perhaps especially curr
 
 ## Limitations
 Only a subset of possible programs have been selected for analysis here. Those that participated in analyses were included due to their popularity, and a more comprehensive sample could no doubt be obtained. Likewise, the programs here were selected not because they are matched perfectly with respect to their instructional priorities. In fact, the approaches represented here often differ in how they describe learning priorities in the reading classroom. The Dolch and Fry approaches, for example, focus on word frequency and selecting words that appear in many different contexts. Conversely, Fundations' approach seeks to teach words that aren't captured by the phonic patterns also taught within the program. The work we've done here considers word selection more broadly: given that programs agree on the importance of early print vocabulary despite differences in approaches, how do the words selected differ? Future work could consider these differences as a function of the specific priorities set by programs themselves.
+
+\newpage
