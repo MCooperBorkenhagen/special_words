@@ -417,4 +417,84 @@ plot_grid(plot_a, plot_b, labels = c("A", "B"), ncol = 1)
 
 ```
 
+## Lexical variables
+
+```{r profileTableStatTest, echo=FALSE, message=FALSE, warning=FALSE, fig.pos="H"}
+Source = z_tables_lexical %>% filter(var == 'aoa') %>% pull(Source)
+AoA = z_tables_lexical %>% filter(var == 'aoa') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+Consistency = z_tables_lexical %>% filter(var == 'consistency') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+Imageability = z_tables_lexical %>% filter(var == 'imageability') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+Letters = z_tables_lexical %>% filter(var == 'letters') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+Syllables = z_tables_lexical %>% filter(var == 'syllables') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
+
+data.frame(cbind(Source, AoA, Consistency, Imageability, Letters, Syllables)) %>% 
+  mutate(Source = case_when(Source == 'Dolch' ~ 'Dolch',
+                            Source == 'Fry' ~ 'Fry',
+                            Source == 'Fundations' ~ 'Fundations',
+                            Source == 'Kilpatrick' ~ 'Kilpatrick',
+                            Source == 'Wonders' ~ 'Wonders',
+                            Source == 'Fountas & Pinnell' ~ 'FP')) %>%
+  apa_table(caption = 'Model Estimates for Statistical Tests of Source Means against Mean from TASA', 
+            note = 'Estimates obtained from using t.test() from base R, with standard errors in parentheses. Bolded parameter estimates are statistically significant. Values were Z transformed on the distribution from the TASA prior to subsetting and testing by source.', escape = FALSE)
+  
+```
+
+
+## Raw frequencies for all corpora
+
+
+
+\begin{landscape}
+```{r SourcesDesc, echo=FALSE, message=FALSE, warning=FALSE, fig.pos="H"}
+table_desc = all_lists %>% 
+  group_by(source, word) %>% 
+  summarise(childes_freq = first(childes_freq),
+                    tasa_freq = first(tasa_freq),
+                    wcbc_freq = first(wcbc_freq),
+                    letters = first(letters),
+                    syllables = first(syllables),
+                    morphemes = first(morphemes)) %>% 
+  ungroup() %>% 
+  left_join(coca %>% 
+              select(word, coca_freq = freq)) %>% 
+  group_by(source) %>% 
+  summarise(TASA = round(mean(tasa_freq, na.rm = T)),
+            TASA_sd = round(sd(tasa_freq, na.rm = T)),
+            WCBC = round(mean(wcbc_freq, na.rm = T)),
+            WCBC_sd = round(sd(wcbc_freq, na.rm = T)),
+            COCA = round(mean(coca_freq, na.rm = T)),
+            COCA_sd = round(sd(coca_freq, na.rm = T)),
+            CHILDES = round(mean(childes_freq, na.rm = T)),
+            CHILDES_sd = round(sd(childes_freq, na.rm = T)),
+            Letters = round(mean(letters, na.rm = T)),
+            Letters_sd = round(sd(letters, na.rm = T), digits = 2),
+            Syllables = round(mean(syllables, na.rm = T)),
+            Syllables_sd = round(sd(syllables, na.rm = T), digits = 2)) %>% 
+  mutate(TASA = str_c(TASA, " (", TASA_sd, ")"),
+         WCBC = str_c(WCBC, " (", WCBC_sd, ")"),
+         COCA = str_c(COCA, " (", COCA_sd, ")"),
+         CHILDES = str_c(CHILDES, " (", CHILDES_sd, ")"),
+         Letters = str_c(Letters, " (", Letters_sd, ")"),
+         Syllables = str_c(Syllables, " (", Syllables_sd, ")")) %>% 
+  select(source, TASA, WCBC, COCA, CHILDES, Letters, Syllables)
+      
+
+all_lists %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  summarise(N = n()) %>%
+  left_join(table_desc) %>% 
+  mutate(Source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'FP')) %>% 
+  select(-source, -Letters, -Syllables) %>% 
+  select(Source, everything()) %>% 
+  apa_table(caption = "Basic Descriptive Data for All Instructional Sources",
+            note = "Values for CHILDES, TASA, WCBC, and COCA are mean raw frequencies. Letters = number of letters. Syllables = number of syllables. Values in parentheses are standard deviations. FP = Fountas & Pinnell.")
+
+```
+\end{landscape}
 
