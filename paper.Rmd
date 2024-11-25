@@ -8,26 +8,12 @@ author:
     affiliation   : 1, 2
     email         : "mcooperborkenhagen@fsu.edu"
     address       : "1114 W. Call Street, Tallahassee, FL 32306"
-    role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
-      - Conceptualization
-      - Supervision
-      - Writing
-      - Formal Analysis
-      - Project administration
-      - Data curation
   - name          : "Lauren P. Schilling"
     affiliation   : 3
     address       : "Harvard Graduate School of Education"
-    role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
-      - Conceptualization
-      - Project administration
-      - Data curation
   - name          : "Mark S. Seidenberg"
     affiliation   : 4
-    role:   # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
-      - Conceptualization
-      - Supervision
-      - Writing
+
 affiliation:
   - id            : 1
     institution   : "School of Teacher Education, Florida State University"
@@ -38,10 +24,10 @@ affiliation:
   - id            : 4
     institution   : "Department of Psychology, University of Wisconsin - Madison"
 
-abstract: "Which words are important for early reading instruction? A standard view holds that certain words should be emphasized early in development because they are used with high frequency and/or contained atypical spelling-sound structure. Such words have been labeled “sight,” “trick,” “snap,” or simply “high frequency” words; we refer to them as “special” words. The present study examined whether instructional resources such as commonly used curricula and word lists agree on the identity of such words. We addressed this question using six such resources ranging from the classic Dolch (1937) list to modern commercial curricula. Results show substantial disagreement about the designated words and their properties.  A total of 973 distinct words are identified as special in these materials. Only 28 words (3%) appear in  all six resources, and over half appear in only a single one (560 words; 56%). Additional analyses suggest that the materials differ in their treatment of “high frequency” words and whether words exhibit consistent spelling-sound associations. Together the results indicate a surprising lack of agreement about which words should be treated as special for instructional purposes. The differences in the treatment of special words in these materials suggest that beginning readers’ learning experiences may vary greatly. In the general discussion we describe a new method for identifying special words that facilitates comparisons across curricula and clarifies the alternative bases for identifying special words. This method is based on computational theories of word reading that specify how properties of words such as spelling-sound consistency and word frequency affect learning. Such theories can provide a more systematic basis for identifying words to emphasize in early instruction."
+abstract: "Which words are important for early reading instruction? A standard view holds that certain words should be emphasized early in development because they are used with high frequency and/or contained atypical spelling-sound structure. Such words have been labeled “sight,” “trick,” “snap,” or simply “high frequency” words; we refer to them as “special” words. The present study examined whether instructional resources such as commonly used curricula and word lists agree on the identity of such words. We addressed this question using six such resources ranging from the classic Dolch (1937) list to modern commercial curricula. Results show substantial disagreement about the designated words and their properties.  A total of 973 distinct words are identified as special in these materials. Only 28 words (3%) appear in  all six resources, and over half appear in only a single one (560 words; 56%). Additional analyses demonstrate that the materials differ in terms of a number of word properties including frequency and spelling-sound consistency. Together the results indicate a surprising lack of agreement about which words should be treated as special for instructional purposes. The differences in the treatment of special words in these materials suggest that beginning readers’ learning experiences may vary greatly. In the general discussion we describe a new method for identifying special words that facilitates comparisons across curricula and clarifies the alternative bases for identifying special words. This method is based on computational theories of word reading that specify how properties of words such as spelling-sound consistency and word frequency affect learning. Such theories can provide a more systematic basis for identifying words to emphasize in early instruction."
   
 keywords          : "Reading development, reading instruction, sight words"
-wordcount         : "9607 words"
+wordcount         : "9482 words"
 bibliography      : ["references.bib"]
 documentclass     : "apa6"
 class             : "man"
@@ -72,6 +58,7 @@ header-includes:
   - \captionsetup{font=small}
   - \usepackage{lipsum}
   - \usepackage{setspace}
+  - \usepackage{fancyhdr}
   
 ---
 

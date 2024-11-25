@@ -12,6 +12,7 @@
 \newpage
 
 \clearpage
+
 ```{r forAppendixAOA, echo=FALSE, warning=FALSE, message=FALSE}
 z_tables_lexical %>% 
   filter(var == 'aoa') %>% 
