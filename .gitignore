@@ -9,3 +9,9 @@
 
 paper_files/
 
+YAML
+*.odp
+*.log
+*.pdf
+*.tex
+resources/
