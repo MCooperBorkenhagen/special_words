@@ -170,9 +170,6 @@ The critical observations here are (1) the sources vary in terms of their covera
 
 ```{r FrequencyConsistencyPlot2, fig.width=7, fig.cap="Words (shown in hexbins, smoothing across proximal points) for all resources are shown in two-dimensional space defined by rank frequency and rank inconsistency. Darker hexbins indicate more points. The dimensions of the space are defined by all words in the TASA sample (K-3). Each plot corresponds to a program."}
 
-
-
-
 x_limit = max(rank_inconsistency_rank_frequency$tasa_rank)
 y_limit = max(rank_inconsistency_rank_frequency$consistency_rank)
 
