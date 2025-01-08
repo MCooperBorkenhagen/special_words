@@ -1,0 +1,18 @@
+---
+title: "anonymities"
+output: html_document
+date: "2024-11-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Data Availability Statement
+All data for this project including the code that generated this manuscript can be found at: https://github.com/MCooperBorkenhagen/special_words
+
+# Funding Statement
+This work was supported by the Institute of Education Sciences, US Department of Education, through Award #R305B150003 to UW-Madison (MCB) and through the Vilas Trust at UW-Madison (MSS). The opinions expressed are those of the authors and do not represent views of the US Department of Education. Additional funding provided by UW-Madison through a Mark Mensink Honors Senior Thesis Research Award and a Hilldale Undergraduate Research Fellowship (LPS).
+

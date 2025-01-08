@@ -1,0 +1,10 @@
+
+# Data Availability Statement
+All data for this project including the code that generated this manuscript can be found at: https://XXX
+
+# Funding Statement
+This work was supported by the Institute of Education Sciences, US Department of Education, through Award XXX to XXX and through XXX. The opinions expressed are those of the authors and do not represent views of the US Department of Education. Additional funding provided by XXX through XXX.
+
+\newpage
+
+# References
