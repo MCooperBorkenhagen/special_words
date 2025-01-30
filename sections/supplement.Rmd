@@ -1,500 +1,214 @@
 ---
-title: "supplement"
-output: html_document
+title             : 'SUPPLEMENT: Which words are special? Identification of "sight" words in educational resources'
+shorttitle        : "SUPPLEMENT: Special words"
+
+
+abstract: "---"
+  
+keywords          : "Reading development, reading instruction, sight words"
+documentclass     : "apa6"
+class             : "man"
+figsintext        : yes
+figurelist        : no
+tablelist         : yes
+footnotelist      : no
+lineno            : yes
+replaceampersands : no
+#lang              : "en-US"
+output            : papaja::apa6_pdf
+#output            : papaja::apa6_docx
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{longtable}[=v4.13]
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \PassOptionsToPackage{x11names}{xcolor}
+  - \usepackage{wrapfig}
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{threeparttable}
+  - \usepackage[normalem]{ulem}
+  - \usepackage{scrextend}
+  - \usepackage{caption}
+  - \captionsetup{font=small}
+  - \usepackage{lipsum}
+  - \usepackage{setspace}
+  - \usepackage{fancyhdr}
+  
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-# Description of measures
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 
-```{r variable_descriptors_examples, echo=FALSE, warning=FALSE, message=FALSE}
+lapply(read.csv('scripts/requirements.txt', stringsAsFactors = F, header = F)[[1]], require, ch = T)
+source('scripts/utilities.R')
 
-read_csv('../data/variable_descriptor_examples.csv') %>% 
-  apa_table()
+#source('scripts/Zs.R') # replaced with structured data read (see Zs.R for specs on this object)...
+Zs = read_csv("data/Zs.csv")
 
-#tibble(
-#  var = c("Frequency", "Age of Acquisition", "Consistency", "Imageability", "Letters", "Syllables"),
-#  description = c("high frequency.",
-#                     "low age of acquisition (i.e., learned earlier in life)",
-#                     "low consistency (i.e., inconsistent). These words have idiosyncratic print-speech structure.",
-#                     "low imageability. These words are tend to be more abstract.",
-#                     "few letters. These are short words, orthographically speaking.",
-#                     "few syllables. These are short words in terms of the number of syllables."),
-#  example = c('the, to, a', 
-#               'I,  door,  animal', 
-#               'an,  women,  two',
-#               'an,  is,  are',
-#               'a,  I,  am',
-#               'a,  I,  am')) %>% 
-  #rename(`Variable` = var, `A low value indicates...` = description, `Example words` = example) %>% 
-#  apa_table()
-
-```
-
-# Frequency
-
-Description from original section on "properties":
-The Wisconsin Children's Book Corpus (WCBC) contains texts commonly read by and to pre-readers (up to the age of six). Data from the Child Language Data Exchange System (CHILDES) represents language from children's spoken language environment (the data used here are from transcripts for children in the US up to the age of six). The Educator's Word Frequency Guide (from Touchstone Applied Science Associates; TASA) captures information about words in literature children are commonly exposed to in grade school, and The Corpus of Contemporary American English is a large corpus of texts aimed at adult readers (COCA; this subset is adult fiction).
-
-Descriptives of each of the four original corpora
-```{r}
-# data rely on reads from paper.Rmd
-
-frequency_by_corpus(all_lists) %>% 
-  rbind(coca %>% 
-              summarise(M = mean(freq, na.rm = T),
-                        SD = sd(freq, na.rm = T),
-                        max = max(freq)) %>% 
-              mutate(Corpus = "COCA")) %>%  # add COCA because it was not included in all_list
-  apa_table(caption = "Descriptive Characteristics for Word Frequencies using for All Words in the Database", note = "Values provided as raw frequencies. Min values are always 1 and have been excluded. WCBC = Wisconsin Childrens Book Corpus; TASA = Frequencies from the Educator's Word Frequency Guide by Touchstone Applied Science Associates; CHILDES = The Child Language Data Exchange System; COCA = The Corpus of Contemporary American English", escape = FALSE)
-
-
-```
-
-
-
-## Descriptive plot of frequency by corpus and source
-This is the one where panels are sources rather than panels being corpora from which frequency distributions are drawn.
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-nsd = Zs %>% 
-  group_by(source, var) %>% 
-  summarise(SD = sd(Z, na.rm = T),
-            M_ = mean(Z, na.rm = T),
-            n = n(),
-            source_order = first(source_order))
-
-Ns = Zs %>% 
-  filter(var == 'wcbc_rank') %>% 
+source_order = Zs %>% 
   group_by(source) %>% 
-  summarise(n = n())
+  summarise(source_order = first(source_order)) %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'F&P',
+                            TRUE ~ source))
 
-frequencies = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
+source('scripts/wcbc.R')
+
+childes = read_csv('data/childes.csv')
 
 
-hlines = nsd %>% 
-  filter(var %in% frequencies) %>% 
-  group_by(source) %>% 
-  summarise(sourcemean = mean(M_, na.rm = T),
-            source_order = first(source_order)) %>% 
-  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
-                            source == 'fry' ~ 'Fry',
-                            source == 'fundations' ~ 'Fundations',
-                            source == 'kilpatrick' ~ 'Kilpatrick',
-                            source == 'wonders' ~ 'Wonders'))
+all_lists = read_csv('data/all_lists_v2.csv') # old call read_csv('data/all_lists.csv')
+source('scripts/sets.R')
 
-plot_data = Zs %>% 
-  filter(var %in% frequencies) %>% 
-  select(var, source, M = Z) %>% 
-  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
-                         var == 'tasa_rank' ~ 'TASA',
-                         var == 'childes_rank' ~ 'CHILDES',
-                         var == 'coca_rank' ~ 'COCA'),
-         source = case_when(source == 'dolch' ~ 'Dolch',
-                            source == 'fry' ~ 'Fry',
-                            source == 'fundations' ~ 'Fundations',
-                            source == 'kilpatrick' ~ 'Kilpatrick',
-                            source == 'wonders' ~ 'Wonders'))
 
-Zs %>% 
-  group_by(source, var) %>% 
-  summarise(M = mean(Z, na.rm = T)) %>% 
-  left_join(nsd) %>% 
-  mutate(SEM = SD/(sqrt(n))) %>%
-  filter(var %in% frequencies) %>% 
-  mutate(var = case_when(var == 'wcbc_rank' ~ 'WCBC',
-                         var == 'tasa_rank' ~ 'TASA',
-                         var == 'childes_rank' ~ 'CHILDES',
-                         var == 'coca_rank' ~ 'COCA'),
-                source = case_when(source == 'dolch' ~ 'Dolch',
-                            source == 'fry' ~ 'Fry',
-                            source == 'fundations' ~ 'Fundations',
-                            source == 'kilpatrick' ~ 'Kilpatrick',
-                            source == 'wonders' ~ 'Wonders')) %>% 
-  ggplot(aes(var, M, color = var, group = source)) +
-  scale_color_manual(values = COLORS_CORPUS) +
-  geom_point(data = plot_data, position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
-  geom_point(size = 2) +
-  geom_line(color = 'grey') +
-  geom_errorbar(aes(ymin = M-SD, ymax = M + SD), width = .5) +
-  facet_grid(~reorder(source, source_order)) +
-  ylim(c(-2, .5)) +
-  labs(color = 'Variable', x = 'Source', y = 'Rank frequency (standardized)') +
-  geom_hline(yintercept = 0, linetype = 'dotted', color = 'black') +
-  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed', alpha = .5) +
-  theme_bw() +
-  theme(legend.position = 'top',
-        axis.ticks.x = element_blank(), 
-        axis.text.x = element_blank(),
-        strip.background=element_rect(fill = 'grey'))
+# added this coca read because it is needed in one of the sections in its raw form
+source('scripts/coca.R')
+source('scripts/tasa.R')
+
+COLORS_CORPUS = c('WCBC' = 'firebrick3',
+           'COCA' = 'darkslategray',
+           'CHILDES' = 'gold2',
+           'TASA' = 'coral')
+
+COLORS_OTHERVAR = c('AoA' = 'darkolivegreen4',
+           'Consistency' = 'turquoise3',
+           'Imageability' = 'darkorange1',
+           'Letters' = 'goldenrod1',
+           'Syllables' = 'dodgerblue3')
+
+COLORS_SOURCE = c('Kilpatrick' = 'darkblue',
+           'Dolch' = 'darkred',
+           'Fry' = 'darkorange',
+           'Fundations' = 'turquoise',
+           'Wonders' = 'red',
+           'Fountas & Pinnell' = 'darkgreen',
+           'FP' = 'darkgreen')
 
 ```
 
 
 
-# lexical variables across sources
-This is the alternative treatment of (non-frequency) word variables across sources with panels grouped 
-```{r echo=FALSE, message=FALSE, warning=FALSE, fig.cap=''}
-
-hlines = nsd %>% 
-  filter(var %in% VARS) %>% 
-  group_by(source) %>% 
-  summarise(sourcemean = mean(M_, na.rm = T),
-            source_order = first(source_order)) %>% 
-  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
-                            source == 'fry' ~ 'Fry',
-                            source == 'fundations' ~ 'Fundations',
-                            source == 'kilpatrick' ~ 'Kilpatrick',
-                            source == 'wonders' ~ 'Wonders'))
-
-Zs %>% 
-  group_by(source, var) %>% 
-  summarise(M = mean(Z, na.rm = T)) %>% 
-  left_join(nsd) %>% 
-  mutate(SEM = SD/(sqrt(n))) %>%
-  filter(var %in% VARS) %>% 
-  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
-                         var == 'syllables' ~ 'Syllables',
-                         var == 'aoa' ~ 'AoA',
-                         var == 'imageability' ~ 'Imageability',
-                         var == 'letters' ~ 'Letters'),
-         source = case_when(source == 'dolch' ~ 'Dolch',
-                            source == 'fry' ~ 'Fry',
-                            source == 'fundations' ~ 'Fundations',
-                            source == 'kilpatrick' ~ 'Kilpatrick',
-                            source == 'wonders' ~ 'Wonders')) %>% 
-  ggplot(aes(var, M, color = var, group = source)) +
-  scale_color_manual(values = COLORS_OTHERVAR) +
-  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed') +
-  geom_point(size = 2) +
-  geom_line(color = 'grey') +
-  geom_linerange(aes(ymin = M-SEM, ymax = M+SEM), size = 1) +
-  labs(color = 'Variable', x = 'Source', y = 'Standardized value (within WCBC)') +
-  facet_grid(~reorder(source, source_order))  +
-  geom_hline(yintercept = 0, linetype = 'dotted', color = 'grey45') +
-  ylim(c(-1.2, 0)) +
-  theme_bw() +
-  theme(legend.position = 'top',
-        axis.ticks.x = element_blank(), 
-        axis.text.x = element_blank(),
-        strip.background=element_rect(fill = 'grey'))
-
+```{r profiles_data, include=FALSE}
+source('scripts/frequency_models.R')
+source('scripts/lexical_models.R')
+source('scripts/lexical_models_affil.R')
 ```
 
 
 
-## Rank frequency by reverse rank consistency
-
-```{r}
-tmp = all_lists %>% filter(source == 'wonders') %>% pull(word)
-COLORS = c('TRUE' = 'firebrick', 'FALSE' = 'goldenrod3')
+```{r overlap_data, include=FALSE}
+source('scripts/overlap.R')
+```
 
 
+```{r properties_data, include=FALSE}
+source('scripts/top_n.R')
+```
+
+
+
+```{r frequency_and_inconsistency_data, include=FALSE}
+
+programs_by_rank_inconsistency_rank_frequency = read_csv(file = "data/programs_by_rank_inconsistency_rank_frequency.csv")
+
+```
+
+
+## Supplement to Table 4: All Words that Appear in Only a Single Resource
+
+```{r supplement_1}
 all_lists %>% 
-  group_by(word) %>% 
-  summarise(wcbc_freq = first(wcbc_freq),
-            consistency = first(consistency)) %>% 
-  arrange(desc(wcbc_freq)) %>% 
-  mutate(rank_frequency = seq_len(n())) %>%
-  arrange(-desc(consistency)) %>% 
-  mutate(rank_consistency = seq_len(n())) %>% 
-  mutate(spotlight = case_when(rank_frequency > 500 | rank_consistency > 500 ~ TRUE,
-                               TRUE ~ FALSE)) %>% 
-    mutate(source_ = case_when(word %in% tmp ~ 'TRUE', 
-                             word %nin% tmp ~ 'FALSE')) %>% 
-  ggplot(aes(rank_frequency, rank_consistency, label = word)) +
-  #scale_fill_manual(values = COLORS) +
-  geom_label(size = 2.5, fill = 'goldenrod3') +
-  #geom_abline(intercept = 0, slope = 1, color = 'grey54') +
-  labs(x = 'Rank frequency', y = 'Reverse rank consistency') +
-  geom_hline(yintercept = 500) +
-  geom_vline(xintercept = 500) +
-  theme(legend.position = 'none')
-
-
-```
-
-
-```{r}
-
-all_lists %>% 
-  group_by(word) %>% 
-  summarise(wcbc_freq = first(wcbc_freq),
-            consistency = first(consistency)) %>% 
-  arrange(desc(wcbc_freq)) %>% 
-  mutate(rank_frequency = seq_len(n())) %>%
-  arrange(-desc(consistency)) %>% 
-  mutate(rank_consistency = seq_len(n())) %>% 
-  mutate(rank_composite = rank_consistency + rank_frequency) %>% 
-  ggplot(aes(rank_composite)) +
-  geom_density(bw = 5) +
-  #geom_histogram(binwidth = 10, color = 'black') +
-  labs(x = 'Rank frequency + reverse rank consistency')
-
-```
-
-
-```{r}
-
-
-all_lists %>% 
-  group_by(word) %>% 
-  summarise(wcbc_freq = first(wcbc_freq),
-            consistency = first(consistency)) %>% 
-  arrange(desc(wcbc_freq)) %>% 
-  mutate(rank_frequency = seq_len(n())) %>%
-  arrange(-desc(consistency)) %>% 
-  mutate(rank_consistency = seq_len(n())) %>% 
-  mutate(rank_composite = rank_consistency + rank_frequency) %>% 
-  ggplot(aes(rank_composite)) +
-  geom_density(bw = 5) +
-  #geom_histogram(binwidth = 10, color = 'black') +
-  labs(x = 'Rank frequency + reverse rank consistency')
-
-```
-
-
-
-
-```{r affiliationPlot, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='Affiliation'}
-
-min_ = Zs %>% 
-  filter(var == 'wcbc_rank') %>% 
-  filter(!is.na(Z)) %>% 
-  summarise(Z = min(Z)) %>% 
-  pull(Z)
-
-plot_data = Zs %>% 
-  mutate(affil = case_when(word %in% intersect_words ~ 'All',
-                           word %in% symmetrical_difference_words ~ 'One',
-                           TRUE ~ 'Remaining')) %>% 
-  mutate(Z = case_when(is.na(Z) ~ min_,
-                       TRUE ~ Z)) %>% 
-  filter(var == 'wcbc_rank') %>% 
-  group_by(word) %>%
-  summarise(affil = first(affil),
-            M = first(Z))
-  
-  
-z_tests = split(plot_data$M, plot_data$affil) %>% 
-    map(t.test)
-
-
-z_table_wcbc_affil = z_tests_to_table(z_tests) %>% 
-  rename(Affiliation = Source) %>% 
-  mutate(var = 'WCBC')
-  
-  
-point_data = z_table_wcbc_affil %>% 
-  select(affil = Affiliation, se = `*SE*`, var, M = `*b*`) %>% 
-  mutate(se = as.numeric(se),
-         M = as.numeric(str_remove_all(M, '\\*')))
-  
-SDs = plot_data %>% 
-  group_by(affil) %>% 
-  dplyr::summarise(SD = sd(M, na.rm = T))
-
-COLORS_AFFIL = c('All' = 'darkgreen', 'One' = 'firebrick', 'Remaining' = 'blue')
-
-point_data %>% 
-  left_join(SDs) %>% 
-  ggplot(aes(affil, M, color = affil)) +
-  geom_point(size = 1.5) +
-  #geom_point(data = plot_data, color = 'grey', size = .8, position = position_jitter(width = .02)) +
-  geom_errorbar(aes(ymin = M+se, ymax = M-se), size = 1.3, width = .13) +
-  scale_color_manual(values = COLORS_AFFIL) +
-  ylim(c(-1.8, 0)) +
-  labs(x = 'Group', y = 'Rank frequency (standardized)', title = 'Frequency') +
-  geom_hline(yintercept = 0, color = 'red', linetype = 'dotted') +
-  theme_apa() +
-  theme(legend.position = 'none', axis.title = element_text(size = 28),
-        plot.title = element_text(size = 42, hjust = .5))
-
-```
-
-
-
-```{r affiliationPlot2, echo=FALSE, warning=FALSE, message=FALSE, fig.cap='Affilition 2'}
-VARS = c("syllables", "letters", "aoa", "imageability", "consistency")
-
-
-bardata = z_tables_lexical_affil %>% 
-  select(group, se = `*SE*`, var, M = `*b*`) %>% 
-  mutate(se = as.numeric(se),
-         M = as.numeric(str_remove_all(M, '\\*')))
-  
-hlines = nsd %>% 
-  filter(var %in% VARS) %>% 
-  group_by(var) %>% 
-  summarise(sourcemean = mean(M_, na.rm = T)) %>% 
-  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
-                         var == 'syllables' ~ 'Syllables',
-                         var == 'aoa' ~ 'AoA',
-                         var == 'imageability' ~ 'Imageability',
-                         var == 'letters' ~ 'Letters'))
-
-
-bardata %>% 
-  mutate(var = case_when(var == 'consistency' ~ 'Consistency',
-                         var == 'syllables' ~ 'Syllables',
-                         var == 'aoa' ~ 'AoA',
-                         var == 'imageability' ~ 'Imageability',
-                         var == 'letters' ~ 'Letters')) %>% 
-  ggplot(aes(group, M, color = group, group = var)) +
-  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'black', linetype = 'dotted') +
-  scale_color_manual(values = COLORS_AFFIL) +
-  geom_point(size = 2) +
-  geom_line(color = 'grey') +
-  geom_errorbar(aes(ymin = M-se, ymax = M+se), size = .5, width = .8) +
-  labs(color = 'Source', x = 'Variable', y = 'Standardized value (within WCBC)') +
-  facet_grid(~var)  +
-  geom_hline(yintercept = 0, linetype = 'dashed', color = 'red') +
-  #ylim(c(-1.3, 0)) +
-  theme_bw() +
-  theme(legend.position = 'top',
-        axis.ticks.x = element_blank(), 
-        axis.text.x = element_blank(),
-        strip.background=element_rect(fill = 'grey'))
-
-
-
-
-
-```
-
-
-In the paper we report the following figure. Also include a table in the supplement that provides the proportions themselves and the number of words associated with each value. For example, Dolch has X number of word that appear in one other resource, which represents Y proportion.
-```{r echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap='Each resource is broken down in terms of the number of resources its words appear in. Bars are labeled with the number of resources those words appear in (i.e., the number six indicates that those words appear in all six resources), and the size of each bar segment corresponds to a proportion of words in that resource (e.g., over 75% of the words in Kilpatrick appear only in that resource). Panel A shows these data for all six lists, and Panel B shows these data with Kilpatrick removed.', fig.height=8, fig.width=7}
-
-# stacked barplot (with kilpatrick)
-plot_a = counts_by_source %>% 
-  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
-                            source == 'fry' ~ 'Fry',
-                            source == 'fundations' ~ 'Fundations',
-                            source == 'kilpatrick' ~ 'Kilpatrick',
-                            source == 'wonders' ~ 'Wonders',
-                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
-  ungroup() %>% 
-  arrange(desc(source)) %>% 
-  mutate(order = seq_len(n())) %>%
-  ggplot(aes(prop, reorder(source, order), fill = count)) +
-  geom_bar(position = "stack", stat = "identity", color = "black") +
-  geom_text(aes(label = count), position = position_stack(vjust = 0.5)) +
-  scale_fill_continuous(low = "grey22", high = "white") +
-  theme_apa() +
-  labs(x = "Proportion",
-       y = "Resource",
-       fill = "# of Resources") +
-  theme(legend.position = "none")
-
-
-# version without Kilpatrick
-plot_b =  counts_by_source_without_kilpatrick %>% 
-  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
-                            source == 'fry' ~ 'Fry',
-                            source == 'fundations' ~ 'Fundations',
-                            source == 'wonders' ~ 'Wonders',
-                            source == 'fountas_pinnell' ~ 'F&P')) %>% 
-  ungroup() %>% 
-  arrange(desc(source)) %>% 
-  mutate(order = seq_len(n())) %>% 
-  ggplot(aes(prop, reorder(source, order), fill = count)) +
-  geom_bar(position = "stack", stat = "identity", color = "black") +
-  geom_text(aes(label = count), position = position_stack(vjust = 0.5)) +
-  scale_fill_continuous(low = "grey22", high = "white") +
-  theme_apa() +
-  labs(x = "Proportion",
-       y = "Resource",
-       fill = "# of Resources") +
-  theme(legend.position = "none")
-
-
-plot_grid(plot_a, plot_b, labels = c("A", "B"), ncol = 1)
-
-
-```
-
-## Lexical variables
-
-```{r profileTableStatTest, echo=FALSE, message=FALSE, warning=FALSE, fig.pos="H"}
-Source = z_tables_lexical %>% filter(var == 'aoa') %>% pull(Source)
-AoA = z_tables_lexical %>% filter(var == 'aoa') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
-Consistency = z_tables_lexical %>% filter(var == 'consistency') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
-Imageability = z_tables_lexical %>% filter(var == 'imageability') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
-Letters = z_tables_lexical %>% filter(var == 'letters') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
-Syllables = z_tables_lexical %>% filter(var == 'syllables') %>% rename(b = `\\textit{b}`, se = `\\textit{SE}`) %>% mutate(o = paste(b, ' (', se, ')', sep = '')) %>%  pull(o)
-
-data.frame(cbind(Source, AoA, Consistency, Imageability, Letters, Syllables)) %>% 
-  mutate(Source = case_when(Source == 'Dolch' ~ 'Dolch',
-                            Source == 'Fry' ~ 'Fry',
-                            Source == 'Fundations' ~ 'Fundations',
-                            Source == 'Kilpatrick' ~ 'Kilpatrick',
-                            Source == 'Wonders' ~ 'Wonders',
-                            Source == 'Fountas & Pinnell' ~ 'FP')) %>%
-  apa_table(caption = 'Model Estimates for Statistical Tests of Source Means against Mean from TASA', 
-            note = 'Estimates obtained from using t.test() from base R, with standard errors in parentheses. Bolded parameter estimates are statistically significant. Values were Z transformed on the distribution from the TASA prior to subsetting and testing by source.', escape = FALSE)
-  
-```
-
-
-## Raw frequencies for all corpora
-
-
-
-\begin{landscape}
-```{r SourcesDesc, echo=FALSE, message=FALSE, warning=FALSE, fig.pos="H"}
-table_desc = all_lists %>% 
   group_by(source, word) %>% 
-  summarise(childes_freq = first(childes_freq),
-                    tasa_freq = first(tasa_freq),
-                    wcbc_freq = first(wcbc_freq),
-                    letters = first(letters),
-                    syllables = first(syllables),
-                    morphemes = first(morphemes)) %>% 
+  summarise(word = first(word)) %>% 
   ungroup() %>% 
-  left_join(coca %>% 
-              select(word, coca_freq = freq)) %>% 
-  group_by(source) %>% 
-  summarise(TASA = round(mean(tasa_freq, na.rm = T)),
-            TASA_sd = round(sd(tasa_freq, na.rm = T)),
-            WCBC = round(mean(wcbc_freq, na.rm = T)),
-            WCBC_sd = round(sd(wcbc_freq, na.rm = T)),
-            COCA = round(mean(coca_freq, na.rm = T)),
-            COCA_sd = round(sd(coca_freq, na.rm = T)),
-            CHILDES = round(mean(childes_freq, na.rm = T)),
-            CHILDES_sd = round(sd(childes_freq, na.rm = T)),
-            Letters = round(mean(letters, na.rm = T)),
-            Letters_sd = round(sd(letters, na.rm = T), digits = 2),
-            Syllables = round(mean(syllables, na.rm = T)),
-            Syllables_sd = round(sd(syllables, na.rm = T), digits = 2)) %>% 
-  mutate(TASA = str_c(TASA, " (", TASA_sd, ")"),
-         WCBC = str_c(WCBC, " (", WCBC_sd, ")"),
-         COCA = str_c(COCA, " (", COCA_sd, ")"),
-         CHILDES = str_c(CHILDES, " (", CHILDES_sd, ")"),
-         Letters = str_c(Letters, " (", Letters_sd, ")"),
-         Syllables = str_c(Syllables, " (", Syllables_sd, ")")) %>% 
-  select(source, TASA, WCBC, COCA, CHILDES, Letters, Syllables)
-      
+  group_by(word) %>% 
+  summarise(count = n()) %>% 
+  filter(count == 1) %>% 
+  left_join(wcbc) %>% 
+  select(word, wcbc_rank) %>%
+  arrange(-desc(wcbc_rank)) %>%
+  mutate(wcbc_rank = as.character(wcbc_rank),
+         wcbc_rank = case_when(is.na(wcbc_rank) ~ "NP",
+                               TRUE ~ wcbc_rank)) %>%
+  mutate(final = str_c(word, ' (', wcbc_rank, ')')) %>%
+  select(final) %>% 
+  pull(final) %>% 
+  matrix(ncol = 5) %>% 
+  apa_table(caption = 'All Words that Appear in Only a Single Resource', note = 'Rank frequency taken from the TASA is given in parentheses. Words that are not present in that corpus are marked with “NP” (“not present”), indicating that they are very infrequent in texts written for children.', col.names = NULL)
+  
+```
 
-all_lists %>% 
+
+
+## Supplement to Figure 2
+
+```{r}
+
+counts_by_source = all_lists %>% 
   group_by(source) %>% 
   distinct(word) %>% 
-  summarise(N = n()) %>%
-  left_join(table_desc) %>% 
-  mutate(Source = case_when(source == 'dolch' ~ 'Dolch',
+  left_join(all_lists %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              ungroup() %>% 
+              group_by(word) %>% 
+              summarise(count = n()) %>% 
+              ungroup()) %>% 
+  ungroup() %>% 
+  group_by(source, count) %>% 
+  summarise(counts = n()) %>% 
+  left_join(all_lists %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              summarise(n = n()) %>% 
+              ungroup()) %>% 
+  mutate(prop = round(counts/n, digits = 2)) %>% 
+  ungroup() %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
                             source == 'fry' ~ 'Fry',
                             source == 'fundations' ~ 'Fundations',
-                            source == 'kilpatrick' ~ 'Kilpatrick',
                             source == 'wonders' ~ 'Wonders',
-                            source == 'fountas_pinnell' ~ 'FP')) %>% 
-  select(-source, -Letters, -Syllables) %>% 
-  select(Source, everything()) %>% 
-  apa_table(caption = "Basic Descriptive Data for All Instructional Sources",
-            note = "Values for CHILDES, TASA, WCBC, and COCA are mean raw frequencies. Letters = number of letters. Syllables = number of syllables. Values in parentheses are standard deviations. FP = Fountas & Pinnell.")
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>%
+  apa_table(caption = 'Supplement to Figure 2, Panel A in paper. For all six resources the proportion of words that occur in 1-6 of the resources are provided.', col.names = c("Source", "Count", "Words per count", "Words in source", "Prop."))
 
 ```
-\end{landscape}
+
+
+```{r}
+
+counts_by_source_without_kilpatrick = all_lists %>% 
+  filter(source != "kilpatrick") %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  left_join(all_lists %>% 
+              filter(source != "kilpatrick") %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              ungroup() %>% 
+              group_by(word) %>% 
+              summarise(count = n()) %>% 
+              ungroup()) %>% 
+  ungroup() %>% 
+  group_by(source, count) %>% 
+  summarise(counts = n()) %>% 
+  left_join(all_lists %>% 
+              filter(source != "kilpatrick") %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              summarise(n = n()) %>% 
+              ungroup()) %>% 
+  mutate(prop = round(counts/n, digits = 2)) %>% 
+  ungroup() %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% view()
+  apa_table(caption = 'Supplement to Figure 2, Panel B in paper. For all resources except for Kilpatrick the proportion of words that occur in 1-6 of the resources are provided.', col.names = c("Source", "Count", "Words per count", "Words in source", "Prop."))
+
+
+```
 
