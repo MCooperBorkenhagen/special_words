@@ -92,6 +92,7 @@ source('scripts/coca.R')
 source('scripts/tasa.R')
 
 COLORS_CORPUS = c('WCBC' = 'firebrick3',
+                  'ACBC' = 'firebrick3',
            'COCA' = 'darkslategray',
            'CHILDES' = 'gold2',
            'TASA' = 'coral')

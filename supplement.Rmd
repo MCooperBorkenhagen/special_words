@@ -1,0 +1,578 @@
+---
+title             : 'SUPPLEMENT: Which words are special? Identification of "sight" words in educational resources'
+shorttitle        : "SUPPLEMENT: Special words"
+
+
+  
+documentclass     : "apa6"
+class             : "man"
+figsintext        : yes
+figurelist        : no
+tablelist         : yes
+footnotelist      : no
+lineno            : yes
+replaceampersands : no
+#lang              : "en-US"
+output            : papaja::apa6_pdf
+#output            : papaja::apa6_docx
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{longtable}[=v4.13]
+  - \usepackage{array}
+  - \usepackage{multirow}
+  - \PassOptionsToPackage{x11names}{xcolor}
+  - \usepackage{wrapfig}
+  - \usepackage{float}
+  - \usepackage{colortbl}
+  - \usepackage{pdflscape}
+  - \usepackage{tabu}
+  - \usepackage{threeparttable}
+  - \usepackage[normalem]{ulem}
+  - \usepackage{scrextend}
+  - \usepackage{caption}
+  - \captionsetup{font=small}
+  - \usepackage{lipsum}
+  - \usepackage{setspace}
+  - \usepackage{fancyhdr}
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+
+lapply(read.csv('scripts/requirements.txt', stringsAsFactors = F, header = F)[[1]], require, ch = T)
+
+
+source('scripts/utilities.R')
+
+#source('scripts/Zs.R') # replaced with structured data read (see Zs.R for specs on this object)...
+Zs = read_csv("data/Zs.csv")
+
+source_order = Zs %>% 
+  group_by(source) %>% 
+  summarise(source_order = first(source_order)) %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'F&P',
+                            TRUE ~ source))
+
+source('scripts/wcbc.R')
+
+childes = read_csv('data/childes.csv')
+
+
+all_lists = read_csv('data/all_lists_v2.csv') # old call read_csv('data/all_lists.csv')
+source('scripts/sets.R')
+
+
+# added this coca read because it is needed in one of the sections in its raw form
+source('scripts/coca.R')
+source('scripts/tasa.R')
+
+COLORS_CORPUS = c('WCBC' = 'firebrick3',
+           'COCA' = 'darkslategray',
+           'CHILDES' = 'gold2',
+           'TASA' = 'coral')
+
+COLORS_OTHERVAR = c('AoA' = 'darkolivegreen4',
+           'Consistency' = 'turquoise3',
+           'Imageability' = 'darkorange1',
+           'Letters' = 'goldenrod1',
+           'Syllables' = 'dodgerblue3')
+
+COLORS_SOURCE = c('Kilpatrick' = 'darkblue',
+           'Dolch' = 'darkred',
+           'Fry' = 'darkorange',
+           'Fundations' = 'turquoise',
+           'Wonders' = 'red',
+           'Fountas & Pinnell' = 'darkgreen',
+           'FP' = 'darkgreen')
+
+```
+
+
+
+```{r profiles_data, include=FALSE}
+source('scripts/frequency_models.R')
+source('scripts/lexical_models.R')
+source('scripts/lexical_models_affil.R')
+```
+
+
+
+```{r overlap_data, include=FALSE}
+source('scripts/overlap.R')
+```
+
+
+```{r properties_data, include=FALSE}
+source('scripts/top_n.R')
+```
+
+
+
+```{r frequency_and_inconsistency_data, include=FALSE}
+
+programs_by_rank_inconsistency_rank_frequency = read_csv(file = "data/programs_by_rank_inconsistency_rank_frequency.csv")
+
+```
+
+
+
+```{r chunk1}
+all_lists %>% 
+  group_by(source, word) %>% 
+  summarise(word = first(word)) %>% 
+  ungroup() %>% 
+  group_by(word) %>% 
+  summarise(count = n()) %>% 
+  filter(count == 1) %>% 
+  left_join(wcbc) %>% 
+  select(word, wcbc_rank) %>%
+  arrange(-desc(wcbc_rank)) %>%
+  mutate(wcbc_rank = as.character(wcbc_rank),
+         wcbc_rank = case_when(is.na(wcbc_rank) ~ "NP",
+                               TRUE ~ wcbc_rank)) %>%
+  mutate(final = str_c(word, ' (', wcbc_rank, ')')) %>%
+  select(final) %>% 
+  pull(final) %>% 
+  matrix(ncol = 5) %>% 
+  apa_table(caption = 'Supplement to Table 4: All Words that Appear in Only a Single Resource', note = 'Rank frequency taken from the TASA is given in parentheses. Words that are not present in that corpus are marked with “NP” (“not present”), indicating that they are very infrequent in texts written for children.', col.names = NULL, longtable = TRUE)
+  
+```
+
+
+
+
+```{r chunk2}
+
+counts_by_source = all_lists %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  left_join(all_lists %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              ungroup() %>% 
+              group_by(word) %>% 
+              summarise(count = n()) %>% 
+              ungroup()) %>% 
+  ungroup() %>% 
+  group_by(source, count) %>% 
+  summarise(counts = n()) %>% 
+  left_join(all_lists %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              summarise(n = n()) %>% 
+              ungroup()) %>% 
+  mutate(prop = round(counts/n, digits = 2)) %>% 
+  ungroup() %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>%
+  apa_table(caption = 'Supplement to Figure 2, Panel A: For all six resources the proportion of words that occur in 1-6 of the resources are provided.', col.names = c("Source", "Count", "Words per count", "Words in source", "Prop."))
+
+```
+
+
+\newpage
+
+```{r chunk3}
+
+counts_by_source_without_kilpatrick = all_lists %>% 
+  filter(source != "kilpatrick") %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  left_join(all_lists %>% 
+              filter(source != "kilpatrick") %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              ungroup() %>% 
+              group_by(word) %>% 
+              summarise(count = n()) %>% 
+              ungroup()) %>% 
+  ungroup() %>% 
+  group_by(source, count) %>% 
+  summarise(counts = n()) %>% 
+  left_join(all_lists %>% 
+              filter(source != "kilpatrick") %>% 
+              group_by(source) %>% 
+              distinct(word) %>% 
+              summarise(n = n()) %>% 
+              ungroup()) %>% 
+  mutate(prop = round(counts/n, digits = 2)) %>% 
+  ungroup() %>% 
+  mutate(source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'Fountas & Pinnell')) %>% 
+  apa_table(caption = 'Supplement to Figure 2, Panel B: For all resources except for Kilpatrick the proportion of words that occur in 1-6 of the resources are provided.', col.names = c("Source", "Count", "Words per count", "Words in source", "Prop."))
+
+
+```
+
+
+
+\begin{landscape}
+```{r SourcesDesc, echo=FALSE, message=FALSE, warning=FALSE, fig.pos="H"}
+table_desc = all_lists %>% 
+  group_by(source, word) %>% 
+  summarise(childes_freq = first(childes_freq),
+                    tasa_freq = first(tasa_freq),
+                    wcbc_freq = first(wcbc_freq),
+                    letters = first(letters),
+                    syllables = first(syllables),
+                    morphemes = first(morphemes)) %>% 
+  ungroup() %>% 
+  left_join(coca %>% 
+              select(word, coca_freq = freq)) %>% 
+  group_by(source) %>% 
+  summarise(TASA = round(mean(tasa_freq, na.rm = T)),
+            TASA_sd = round(sd(tasa_freq, na.rm = T)),
+            WCBC = round(mean(wcbc_freq, na.rm = T)),
+            WCBC_sd = round(sd(wcbc_freq, na.rm = T)),
+            COCA = round(mean(coca_freq, na.rm = T)),
+            COCA_sd = round(sd(coca_freq, na.rm = T)),
+            CHILDES = round(mean(childes_freq, na.rm = T)),
+            CHILDES_sd = round(sd(childes_freq, na.rm = T)),
+            Letters = round(mean(letters, na.rm = T)),
+            Letters_sd = round(sd(letters, na.rm = T), digits = 2),
+            Syllables = round(mean(syllables, na.rm = T)),
+            Syllables_sd = round(sd(syllables, na.rm = T), digits = 2)) %>% 
+  mutate(TASA = str_c(TASA, " (", TASA_sd, ")"),
+         WCBC = str_c(WCBC, " (", WCBC_sd, ")"),
+         COCA = str_c(COCA, " (", COCA_sd, ")"),
+         CHILDES = str_c(CHILDES, " (", CHILDES_sd, ")"),
+         Letters = str_c(Letters, " (", Letters_sd, ")"),
+         Syllables = str_c(Syllables, " (", Syllables_sd, ")")) %>% 
+  select(source, TASA, WCBC, COCA, CHILDES, Letters, Syllables)
+      
+
+all_lists %>% 
+  group_by(source) %>% 
+  distinct(word) %>% 
+  summarise(N = n()) %>%
+  left_join(table_desc) %>% 
+  mutate(Source = case_when(source == 'dolch' ~ 'Dolch',
+                            source == 'fry' ~ 'Fry',
+                            source == 'fundations' ~ 'Fundations',
+                            source == 'kilpatrick' ~ 'Kilpatrick',
+                            source == 'wonders' ~ 'Wonders',
+                            source == 'fountas_pinnell' ~ 'FP')) %>% 
+  select(-source, -Letters, -Syllables) %>% 
+  select(Source, everything()) %>% 
+  apa_table(caption = "Supplement on Word Frequency: Basic Descriptive Data for All Instructional Sources",
+            note = "Values for CHILDES, TASA, ACBC, and COCA are mean raw frequencies. Values in parentheses are standard deviations. FP = Fountas & Pinnell.")
+
+```
+\end{landscape}
+
+
+\newpage
+
+
+
+
+```{r chunk5a, echo=FALSE, message=FALSE, warning=FALSE, out.width='\\textwidth', fig.cap = "The distribution of frequencies (rank, standardized) for each resource measured in four different corpora: the American Children's Book Corpus (ACBC; Lewis et al., 2022), the CHILDES database (MacWhinney, 2000), the Corpus of Contemporary American English (COCA; Davies, 2009), and the Educator's Word Frequency Guide (TASA; Zeno et al., 1995). In this plot the panels are corpora rather than resources. The words are shown as grey points. Each panel also shows the mean for all corpora (zero line, dotted) and the mean for each group of resources on a given corpus (dashed line). Error bars are standard error of the mean.", fig.height=3}
+frequencies = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
+
+nsd = Zs %>% 
+  filter(var %in% frequencies) %>% 
+  group_by(var, source) %>% 
+  summarise(SD = sd(Z, na.rm = T),
+            M_ = mean(Z, na.rm = T),
+            n = n(),
+            source_order = first(source_order)) %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source))
+
+
+
+hlines = nsd %>% 
+  filter(var %in% frequencies) %>% 
+  group_by(var) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T)) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'ACBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'))
+
+plot_data = Zs %>% 
+  filter(var %in% frequencies) %>% 
+  select(var, source, M = Z) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'ACBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+         source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source))
+
+plot_a = Zs %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source)) %>% 
+  group_by(var, source) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% frequencies) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'ACBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA')) %>%
+  mutate(source = factor(source, levels = c('Dolch', 'FP', 'Fry', 'Fundations', 'Kilpatrick', 'Wonders'))) %>%
+  ggplot(aes(reorder(source, source_order), M, color = source, group = source)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(data = plot_data, position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-SD, ymax = M + SD), width = .5) +
+  facet_grid(~var) +
+  ylim(c(-2, .5)) +
+  labs(color = 'Variable', x = 'Source', y = 'Rank freq. (Z)') +
+  geom_hline(yintercept = 0, linetype = 'dotted', color = 'black') +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed', alpha = .5) +
+  theme_bw() +
+  theme(strip.background=element_rect(fill = 'grey'))
+
+
+
+plot_b = Zs %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source)) %>% 
+  group_by(var, source) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% frequencies) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'ACBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA')) %>%
+  mutate(source = factor(source, levels = c('Dolch', 'FP', 'Fry', 'Fundations', 'Kilpatrick', 'Wonders'))) %>% 
+  ggplot(aes(reorder(source, source_order), M, color = source, group = source)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(data = plot_data, position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-SEM, ymax = M + SEM), width = .5) +
+  facet_grid(~var) +
+  ylim(c(-2, .5)) +
+  labs(color = 'Variable', x = 'Source', y = 'Rank freq. (Z)') +
+  geom_hline(yintercept = 0, linetype = 'dotted', color = 'black') +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed', alpha = .5) +
+  theme_bw() +
+  theme(legend.position = 'none',
+        axis.text.x = element_text(angle = 60, hjust = 1),
+        strip.background=element_rect(fill = 'grey'))
+
+
+plot_c = Zs %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source)) %>% 
+  group_by(var, source) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% frequencies) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'ACBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA')) %>% 
+  mutate(source = factor(source, levels = c('Dolch', 'FP', 'Fry', 'Fundations', 'Kilpatrick', 'Wonders'))) %>%
+  ggplot(aes(source, M, color = source, group = source)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-SEM, ymax = M + SEM), width = .5) +
+  facet_grid(~var) +
+  ylim(c(-1.8, -.5)) +
+  labs(color = 'Corpus', x = 'Source', y = 'Rank freq. (Z)') +
+  geom_hline(yintercept = 0, linetype = 'dotted', color = 'black') +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed', alpha = .5) +
+  theme_bw() +
+  theme(legend.position = 'none',
+        axis.text.x = element_text(angle = 60, hjust = 1),
+        strip.background=element_rect(fill = 'grey'))
+
+plot_b
+```
+
+
+```{r chunk5b, echo=FALSE, message=FALSE, warning=FALSE, out.width='\\textwidth', fig.cap = "The distribution of frequencies (rank, standardized) for each resource measured in four different corpora: the American Children's Book Corpus (ACBC; Lewis et al., 2022), the CHILDES database (MacWhinney, 2000), the Corpus of Contemporary American English (COCA; Davies, 2009), and the Educator's Word Frequency Guide (TASA; Zeno et al., 1995). In this plot the panels are resources rather than corpora. The words are shown as grey points. Each panel also shows the mean for all corpora (zero line, dotted) and the mean for each resource (dashed line). Error bars are standard error of the mean.", fig.height=2}
+
+nsd = Zs %>% 
+  group_by(source, var) %>% 
+  summarise(SD = sd(Z, na.rm = T),
+            M_ = mean(Z, na.rm = T),
+            n = n(),
+            source_order = first(source_order)) %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source))
+
+frequencies = c('tasa_rank', 'wcbc_rank', 'childes_rank', 'coca_rank')
+
+
+hlines = nsd %>% 
+  filter(var %in% frequencies) %>% 
+  group_by(source) %>% 
+  summarise(sourcemean = mean(M_, na.rm = T),
+            source_order = first(source_order)) %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source))
+
+plot_data = Zs %>% 
+  filter(var %in% frequencies) %>% 
+  select(var, source, M = Z) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'ACBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+         source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source))
+
+plot_a = Zs %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% frequencies) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'ACBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA')) %>%
+  mutate(source = factor(source, levels = c('Dolch', 'FP', 'Fry', 'Fundations', 'Kilpatrick', 'Wonders'))) %>%
+  ggplot(aes(source, M, color = source, group = source)) +
+  scale_color_manual(values = COLORS_SOURCE) +
+  geom_point(data = plot_data, position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-SD, ymax = M + SD), width = .5) +
+  facet_grid(~var) +
+  ylim(c(-2, .5)) +
+  labs(color = 'Variable', x = 'Source', y = 'Rank freq. (Z)') +
+  geom_hline(yintercept = 0, linetype = 'dotted', color = 'black') +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed', alpha = .5) +
+  theme_bw() +
+  theme(legend.position = 'none',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+
+plot_b = Zs %>% 
+  mutate(source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source)) %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% frequencies) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'ACBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA')) %>%
+  mutate(source = factor(source, levels = c('Dolch', 'FP', 'Fry', 'Fundations', 'Kilpatrick', 'Wonders'))) %>% 
+  ggplot(aes(var, M, color = var, group = source)) +
+  scale_color_manual(values = COLORS_CORPUS) +
+  geom_point(data = plot_data, position = position_jitter(width = .04, height = .01), size = .01, color = 'grey') +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-SEM, ymax = M + SEM), width = .5) +
+  facet_grid(~source) +
+  ylim(c(-2, .5)) +
+  labs(color = 'Variable', x = 'Source', y = 'Rank freq. (Z)') +
+  geom_hline(yintercept = 0, linetype = 'dotted', color = 'black') +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed', alpha = .5) +
+  theme_bw() +
+  theme(legend.position = 'none',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+
+plot_c = Zs %>% 
+  group_by(source, var) %>% 
+  summarise(M = mean(Z, na.rm = T)) %>% 
+  left_join(nsd) %>% 
+  mutate(SEM = SD/(sqrt(n))) %>%
+  filter(var %in% frequencies) %>% 
+  mutate(var = case_when(var == 'wcbc_rank' ~ 'ACBC',
+                         var == 'tasa_rank' ~ 'TASA',
+                         var == 'childes_rank' ~ 'CHILDES',
+                         var == 'coca_rank' ~ 'COCA'),
+         source = case_when(source == 'Fountas & Pinnell' ~ 'FP',
+                            TRUE ~ source)) %>% 
+  mutate(source = factor(source, levels = c('Dolch', 'FP', 'Fry', 'Fundations', 'Kilpatrick', 'Wonders'))) %>%
+  ggplot(aes(var, M, color = var, group = source)) +
+  scale_color_manual(values = COLORS_CORPUS) +
+  geom_point(size = 2) +
+  geom_line(color = 'grey') +
+  geom_errorbar(aes(ymin = M-SEM, ymax = M + SEM), width = .5) +
+  facet_grid(~source) +
+  ylim(c(-1.8, -.5)) +
+  labs(color = 'Corpus', x = 'Source', y = 'Rank freq. (Z)') +
+  geom_hline(yintercept = 0, linetype = 'dotted', color = 'black') +
+  geom_hline(data = hlines, aes(yintercept = sourcemean), color = 'red', linetype = 'dashed', alpha = .5) +
+  theme_bw() +
+  theme(legend.position = 'bottom',
+        axis.ticks.x = element_blank(), 
+        axis.text.x = element_blank(),
+        strip.background=element_rect(fill = 'grey'))
+
+plot_b
+
+```
+
+
+\newpage
+
+```{r chunk6}
+all_lists %>% 
+  group_by(word) %>% 
+  summarise(tasa_freq = first(tasa_freq)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "dolch") %>% 
+              distinct(word) %>% 
+              mutate(Dolch = word) %>% 
+              select(word, Dolch)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "fry") %>% 
+              distinct(word) %>% 
+              mutate(Fry = word) %>% 
+              select(word, Fry)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "fundations") %>% 
+              distinct(word) %>% 
+              mutate(Fundations = word) %>% 
+              select(word, Fundations)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "fountas_pinnell") %>% 
+              distinct(word) %>% 
+              mutate(`FP` = word) %>% 
+              select(word, `FP`)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "kilpatrick") %>% 
+              distinct(word) %>% 
+              mutate(Kilpatrick = word) %>% 
+              select(word, Kilpatrick)) %>% 
+  left_join(all_lists %>% 
+              filter(source == "wonders") %>% 
+              distinct(word) %>% 
+              mutate(Wonders = word) %>% 
+              select(word, Wonders)) %>% 
+  select(`Freq.` = tasa_freq, Dolch, FP, Fry, Fundations, Kilpatrick, Wonders) %>% 
+  arrange(desc(`Freq.`)) %>% 
+  mutate(`Freq.` = as.character(`Freq.`)) %>% 
+  apa_table(caption = "Supplement to Figure 4: All words (rows) present in all six resources (columns) arranged in descending frequency.", note = "Frequencies provided from the TASA corpus (Zeno et al., 1995). NA values indicate that a given word is not present in that resource or that there is no frequency value associated with that word in the TASA corpus.", longtable = TRUE)
+
+```
+
+# References
+Davies, M. (2009). The 385+ million word Corpus of Contemporary American English (1990–2008+): Design, architecture, and linguistic insights. International journal of corpus linguistics, 14(2), 159-190.
+
+Lewis, M., Cooper Borkenhagen, M., Converse, E., Lupyan, G., & Seidenberg, M. S. (2022). What Might Books Be Teaching Young Children About Gender? Psychological Science, 33(1), 33–47. https://doi.org/10.1177/09567976211024643
+
+MacWhinney, B. (2000). The CHILDES Project: Tools for analyzing talk. (3rd ed.). Lawrence Erlbaum Associates.
+
+Zeno, S. M., Ivens, S. H., Millard, R. T., & Duvvuri, R. (1995). The educator’s word frequency guide. Touchstone Applied Science Associates.

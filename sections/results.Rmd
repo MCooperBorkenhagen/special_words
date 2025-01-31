@@ -121,7 +121,6 @@ plot_grid(plot_a, plot_b, labels = c("A", "B"))
 Figure 2 shows for each resource the proportion of its special words that occur in other resources.  Panel A shows the results using all six resources. A few main patterns are apparent. The Dolch, Fry, and Fountas & Pinnell results are very similar, likely because the two later resources relied heavily on the earlier Dolch article. Fundations contains the most words that are present in all other resources: 15% of the Fundations words appear in all six lists; 41% appear in all five lists when excluding Kilpatrick. Kilpatrick’s list is the most idiosyncratic, with most of the words (328, 77%) included in no other resources.
 
 ```{r fig2, echo=FALSE, warning=FALSE, message=FALSE, fig.height=3, fig.cap= 'For each resource, the proportion of words that occur in 1-6 of the resources. (1) indicates words that only occurred in that resource; (6) indicates words that occurred in all resources.  Panel A shows these data for all six lists, and Panel B shows these data with Kilpatrick words removed. See supplement for these data along with the values for each proportion and the number of words associated with each proportion shown in the graph. FP = Fountas and Pinnell.', fig.height=8, fig.width=7}
-
 counts_by_source = all_lists %>% 
   group_by(source) %>% 
   distinct(word) %>% 
@@ -1048,7 +1047,7 @@ rank_inconsistency_rank_frequency %>%
 
 
 
-```{r fig.cap='Tthe top 50 words using the distance from origin (see list in Table 11 and expanded table in appendix) plotted in terms of frequency (high to low) and consistency (low to high). The rank according to this distance is provided before each word. The word closest to the origin is “to”, representing the word that is most frequent and atypical when both properties are considered.'}
+```{r fig.cap='The top 50 words using the distance from origin (see list in Table 11 and expanded table in appendix) plotted in terms of frequency (high to low) and consistency (low to high). The rank according to this distance is provided before each word. The word closest to the origin is “to”, representing the word that is most frequent and atypical when both properties are considered.'}
 
 rank_inconsistency_rank_frequency %>% 
   filter(word %nin% c('and')) %>% 
