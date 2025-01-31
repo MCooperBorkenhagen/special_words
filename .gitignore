@@ -8,6 +8,7 @@
 *.docx
 
 paper_files/
+supplement_files/
 
 YAML
 *.odp
@@ -15,3 +16,6 @@ YAML
 *.pdf
 *.tex
 resources/
+
+
+*.html
